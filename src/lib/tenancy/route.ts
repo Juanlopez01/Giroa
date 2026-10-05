@@ -30,19 +30,22 @@ export function decideRoute(
     case "reserved":
       return { type: "not_found" };
 
-    case "marketing":
     case "platform":
-    case "unknown": {
-      const match = STUDIO_PATH_RE.exec(pathname);
-      if (match) {
-        const slug = match[1] ?? "";
-        if (!isValidSlug(slug)) return { type: "not_found" };
-        return {
-          type: "redirect",
-          url: `${studioOrigin(slug, rootDomain, protocol)}${match[2] ?? "/"}${search}`,
-        };
-      }
-      return { type: "next" };
-    }
+      // app.giroa.app a secas: elegir estudio (o login si no hay sesión).
+      if (pathname === "/") return { type: "redirect", url: `${protocol}//app.${rootDomain}/estudios${search}` };
+      return studioPathRedirect(pathname, search, rootDomain, protocol);
+
+    case "marketing":
+    case "unknown":
+      return studioPathRedirect(pathname, search, rootDomain, protocol);
   }
+}
+
+// /s/{slug}/... fuera del subdominio redirige al subdominio.
+function studioPathRedirect(pathname: string, search: string, rootDomain: string, protocol: string): RouteDecision {
+  const match = STUDIO_PATH_RE.exec(pathname);
+  if (!match) return { type: "next" };
+  const slug = match[1] ?? "";
+  if (!isValidSlug(slug)) return { type: "not_found" };
+  return { type: "redirect", url: `${studioOrigin(slug, rootDomain, protocol)}${match[2] ?? "/"}${search}` };
 }

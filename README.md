@@ -12,7 +12,7 @@ Requisitos: Node 24+, Docker Desktop corriendo.
 npm install
 npm run db:start      # levanta Supabase local (Docker)
 npm run db:reset      # aplica migraciones + seed
-npm run dev           # http://localhost:3000
+npm run dev           # http://app.lvh.me:3000 (estudios: http://{slug}.lvh.me:3000)
 ```
 
 Tests:

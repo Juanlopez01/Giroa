@@ -81,6 +81,13 @@ describe("decideRoute", () => {
     });
   });
 
+  it("app. a secas lleva a elegir estudio", () => {
+    expect(decideRoute({ kind: "platform" }, "/", "", root, "https:")).toEqual({
+      type: "redirect",
+      url: "https://app.giroa.app/estudios",
+    });
+  });
+
   it("landing y plataforma pasan derecho", () => {
     expect(decideRoute({ kind: "marketing" }, "/", "", root, "https:")).toEqual({ type: "next" });
     expect(decideRoute({ kind: "platform" }, "/login", "", root, "https:")).toEqual({ type: "next" });

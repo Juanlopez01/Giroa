@@ -93,7 +93,7 @@ npm run db:start    # Supabase local (requiere Docker Desktop)
 npm run db:reset    # migraciones + seed
 npm run db:test     # tests pgTAP
 npm run db:types    # regenerar tipos
-npm run dev         # http://localhost:3000 · estudios en http://{slug}.localhost:3000
+npm run dev         # http://app.lvh.me:3000 · estudios en http://{slug}.lvh.me:3000
 npm test            # Vitest
 npm run typecheck && npm run lint
 ```
