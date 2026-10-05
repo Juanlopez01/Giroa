@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ActionForm } from "@/components/ui/action-form";
 import { FormMessage } from "@/components/ui/field";
 import { initialActionState } from "@/lib/errors";
 import { BRAND_PRESETS } from "@/lib/studio";
@@ -28,7 +29,7 @@ export function BrandForm({ studioId, studioName, initialColor, initialLogoUrl, 
   }, [preview]);
 
   return (
-    <form action={action} className="space-y-7">
+    <ActionForm action={action} className="space-y-7">
       <input type="hidden" name="studioId" value={studioId} />
 
       {/* Vista previa de cómo lo ven los alumnos */}
@@ -113,6 +114,6 @@ export function BrandForm({ studioId, studioName, initialColor, initialLogoUrl, 
           Lo hago después
         </a>
       </div>
-    </form>
+    </ActionForm>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input, Select, Textarea } from "@/components/ui/field";
 import { initialActionState, type ActionState } from "@/lib/errors";
 import type { DisciplineOption } from "@/lib/disciplines";
@@ -33,7 +34,7 @@ export function OfferingForm({ action, disciplines, initial, submitLabel }: Prop
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="space-y-5">
+    <ActionForm action={formAction} className="space-y-5">
       <Field label="Nombre de la clase" error={errors.title}>
         <Input
           name="title"
@@ -137,6 +138,6 @@ export function OfferingForm({ action, disciplines, initial, submitLabel }: Prop
       <Button type="submit" disabled={pending}>
         {pending ? "Guardando…" : submitLabel}
       </Button>
-    </form>
+    </ActionForm>
   );
 }

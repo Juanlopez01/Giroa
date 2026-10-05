@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input, Select } from "@/components/ui/field";
 import { initialActionState, type ActionState } from "@/lib/errors";
 import { WEEKDAYS } from "@/lib/datetime";
@@ -18,7 +19,7 @@ export function AddScheduleForm({
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="space-y-4 rounded-2xl border border-border bg-surface p-4">
+    <ActionForm action={formAction} className="space-y-4 rounded-2xl border border-border bg-surface p-4">
       <p className="font-medium">Agregar horario</p>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Día" error={errors.weekday}>
@@ -41,7 +42,7 @@ export function AddScheduleForm({
       <Button type="submit" variant="secondary" disabled={pending}>
         {pending ? "Agregando…" : "Agregar horario"}
       </Button>
-    </form>
+    </ActionForm>
   );
 }
 

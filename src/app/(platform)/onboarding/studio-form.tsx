@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input } from "@/components/ui/field";
 import { initialActionState } from "@/lib/errors";
 import { slugify } from "@/lib/slug";
@@ -40,7 +41,7 @@ export function StudioForm({ rootDomain }: { rootDomain: string }) {
   const slugError = state.fieldErrors?.slug ?? (current && current !== "available" ? slugMessages[current] : undefined);
 
   return (
-    <form action={action} className="space-y-5">
+    <ActionForm action={action} className="space-y-5">
       <Field label="Nombre del estudio" error={state.fieldErrors?.name}>
         <Input
           name="name"
@@ -91,6 +92,6 @@ export function StudioForm({ rootDomain }: { rootDomain: string }) {
       <Button type="submit" disabled={pending || current === "taken" || current === "reserved"}>
         {pending ? "Creando tu estudio…" : "Crear estudio"}
       </Button>
-    </form>
+    </ActionForm>
   );
 }

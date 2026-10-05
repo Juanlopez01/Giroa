@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/panel", label: "Inicio", exact: true },
   { href: "/panel/agenda", label: "Agenda" },
   { href: "/panel/clases", label: "Clases" },
+  { href: "/panel/packs", label: "Packs" },
 ] as const;
 
 export function PanelNav({ variant }: { variant: "top" | "bottom" }) {
@@ -17,7 +18,7 @@ export function PanelNav({ variant }: { variant: "top" | "bottom" }) {
 
   if (variant === "bottom") {
     return (
-      <nav className="grid grid-cols-3">
+      <nav className="grid grid-cols-4">
         {ITEMS.map((item) => (
           <Link
             key={item.href}

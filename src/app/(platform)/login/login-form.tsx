@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
+import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input } from "@/components/ui/field";
 import { initialActionState } from "@/lib/errors";
 import { sendMagicLink } from "./actions";
@@ -19,7 +20,7 @@ export function LoginForm({ next }: { next: string }) {
   }
 
   return (
-    <form action={action} className="space-y-5">
+    <ActionForm action={action} className="space-y-5">
       <input type="hidden" name="next" value={next} />
       <Field label="Tu email" error={state.fieldErrors?.email}>
         <Input
@@ -36,6 +37,6 @@ export function LoginForm({ next }: { next: string }) {
       <Button type="submit" disabled={pending}>
         {pending ? "Mandando…" : "Mandame el link"}
       </Button>
-    </form>
+    </ActionForm>
   );
 }
