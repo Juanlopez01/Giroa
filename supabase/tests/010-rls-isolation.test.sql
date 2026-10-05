@@ -96,11 +96,11 @@ select is(tests.count('authenticated', '00000000-0000-0000-0000-0000000000c1', '
   'un usuario sin estudio no ve alumnos');
 
 -- ---------------------------------------------------------------- anónimo
-select is(tests.count('anon', null, 'select * from public.studios'), 2,
+select is(tests.count('anon', null, $$select * from public.studios where slug in ('estudio-a', 'estudio-b')$$), 2,
   'anónimo ve los estudios activos');
 select is(tests.count('anon', null, $$select * from public.offerings where studio_id = '10000000-0000-0000-0000-00000000000a'$$), 2,
   'anónimo ve las clases activas');
-select is(tests.count('anon', null, 'select * from public.pack_products'), 3,
+select is(tests.count('anon', null, $$select * from public.pack_products where studio_id in ('10000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000b')$$), 3,
   'anónimo ve los packs activos');
 select is(tests.err('anon', null, 'select * from public.students'), '42501',
   'anónimo no puede leer alumnos');

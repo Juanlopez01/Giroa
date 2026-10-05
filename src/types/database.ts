@@ -724,6 +724,9 @@ isOneToOne: false
 "record_manual_payment":
 { Args: { "p_amount_cents"?: number,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_pack_product_id": string,"p_partner_student_id"?: string,"p_student_id": string }; Returns: Json
                            },
+"remove_schedule":
+{ Args: { "p_schedule_id": string }; Returns: number
+                           },
 "studio_has_feature":
 { Args: { "p_feature": string,"p_studio_id": string }; Returns: boolean
                            },
