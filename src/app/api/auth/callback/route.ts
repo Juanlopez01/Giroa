@@ -28,7 +28,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (!ok) {
-    return NextResponse.redirect(platformUrl(`/login?error=link&next=${encodeURIComponent(next)}`));
+    // En el subdominio de un estudio, vuelve a su login (con su marca).
+    const onStudio = resolveHost(new URL(origin).host, publicEnv().NEXT_PUBLIC_ROOT_DOMAIN).kind === "studio";
+    const retry = `${onStudio ? "/ingresar" : "/login"}?error=link&next=${encodeURIComponent(next)}`;
+    return NextResponse.redirect(onStudio ? new URL(retry, origin) : platformUrl(retry));
   }
   return NextResponse.redirect(new URL(next, origin));
 }

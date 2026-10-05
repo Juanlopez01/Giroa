@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input } from "@/components/ui/field";
 import { initialActionState } from "@/lib/errors";
-import { sendMagicLink } from "./actions";
+import { sendMagicLink } from "@/app/(platform)/login/actions";
 
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(sendMagicLink, initialActionState);

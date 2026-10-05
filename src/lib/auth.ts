@@ -23,3 +23,13 @@ export async function requireUser(returnTo: string): Promise<CurrentUser> {
   if (!user) redirect(platformUrl(`/login?next=${encodeURIComponent(returnTo)}`));
   return user;
 }
+
+/**
+ * Para pantallas del alumno: si no hay sesión, manda al login del propio
+ * estudio (con su marca), no al de Giroa. `path` es relativo al subdominio.
+ */
+export async function requireUserOnStudio(path: string): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect(`/ingresar?next=${encodeURIComponent(path)}`);
+  return user;
+}
