@@ -688,6 +688,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"import_students":
+{ Args: { "p_rows": Json,"p_studio_id": string }; Returns: Json
+                           },
 "join_studio":
 { Args: { "p_full_name": string,"p_phone"?: string,"p_role"?: Database["public"]['Enums']["dance_role"],"p_slug": string }; Returns: {
               "created_at": string,
