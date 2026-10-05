@@ -1,0 +1,3 @@
+-- Datos solo para desarrollo local (supabase db reset).
+-- Los catálogos de producción (planes, disciplinas) están en las migraciones.
+-- El estudio demo se agrega al final de la Fase 1.
