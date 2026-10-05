@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/panel", label: "Inicio", exact: true },
   { href: "/panel/agenda", label: "Agenda" },
   { href: "/panel/clases", label: "Clases" },
+  { href: "/panel/alumnos", label: "Alumnos" },
   { href: "/panel/packs", label: "Packs" },
 ] as const;
 
@@ -18,12 +19,12 @@ export function PanelNav({ variant }: { variant: "top" | "bottom" }) {
 
   if (variant === "bottom") {
     return (
-      <nav className="grid grid-cols-4">
+      <nav className="grid grid-cols-5">
         {ITEMS.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`py-3 text-center text-sm font-medium ${
+            className={`py-3 text-center text-xs font-medium ${
               isActive(item.href, "exact" in item ? item.exact : false) ? "text-brand" : "text-muted"
             }`}
           >
