@@ -47,14 +47,14 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
           </a>
         </div>
         <div className="mx-auto hidden max-w-5xl px-3 md:block">
-          <PanelNav variant="top" />
+          <PanelNav variant="top" isAdmin={role === "owner" || role === "admin"} />
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6">{children}</main>
 
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface md:hidden">
-        <PanelNav variant="bottom" />
+        <PanelNav variant="bottom" isAdmin={role === "owner" || role === "admin"} />
       </div>
     </div>
   );
