@@ -17,9 +17,11 @@ revoke all on schema private from public;
 -- las políticas RLS, triggers y checks llaman helpers de acá.
 grant usage on schema private to anon, authenticated, service_role;
 
--- En public (expuesto por la API) ninguna función es ejecutable salvo grant
--- explícito: cada RPC declara quién la puede llamar.
-alter default privileges in schema public revoke execute on functions from public;
+-- Ninguna función nueva es ejecutable salvo grant explícito: cada RPC declara
+-- quién la puede llamar. Ojo: "in schema" solo puede sumar permisos, por eso
+-- el revoke a PUBLIC es global; el segundo saca los grants que Supabase
+-- agrega por defecto en public.
+alter default privileges revoke execute on functions from public;
 alter default privileges in schema public revoke execute on functions from anon, authenticated, service_role;
 
 -- -----------------------------------------------------------------------------
@@ -87,3 +89,6 @@ begin
   raise exception using errcode = 'P0001', message = p_message, hint = p_code;
 end;
 $$;
+
+grant execute on function private.request_role(), private.is_privileged(), private.fail(text, text)
+  to anon, authenticated, service_role;

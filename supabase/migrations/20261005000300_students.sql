@@ -77,3 +77,5 @@ create policy students_staff_update on public.students for update to authenticat
   with check (private.is_studio_staff(studio_id));
 create policy students_admin_delete on public.students for delete to authenticated
   using (private.is_studio_admin(studio_id));
+
+grant execute on function private.students_normalize() to authenticated, service_role;

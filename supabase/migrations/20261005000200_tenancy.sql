@@ -212,3 +212,8 @@ create policy studio_members_read on public.studio_members for select to authent
 grant select on public.studio_subscriptions to authenticated;
 create policy studio_subscriptions_read on public.studio_subscriptions for select to authenticated
   using (private.is_studio_admin(studio_id));
+
+-- Utilidades que corren en contexto del usuario (checks y triggers).
+grant execute on function private.is_reserved_slug(text), private.is_valid_timezone(text),
+  private.studios_validate(), private.set_updated_at()
+  to anon, authenticated, service_role;
