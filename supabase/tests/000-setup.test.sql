@@ -84,8 +84,9 @@ begin
 end;
 $$;
 
--- Ejecuta y devuelve el código de error: el hint de los errores de negocio,
--- o el SQLSTATE si no tiene hint. 'OK' si no hubo error.
+-- Ejecuta y devuelve el código de error: el hint de los errores de negocio
+-- (private.fail, SQLSTATE P0001) o el SQLSTATE en cualquier otro caso.
+-- 'OK' si no hubo error.
 create or replace function tests.err(p_role text, p_uid uuid, p_sql text)
 returns text
 language plpgsql
@@ -102,7 +103,7 @@ begin
   exception when others then
     get stacked diagnostics v_hint = pg_exception_hint, v_state = returned_sqlstate;
     perform tests.clear_auth();
-    return coalesce(nullif(v_hint, ''), v_state);
+    return case when v_state = 'P0001' then coalesce(nullif(v_hint, ''), v_state) else v_state end;
   end;
 end;
 $$;
