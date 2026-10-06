@@ -22,9 +22,11 @@ type Props = {
   disciplines: DisciplineOption[];
   initial?: OfferingFormValues;
   submitLabel: string;
+  /** El plan incluye balance de roles. */
+  allowRoleBalance: boolean;
 };
 
-export function OfferingForm({ action, disciplines, initial, submitLabel }: Props) {
+export function OfferingForm({ action, disciplines, initial, submitLabel, allowRoleBalance }: Props) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [disciplineKey, setDisciplineKey] = useState(initial?.disciplineKey ?? "");
   const [roleBalance, setRoleBalance] = useState(initial ? initial.roleBalanceMaxDiff !== null : true);
@@ -90,7 +92,7 @@ export function OfferingForm({ action, disciplines, initial, submitLabel }: Prop
         </Field>
       </div>
 
-      {features?.role_balance ? (
+      {features?.role_balance && allowRoleBalance ? (
         <div className="space-y-3 rounded-2xl border border-border bg-surface p-4">
           <label className="flex items-start gap-3">
             <input

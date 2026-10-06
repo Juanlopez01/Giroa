@@ -6,6 +6,7 @@ import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
+import { can } from "@/lib/gating";
 import { checkInByQr, checkInStudent } from "./actions";
 import { MarkPresentButton, WalkInPicker } from "./attendance";
 import { QrScanner } from "./qr-scanner";
@@ -37,6 +38,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
   const startsMs = new Date(occ.starts_at).getTime();
   // Mismo margen que check_in: desde 2 h antes.
   const canCheckIn = occ.status === "scheduled" && nowMs() >= startsMs - 2 * 3_600_000;
+  const qrAllowed = await can(studio.id, "qr_checkin");
   const list = bookings ?? [];
   const present = list.filter((b) => b.status === "attended").length;
   const bookedIds = new Set(list.map((b) => b.students?.id));
@@ -63,7 +65,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
         <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">Esta clase está cancelada.</p>
       ) : canCheckIn ? (
         <section className="space-y-4">
-          <QrScanner checkIn={checkInByQr.bind(null, slug, id)} />
+          {qrAllowed ? <QrScanner checkIn={checkInByQr.bind(null, slug, id)} /> : null}
           <WalkInPicker
             students={(students ?? []).filter((s) => !bookedIds.has(s.id)).map((s) => ({ id: s.id, name: s.full_name }))}
             mark={checkInStudent.bind(null, slug, id)}

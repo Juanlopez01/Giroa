@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { listDisciplines } from "@/lib/disciplines.server";
+import { can } from "@/lib/gating";
 import { trimTime, WEEKDAYS } from "@/lib/datetime";
 import { FormMessage } from "@/components/ui/field";
 import { addSchedule, removeSchedule, setOfferingActive, updateOffering } from "../actions";
@@ -21,7 +22,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
   const { studio, isAdmin } = await requireStaff(slug, `/panel/clases/${id}`);
   const supabase = await createClient();
 
-  const [{ data: offering }, disciplines] = await Promise.all([
+  const [{ data: offering }, disciplines, allowRoleBalance] = await Promise.all([
     supabase
       .from("offerings")
       .select("*, disciplines(name), class_schedules(id, weekday, start_time, duration_minutes, is_active)")
@@ -29,6 +30,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
       .eq("studio_id", studio.id)
       .maybeSingle(),
     listDisciplines(),
+    can(studio.id, "role_balance"),
   ]);
   if (!offering) notFound();
 
@@ -82,6 +84,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
               action={updateOffering.bind(null, slug, offering.id)}
               disciplines={disciplines}
               submitLabel="Guardar cambios"
+              allowRoleBalance={allowRoleBalance}
               initial={{
                 title: offering.title,
                 disciplineKey: offering.discipline_key,

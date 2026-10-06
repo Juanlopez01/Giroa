@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { parseFeatures } from "@/lib/disciplines";
+import { can } from "@/lib/gating";
 import { offeringSchema, scheduleSchema, type OfferingInput } from "@/lib/validation/offering";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
 
@@ -26,7 +27,7 @@ function readOffering(formData: FormData) {
 }
 
 /** Columnas de offerings a partir del input, respetando los flags de la disciplina. */
-async function toRow(input: OfferingInput) {
+async function toRow(studioId: string, input: OfferingInput) {
   const supabase = await createClient();
   const { data: discipline } = await supabase
     .from("disciplines")
@@ -37,6 +38,7 @@ async function toRow(input: OfferingInput) {
   if (!discipline) return null;
 
   const features = parseFeatures(discipline.features);
+  const roleBalance = features.role_balance && (await can(studioId, "role_balance"));
   return {
     title: input.title,
     discipline_key: input.disciplineKey,
@@ -44,7 +46,7 @@ async function toRow(input: OfferingInput) {
     teacher_name: input.teacherName ?? null,
     description: input.description ?? null,
     capacity: input.capacity,
-    role_balance_max_diff: features.role_balance && input.roleBalance ? (input.roleBalanceMaxDiff ?? null) : null,
+    role_balance_max_diff: roleBalance && input.roleBalance ? (input.roleBalanceMaxDiff ?? null) : null,
   };
 }
 
@@ -53,7 +55,7 @@ export async function createOffering(slug: string, _prev: ActionState, formData:
   const parsed = readOffering(formData);
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsFromZod(parsed.error.issues) };
 
-  const row = await toRow(parsed.data);
+  const row = await toRow(studio.id, parsed.data);
   if (!row) return { ok: false, fieldErrors: { disciplineKey: "Elegí una disciplina." } };
 
   const supabase = await createClient();
@@ -77,7 +79,7 @@ export async function updateOffering(
   const parsed = readOffering(formData);
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsFromZod(parsed.error.issues) };
 
-  const row = await toRow(parsed.data);
+  const row = await toRow(studio.id, parsed.data);
   if (!row) return { ok: false, fieldErrors: { disciplineKey: "Elegí una disciplina." } };
 
   const supabase = await createClient();

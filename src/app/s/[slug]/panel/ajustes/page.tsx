@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/panel";
+import { can } from "@/lib/gating";
+import { UpgradeNotice } from "@/components/panel/upgrade-notice";
 import { createClient } from "@/lib/supabase/server";
 import { platformUrl } from "@/lib/urls";
 import { FormMessage } from "@/components/ui/field";
@@ -23,6 +25,7 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
   const supabase = await createClient();
   const { data: mp } = await supabase.rpc("mp_connection_status", { p_studio_id: studio.id });
   const connection = mp?.[0];
+  const mpAllowed = await can(studio.id, "mp_checkout");
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
@@ -31,7 +34,9 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
       <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
         <h2 className="text-lg font-semibold">Mercado Pago</h2>
         {mpMessage ? <FormMessage ok={mpMessage.ok} message={mpMessage.text} /> : null}
-        {connection?.connected ? (
+        {!mpAllowed ? (
+          <UpgradeNotice feature="mp_checkout" what="El cobro online" />
+        ) : connection?.connected ? (
           <>
             <p>
               <span className="font-medium text-success">Vinculado</span>

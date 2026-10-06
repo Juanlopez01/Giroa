@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { parseFeatures, type DisciplineFeatures } from "@/lib/disciplines";
+import { can } from "@/lib/gating";
 
 /**
  * ¿El estudio da alguna clase activa de una disciplina con este flag?
@@ -17,8 +18,8 @@ export async function studioOffersFeature(studioId: string, feature: keyof Disci
   return (data ?? []).some((o) => parseFeatures(o.disciplines?.features)[feature]);
 }
 
-export function studioOffersCouplePacks(studioId: string): Promise<boolean> {
-  return studioOffersFeature(studioId, "couple_packs");
+export async function studioOffersCouplePacks(studioId: string): Promise<boolean> {
+  return (await can(studioId, "couple_packs")) && (await studioOffersFeature(studioId, "couple_packs"));
 }
 
 /** "8 clases · 30 días" / "Clases libres · 30 días" */

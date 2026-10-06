@@ -29,7 +29,13 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
     query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`);
   }
 
-  const [{ data: students, count }, balances] = await Promise.all([query, balancesByStudent(studio.id)]);
+  const [{ data: students, count }, balances, usageRes] = await Promise.all([
+    query,
+    balancesByStudent(studio.id),
+    isAdmin ? supabase.rpc("studio_usage", { p_studio_id: studio.id }) : Promise.resolve({ data: null }),
+  ]);
+  const usage = usageRes.data as { at_limit?: boolean; max_active_students?: number | null } | null;
+  const atLimit = Boolean(usage?.at_limit);
 
   return (
     <div className="space-y-6">
@@ -44,14 +50,23 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
               Importar
             </Link>
           ) : null}
-          <Link
-            href="/panel/alumnos/nuevo"
-            className="inline-flex h-11 items-center rounded-xl bg-brand px-4 font-medium text-brand-foreground"
-          >
-            + Alumno
-          </Link>
+          {atLimit ? null : (
+            <Link
+              href="/panel/alumnos/nuevo"
+              className="inline-flex h-11 items-center rounded-xl bg-brand px-4 font-medium text-brand-foreground"
+            >
+              + Alumno
+            </Link>
+          )}
         </div>
       </div>
+
+      {atLimit ? (
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
+          Llegaste al límite de {usage?.max_active_students} alumnos activos de tu plan. Para sumar alumnos nuevos, pasate
+          a un plan mayor.
+        </p>
+      ) : null}
 
       <form className="flex gap-2" role="search">
         <input

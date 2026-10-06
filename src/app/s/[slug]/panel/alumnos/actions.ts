@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireStaff } from "@/lib/panel";
+import { can } from "@/lib/gating";
 import { createClient } from "@/lib/supabase/server";
 import { importPayloadSchema, studentSchema } from "@/lib/validation/student";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
@@ -90,6 +91,7 @@ export type ImportResult = {
 
 export async function importStudents(slug: string, rowsJson: string): Promise<ImportResult> {
   const { studio } = await requireAdmin(slug);
+  if (!(await can(studio.id, "csv_import"))) return { ok: false, message: "El import desde Excel no está incluido en tu plan." };
 
   let rows: unknown;
   try {
