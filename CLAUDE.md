@@ -62,8 +62,11 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.app`.
   el que vence antes; `pack_credit_events` es el historial de créditos.
 - El bloqueo por deuda aplica solo a cuotas de formaciones (Fase 2): si al
   día 10 del mes no pagó.
-- Todo estudio nuevo arranca en plan **Inicial con 14 días de prueba**; el plan
-  lo cambia Giroa (service role), nunca el estudio.
+- Todo estudio nuevo arranca en plan **Inicial con 14 días de prueba** (sin tarjeta). Durante la
+  prueba elige qué plan probar (`choose_trial_plan`). Después se suscribe solo con MP
+  Suscripciones (cobra en la cuenta de Giroa); el plan lo activa el webhook vía
+  `giroa_apply_preapproval` (service role). Sin pago: 7 días de gracia y después el panel queda
+  pausado (`studio_access`), pero los alumnos siguen reservando. Códigos en `giroa_coupons`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

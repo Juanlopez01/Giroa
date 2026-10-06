@@ -19,8 +19,12 @@ const mercadoPagoSchema = z.object({
   MP_WEBHOOK_SECRET: z.string().min(1),
 });
 
+// Cuenta de Mercado Pago de Giroa (cobra las suscripciones de los estudios).
+const giroaMpSchema = z.object({ MP_ACCESS_TOKEN: z.string().min(1) });
+
 let cachedServer: z.infer<typeof serverSchema> | undefined;
 let cachedMp: z.infer<typeof mercadoPagoSchema> | undefined;
+let cachedGiroaMp: z.infer<typeof giroaMpSchema> | undefined;
 
 export function serverEnv() {
   cachedServer ??= serverSchema.parse(process.env);
@@ -31,4 +35,10 @@ export function serverEnv() {
 export function mercadoPagoEnv() {
   cachedMp ??= mercadoPagoSchema.parse(process.env);
   return cachedMp;
+}
+
+/** Access token de la cuenta de MP de Giroa (solo servidor). */
+export function giroaMercadoPagoEnv() {
+  cachedGiroaMp ??= giroaMpSchema.parse(process.env);
+  return cachedGiroaMp;
 }

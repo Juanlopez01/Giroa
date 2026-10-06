@@ -14,6 +14,7 @@ const ITEMS: Item[] = [
   { href: "/panel/clases", label: "Clases", secondary: true },
   { href: "/panel/packs", label: "Packs", secondary: true },
   { href: "/panel/ajustes", label: "Ajustes", secondary: true, adminOnly: true },
+  { href: "/panel/plan", label: "Tu plan", secondary: true, adminOnly: true },
 ];
 
 const SECONDARY_ITEMS = ITEMS.filter((i) => i.secondary);

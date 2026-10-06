@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/panel/clases", label: "Clases", detail: "Clases regulares y sus horarios" },
   { href: "/panel/packs", label: "Packs", detail: "Lo que compran tus alumnos para reservar" },
   { href: "/panel/ajustes", label: "Ajustes", detail: "Mercado Pago y reglas de reserva", adminOnly: true },
+  { href: "/panel/plan", label: "Tu plan", detail: "Suscripción a Giroa", adminOnly: true },
 ];
 
 // En el celular, las secciones que no entran en la barra de abajo.

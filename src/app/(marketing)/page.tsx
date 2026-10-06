@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { formatArs } from "@/lib/money";
+import { platformUrl } from "@/lib/urls";
 import { FounderForm } from "./founder-form";
 
 export const metadata: Metadata = {
@@ -71,16 +72,16 @@ export default async function LandingPage() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <a
-            href="#fundadores"
+            href={platformUrl("/login?next=/onboarding")}
             className="inline-flex h-12 items-center justify-center rounded-xl bg-brand px-6 font-medium text-brand-foreground"
           >
-            Quiero ser estudio fundador
+            Probá gratis 14 días
           </a>
           <a
-            href="#como-funciona"
+            href="#fundadores"
             className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-6 font-medium"
           >
-            Ver cómo funciona
+            Quiero ser estudio fundador
           </a>
         </div>
       </section>
@@ -149,7 +150,8 @@ export default async function LandingPage() {
       <section id="planes" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="font-serif text-3xl font-semibold sm:text-4xl">Planes</h2>
         <p className="mt-2 text-muted">
-          Precios mensuales en pesos. Se ajustan cada tres meses por inflación, y te avisamos antes. Pagando el año,
+          Empezás con 14 días gratis, sin tarjeta. Después elegís tu plan y lo pagás con débito automático de Mercado
+          Pago. Precios mensuales en pesos. Se ajustan cada tres meses por inflación, y te avisamos antes. Pagando el año,
           tenés 2 meses gratis.
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -42,6 +42,7 @@ Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
    | `CRON_SECRET` | `openssl rand -base64 48` |
    | `MP_CLIENT_ID` / `MP_CLIENT_SECRET` | credenciales de producción de la app de MP |
    | `MP_WEBHOOK_SECRET` | clave secreta de Webhooks de la app de MP (paso 4) |
+| `MP_ACCESS_TOKEN` | Access Token de producción de la cuenta de MP de Giroa (cobra las suscripciones) |
 
 3. **Settings → Domains**: agregá `TUDOMINIO.com`, `app.TUDOMINIO.com` y `*.TUDOMINIO.com`.
    El comodín (`*`) exige que el dominio use los **nameservers de Vercel**: Vercel te muestra cuáles
@@ -58,7 +59,8 @@ Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
 1. En la app de MP (**Tus integraciones → Giroa**):
    - **URL de redireccionamiento (OAuth):** `https://app.TUDOMINIO.com/api/mp/oauth/callback`
    - **Webhooks → Configurar notificaciones:** URL `https://app.TUDOMINIO.com/api/webhooks/mercadopago`,
-     evento **Pagos**. Copiá la **clave secreta** a `MP_WEBHOOK_SECRET` en Vercel y redeployá.
+     eventos **Pagos**, **Planes y suscripciones** (subscription_preapproval y
+     subscription_authorized_payment). Copiá la **clave secreta** a `MP_WEBHOOK_SECRET` en Vercel y redeployá.
 2. Para probar sin plata real: entrá al panel del estudio con el **usuario de prueba vendedor**,
    vinculá MP desde *Ajustes*, y comprá un pack desde la app del alumno con el **usuario de prueba
    comprador**.

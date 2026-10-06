@@ -55,10 +55,6 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   const noBalance = owner?.[3] ?? [];
   const slots = owner?.[4] ?? [];
 
-  const trialDaysLeft =
-    usage?.subscription_status === "trialing" && usage.trial_ends_at
-      ? Math.max(0, Math.ceil((new Date(usage.trial_ends_at).getTime() - now.getTime()) / 86_400_000))
-      : null;
 
   if (offeringsCount === 0) {
     return (
@@ -81,13 +77,6 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
 
   return (
     <div className="space-y-8">
-      {trialDaysLeft !== null ? (
-        <p className="rounded-xl bg-brand/10 px-4 py-3 text-sm">
-          {trialDaysLeft > 0
-            ? `Te quedan ${trialDaysLeft} ${trialDaysLeft === 1 ? "día" : "días"} de prueba gratis.`
-            : "Terminó tu prueba gratis. Escribinos para seguir usando Giroa."}
-        </p>
-      ) : null}
       {usage?.at_limit ? (
         <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
           Llegaste al límite de {usage.max_active_students} alumnos activos de tu plan. No vas a poder sumar alumnos

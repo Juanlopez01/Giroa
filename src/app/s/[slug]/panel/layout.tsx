@@ -4,6 +4,9 @@ import { getMyStaffRole, getStudioBySlug } from "@/lib/studio.server";
 import { logoUrl } from "@/lib/studio";
 import { platformUrl, studioUrl } from "@/lib/urls";
 import { PanelNav } from "./panel-nav";
+import { AccessGate } from "./access-gate";
+import { daysUntil, getStudioAccess } from "@/lib/subscription.server";
+import { nowMs } from "@/lib/datetime";
 
 export default async function PanelLayout({ children, params }: LayoutProps<"/s/[slug]/panel">) {
   const { slug } = await params;
@@ -28,6 +31,15 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
   }
 
   const logo = logoUrl(studio.logo_path);
+  const isAdmin = role === "owner" || role === "admin";
+  const access = await getStudioAccess(studio.id);
+  const days = daysUntil(access.until, nowMs());
+  const notice =
+    access.state === "trial" && days !== null
+      ? `Prueba gratis: te ${days === 1 ? "queda 1 día" : `quedan ${days} días`}.`
+      : access.state === "grace"
+        ? `${access.status === "past_due" ? "No pudimos cobrar tu suscripción" : "Terminó tu prueba"}: te ${days === 1 ? "queda 1 día" : `quedan ${days} días`} para suscribirte.`
+        : null;
 
   return (
     <div className="flex flex-1 flex-col pb-20 md:pb-0">
@@ -47,14 +59,29 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
           </a>
         </div>
         <div className="mx-auto hidden max-w-5xl px-3 md:block">
-          <PanelNav variant="top" isAdmin={role === "owner" || role === "admin"} />
+          <PanelNav variant="top" isAdmin={isAdmin} />
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6">{children}</main>
+      {notice ? (
+        <div className={`px-5 py-2 text-center text-sm ${access.state === "grace" ? "bg-danger/10 text-danger" : "bg-brand/10"}`}>
+          {notice}{" "}
+          {isAdmin ? (
+            <a href="/panel/plan" className="font-medium underline">
+              Elegí tu plan
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+
+      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6">
+        <AccessGate blocked={access.state === "blocked"} isAdmin={isAdmin}>
+          {children}
+        </AccessGate>
+      </main>
 
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface md:hidden">
-        <PanelNav variant="bottom" isAdmin={role === "owner" || role === "admin"} />
+        <PanelNav variant="bottom" isAdmin={isAdmin} />
       </div>
     </div>
   );
