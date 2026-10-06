@@ -42,7 +42,7 @@ Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
    | `CRON_SECRET` | `openssl rand -base64 48` |
    | `MP_CLIENT_ID` / `MP_CLIENT_SECRET` | credenciales de producción de la app de MP |
    | `MP_WEBHOOK_SECRET` | clave secreta de Webhooks de la app de MP (paso 4) |
-| `MP_ACCESS_TOKEN` | Access Token de producción de la cuenta de MP de Giroa (cobra las suscripciones) |
+   | `MP_ACCESS_TOKEN` | Access Token de producción de la cuenta de MP de Giroa (cobra las suscripciones) |
 
 3. **Settings → Domains**: agregá `TUDOMINIO.com`, `app.TUDOMINIO.com` y `*.TUDOMINIO.com`.
    El comodín (`*`) exige que el dominio use los **nameservers de Vercel**: Vercel te muestra cuáles
