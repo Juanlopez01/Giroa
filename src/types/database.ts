@@ -123,6 +123,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"giroa_coupons": {
+                  Row: {
+                    "code": string,"created_at": string,"discount_pct": number,"is_active": boolean,"max_uses": number | null,"used_count": number
+                  }
+                  Insert: {
+                    "code": string,"created_at"?: string,"discount_pct": number,"is_active"?: boolean,"max_uses"?: number | null,"used_count"?: number
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"discount_pct"?: number,"is_active"?: boolean,"max_uses"?: number | null,"used_count"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"mp_connections": {
                   Row: {
                     "access_token_enc": string,"connected_by": string | null,"created_at": string,"expires_at": string,"live_mode": boolean,"mp_user_id": string,"public_key": string | null,"refresh_token_enc": string,"scope": string | null,"studio_id": string,"updated_at": string
@@ -456,13 +469,13 @@ isOneToOne: false
                   ]
                 },"studio_subscriptions": {
                   Row: {
-                    "billing_cycle": Database["public"]['Enums']["billing_cycle"],"created_at": string,"current_period_end": string | null,"founder_discount_pct": number,"mp_preapproval_id": string | null,"notes": string | null,"payment_method": string,"status": Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at": string | null,"updated_at": string
+                    "amount_cents": number | null,"billing_cycle": Database["public"]['Enums']["billing_cycle"],"cancelled_at": string | null,"coupon_code": string | null,"created_at": string,"current_period_end": string | null,"discount_pct": number,"founder_discount_pct": number,"grace_until": string | null,"last_payment_at": string | null,"mp_preapproval_id": string | null,"notes": string | null,"payment_method": string,"plan": Database["public"]['Enums']["studio_plan"] | null,"status": Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at": string | null,"updated_at": string
                   }
                   Insert: {
-                    "billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"created_at"?: string,"current_period_end"?: string | null,"founder_discount_pct"?: number,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at"?: string | null,"updated_at"?: string
+                    "amount_cents"?: number | null,"billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"cancelled_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"discount_pct"?: number,"founder_discount_pct"?: number,"grace_until"?: string | null,"last_payment_at"?: string | null,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"created_at"?: string,"current_period_end"?: string | null,"founder_discount_pct"?: number,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id"?: string,"trial_ends_at"?: string | null,"updated_at"?: string
+                    "amount_cents"?: number | null,"billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"cancelled_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"discount_pct"?: number,"founder_discount_pct"?: number,"grace_until"?: string | null,"last_payment_at"?: string | null,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id"?: string,"trial_ends_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -623,6 +636,9 @@ isOneToOne: false
 "check_slug":
 { Args: { "p_slug": string }; Returns: string
                            },
+"choose_trial_plan":
+{ Args: { "p_plan": Database["public"]['Enums']["studio_plan"],"p_studio_id": string }; Returns: undefined
+                           },
 "create_pack_payment":
 { Args: { "p_pack_product_id": string }; Returns: {
               "amount_cents": number,
@@ -676,6 +692,15 @@ isOneToOne: false
                            },
 "generate_sessions":
 { Args: { "p_from"?: string,"p_studio_id": string,"p_weeks"?: number }; Returns: number
+                           },
+"giroa_apply_preapproval":
+{ Args: { "p_amount_cents": number,"p_coupon": string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_discount_pct": number,"p_next_payment_at"?: string,"p_plan": Database["public"]['Enums']["studio_plan"],"p_preapproval_id": string,"p_status": string,"p_studio_id": string }; Returns: Json
+                           },
+"giroa_apply_subscription_charge":
+{ Args: { "p_approved": boolean,"p_next_payment_at"?: string,"p_preapproval_id": string }; Returns: undefined
+                           },
+"giroa_quote":
+{ Args: { "p_coupon"?: string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_plan": Database["public"]['Enums']["studio_plan"] }; Returns: Json
                            },
 "grant_pack":
 { Args: { "p_payment_id": string }; Returns: {
@@ -745,6 +770,9 @@ isOneToOne: false
                            },
 "studio_accepts_online_payments":
 { Args: { "p_studio_id": string }; Returns: boolean
+                           },
+"studio_access":
+{ Args: { "p_studio_id": string }; Returns: Json
                            },
 "studio_has_feature":
 { Args: { "p_feature": string,"p_studio_id": string }; Returns: boolean
