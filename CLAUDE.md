@@ -116,4 +116,6 @@ npm run typecheck && npm run lint
 - Formularios con server actions: usar `ActionForm` (`src/components/ui/action-form.tsx`), que no
   resetea los campos si hay error de validación.
 - En producción el magic link necesita SMTP propio en Supabase (ver `docs/deploy.md`).
+- `supabase projects api-keys` devuelve la secret key **enmascarada** salvo con `--reveal`: nunca
+  copiar esa salida a Vercel sin revisar.
 - Deploy: `docs/deploy.md`. Estudio demo: `supabase/seed-demo.sql`.
