@@ -2,7 +2,7 @@ import Link from "next/link";
 import { GiroaLogo } from "@/components/brand/giroa-logo";
 import { GiroaTheme } from "@/components/brand/giroa-theme";
 
-// Pantallas de app.giroa.app: login, onboarding y elegir estudio.
+// Pantallas de app.giroa.com.ar: login, onboarding y elegir estudio.
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   return (
     <GiroaTheme>

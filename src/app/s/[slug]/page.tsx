@@ -10,7 +10,7 @@ import { packSummary } from "@/lib/packs.server";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { SessionCard } from "@/components/studio/session-card";
 
-// Página pública del estudio ({slug}.giroa.app): grilla, packs y "Sumate".
+// Página pública del estudio ({slug}.giroa.com.ar): grilla, packs y "Sumate".
 export default async function StudioPublicPage({ params, searchParams }: PageProps<"/s/[slug]">) {
   const { slug } = await params;
   const studio = await getStudioBySlug(slug);

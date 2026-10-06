@@ -1,6 +1,6 @@
 # Deploy de Giroa (Supabase + Vercel + dominio)
 
-Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
+Dominio: `giroa.com.ar` (registrado en NIC Argentina).
 
 ## 1. Supabase (base de datos en la nube)
 
@@ -14,8 +14,8 @@ Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
    ```
    (El ref está en la URL del proyecto: `https://supabase.com/dashboard/project/<REF>`.)
 3. **Authentication → URL Configuration**
-   - Site URL: `https://app.TUDOMINIO.com`
-   - Redirect URLs: `https://app.TUDOMINIO.com/**` y `https://*.TUDOMINIO.com/**`
+   - Site URL: `https://app.giroa.com.ar`
+   - Redirect URLs: `https://app.giroa.com.ar/**` y `https://*.giroa.com.ar/**`
 4. **Authentication → Emails → SMTP**: configurá un SMTP propio (por ejemplo Resend, gratis hasta
    100 mails por día). Sin esto, Supabase solo manda el magic link a los miembros del equipo del
    proyecto y con un límite muy bajo: los alumnos no podrían entrar.
@@ -35,8 +35,8 @@ Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
    | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto de Supabase |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key |
    | `SUPABASE_SERVICE_ROLE_KEY` | Secret key (solo servidor) |
-   | `NEXT_PUBLIC_ROOT_DOMAIN` | `TUDOMINIO.com` |
-   | `NEXT_PUBLIC_COOKIE_DOMAIN` | `.TUDOMINIO.com` |
+   | `NEXT_PUBLIC_ROOT_DOMAIN` | `giroa.com.ar` |
+   | `NEXT_PUBLIC_COOKIE_DOMAIN` | `.giroa.com.ar` |
    | `TOKEN_ENCRYPTION_KEY` | `openssl rand -base64 32` (uno nuevo, distinto al local) |
    | `OAUTH_STATE_SECRET` | `openssl rand -base64 48` |
    | `CRON_SECRET` | `openssl rand -base64 48` |
@@ -44,21 +44,21 @@ Reemplazá `TUDOMINIO.com` por el dominio real en todos los pasos.
    | `MP_WEBHOOK_SECRET` | clave secreta de Webhooks de la app de MP (paso 4) |
    | `MP_ACCESS_TOKEN` | Access Token de producción de la cuenta de MP de Giroa (cobra las suscripciones) |
 
-3. **Settings → Domains**: agregá `TUDOMINIO.com`, `app.TUDOMINIO.com` y `*.TUDOMINIO.com`.
+3. **Settings → Domains**: agregá `giroa.com.ar`, `app.giroa.com.ar` y `*.giroa.com.ar`.
    El comodín (`*`) exige que el dominio use los **nameservers de Vercel**: Vercel te muestra cuáles
-   poner en el lugar donde compraste el dominio.
+   poner en nic.ar → tu dominio → **Delegaciones** (reemplazá las de NIC por las de Vercel).
 
 ## 3. Probar
 
-- `https://TUDOMINIO.com` → landing.
-- `https://app.TUDOMINIO.com/login` → entrar y crear un estudio.
-- `https://demo.TUDOMINIO.com` → estudio demo.
+- `https://giroa.com.ar` → landing.
+- `https://app.giroa.com.ar/login` → entrar y crear un estudio.
+- `https://demo.giroa.com.ar` → estudio demo.
 
 ## 4. Mercado Pago
 
 1. En la app de MP (**Tus integraciones → Giroa**):
-   - **URL de redireccionamiento (OAuth):** `https://app.TUDOMINIO.com/api/mp/oauth/callback`
-   - **Webhooks → Configurar notificaciones:** URL `https://app.TUDOMINIO.com/api/webhooks/mercadopago`,
+   - **URL de redireccionamiento (OAuth):** `https://app.giroa.com.ar/api/mp/oauth/callback`
+   - **Webhooks → Configurar notificaciones:** URL `https://app.giroa.com.ar/api/webhooks/mercadopago`,
      eventos **Pagos**, **Planes y suscripciones** (subscription_preapproval y
      subscription_authorized_payment). Copiá la **clave secreta** a `MP_WEBHOOK_SECRET` en Vercel y redeployá.
 2. Para probar sin plata real: entrá al panel del estudio con el **usuario de prueba vendedor**,

@@ -15,7 +15,7 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "test",
-      NEXT_PUBLIC_ROOT_DOMAIN: "giroa.app",
+      NEXT_PUBLIC_ROOT_DOMAIN: "giroa.com.ar",
     },
   },
 });

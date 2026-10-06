@@ -31,7 +31,7 @@ export function decideRoute(
       return { type: "not_found" };
 
     case "platform":
-      // app.giroa.app a secas: elegir estudio (o login si no hay sesión).
+      // app.giroa.com.ar a secas: elegir estudio (o login si no hay sesión).
       if (pathname === "/") return { type: "redirect", url: `${protocol}//app.${rootDomain}/estudios${search}` };
       return studioPathRedirect(pathname, search, rootDomain, protocol);
 

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GIROA_BRAND, studioFromRequest } from "@/lib/pwa.server";
 
-// Manifest de la PWA según el host: en {slug}.giroa.app se instala "la app del
+// Manifest de la PWA según el host: en {slug}.giroa.com.ar se instala "la app del
 // estudio" con su nombre, color y logo; en Giroa, la app de Giroa.
 export async function GET(request: NextRequest) {
   const studio = await studioFromRequest(request);

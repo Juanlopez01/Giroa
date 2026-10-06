@@ -7,7 +7,7 @@ SaaS B2B multi-tenant para estudios de danza y disciplinas de movimiento
 
 Stack: Next.js 16 (App Router, `src/proxy.ts` reemplaza al middleware) +
 TypeScript estricto + Tailwind 4 · Supabase (Postgres, Auth con magic link,
-Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.app`.
+Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`.
 
 ## Cómo trabajamos
 
@@ -81,10 +81,10 @@ ids fijos; las consultas se prueban como cada rol con `tests.q`, `tests.count`,
 ## App (src/)
 
 - `src/proxy.ts`: resuelve el host (`src/lib/tenancy`) y reescribe
-  `{slug}.giroa.app/x` → `/s/{slug}/x`. Subdominios reservados: www, app, api,
+  `{slug}.giroa.com.ar/x` → `/s/{slug}/x`. Subdominios reservados: www, app, api,
   admin. `/api/*` no se reescribe.
-- Rutas: `(marketing)` landing en giroa.app · `(platform)` login/onboarding en
-  app.giroa.app · `s/[slug]` público, app del alumno (`/app`) y panel (`/panel`).
+- Rutas: `(marketing)` landing en giroa.com.ar · `(platform)` login/onboarding en
+  app.giroa.com.ar · `s/[slug]` público, app del alumno (`/app`) y panel (`/panel`).
 - Toda escritura por Server Actions o Route Handlers, con input validado con zod.
 - Tipos de la base: `npm run db:types` → `src/types/database.ts` (generado,
   no editar).

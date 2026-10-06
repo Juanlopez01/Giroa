@@ -5,9 +5,9 @@ import { z } from "zod";
 const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
-  // giroa.app en producción, localhost:3000 en desarrollo (con puerto).
+  // giroa.com.ar en producción, localhost:3000 en desarrollo (con puerto).
   NEXT_PUBLIC_ROOT_DOMAIN: z.string().min(1),
-  // .giroa.app en producción para compartir la sesión entre subdominios.
+  // .giroa.com.ar en producción para compartir la sesión entre subdominios.
   NEXT_PUBLIC_COOKIE_DOMAIN: z.string().optional(),
 });
 

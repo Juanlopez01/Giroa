@@ -8,7 +8,7 @@ function protocol(rootDomain: string): string {
   return DEV_ROOT_RE.test(rootDomain) ? "http:" : "https:";
 }
 
-/** URL absoluta en app.giroa.app (login, onboarding, elegir estudio). */
+/** URL absoluta en app.giroa.com.ar (login, onboarding, elegir estudio). */
 export function platformUrl(path = "/"): string {
   const root = publicEnv().NEXT_PUBLIC_ROOT_DOMAIN;
   return `${protocol(root)}//app.${root}${path}`;

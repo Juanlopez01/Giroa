@@ -6,7 +6,7 @@ import { publicEnv } from "@/lib/env";
 import { resolveHost } from "@/lib/tenancy/host";
 
 // Destino del magic link. Vive en /api para que el proxy no lo reescriba:
-// así funciona igual en app.giroa.app y en el subdominio de cada estudio
+// así funciona igual en app.giroa.com.ar y en el subdominio de cada estudio
 // (la cookie del PKCE queda en el host donde se pidió el link).
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;

@@ -11,8 +11,8 @@ describe("safeNext (después del login)", () => {
   });
 
   it("acepta URLs de Giroa (app. y estudios)", () => {
-    expect(safeNext("https://tango-sur.giroa.app/panel", fallback)).toBe("https://tango-sur.giroa.app/panel");
-    expect(safeNext("https://app.giroa.app/estudios", fallback)).toBe("https://app.giroa.app/estudios");
+    expect(safeNext("https://tango-sur.giroa.com.ar/panel", fallback)).toBe("https://tango-sur.giroa.com.ar/panel");
+    expect(safeNext("https://app.giroa.com.ar/estudios", fallback)).toBe("https://app.giroa.com.ar/estudios");
   });
 
   it("rechaza redirecciones a otros sitios", () => {
@@ -20,8 +20,8 @@ describe("safeNext (después del login)", () => {
     expect(safeNext("//evil.com", fallback)).toBe(fallback);
     expect(safeNext(String.raw`/\evil.com`, fallback)).toBe(fallback);
     expect(safeNext("javascript:alert(1)", fallback)).toBe(fallback);
-    expect(safeNext("https://giroa.app.evil.com/", fallback)).toBe(fallback);
-    expect(safeNext("http://tango-sur.giroa.app/panel", fallback)).toBe(fallback);
+    expect(safeNext("https://giroa.com.ar.evil.com/", fallback)).toBe(fallback);
+    expect(safeNext("http://tango-sur.giroa.com.ar/panel", fallback)).toBe(fallback);
   });
 
   it("vacío vuelve al default", () => {
@@ -30,8 +30,8 @@ describe("safeNext (después del login)", () => {
   });
 
   it("arma las URLs de plataforma y estudio", () => {
-    expect(platformUrl("/login")).toBe("https://app.giroa.app/login");
-    expect(studioUrl("tango-sur", "/panel")).toBe("https://tango-sur.giroa.app/panel");
+    expect(platformUrl("/login")).toBe("https://app.giroa.com.ar/login");
+    expect(studioUrl("tango-sur", "/panel")).toBe("https://tango-sur.giroa.com.ar/panel");
   });
 });
 
