@@ -473,6 +473,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"session_waitlist": {
+                  Row: {
+                    "created_at": string,"dance_role": Database["public"]['Enums']["dance_role"] | null,"id": string,"notified_at": string | null,"session_id": string,"status": Database["public"]['Enums']["waitlist_status"],"student_id": string,"studio_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"dance_role"?: Database["public"]['Enums']["dance_role"] | null,"id"?: string,"notified_at"?: string | null,"session_id": string,"status"?: Database["public"]['Enums']["waitlist_status"],"student_id": string,"studio_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"dance_role"?: Database["public"]['Enums']["dance_role"] | null,"id"?: string,"notified_at"?: string | null,"session_id"?: string,"status"?: Database["public"]['Enums']["waitlist_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "session_waitlist_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_waitlist_studio_id_session_id_fkey"
+      columns: ["studio_id","session_id"]
+isOneToOne: false
+      referencedRelation: "session_occupancy"
+      referencedColumns: ["studio_id","session_id"]
+    },{
+      foreignKeyName: "session_waitlist_studio_id_session_id_fkey"
+      columns: ["studio_id","session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "session_waitlist_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
                 },"sessions": {
                   Row: {
                     "capacity_override": number | null,"created_at": string,"ends_at": string,"id": string,"notes": string | null,"offering_id": string,"schedule_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["session_status"],"studio_id": string
@@ -955,6 +992,27 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"join_waitlist":
+{ Args: { "p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id": string }; Returns: {
+              "created_at": string,
+"dance_role": Database["public"]['Enums']["dance_role"] | null,
+"id": string,
+"notified_at": string | null,
+"session_id": string,
+"status": Database["public"]['Enums']["waitlist_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "session_waitlist"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"leave_waitlist":
+{ Args: { "p_session_id": string }; Returns: undefined
+                           },
 "list_public_sessions":
 { Args: { "p_from": string,"p_slug": string,"p_to": string }; Returns: {
               "booked_count": number,"capacity": number,"description": string,"discipline_key": string,"discipline_name": string,"ends_at": string,"follower_count": number,"leader_count": number,"level": string,"offering_id": string,"role_balance": boolean,"role_balance_max_diff": number,"session_id": string,"spots_left": number,"starts_at": string,"status": Database["public"]['Enums']["session_status"],"teacher_name": string,"title": string
@@ -1044,7 +1102,7 @@ isOneToOne: false
       } }
           }
           Enums: {
-            "billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled"
+            "billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1164,7 +1222,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"]
+            "billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
           }
         }
 } as const
