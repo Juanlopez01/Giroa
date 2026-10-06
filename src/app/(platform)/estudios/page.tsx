@@ -36,7 +36,7 @@ export default async function StudiosPage() {
 
   return (
     <div className="space-y-8 pt-8">
-      <h1 className="text-3xl font-semibold tracking-tight">Tus estudios</h1>
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Tus estudios</h1>
 
       {staff.length > 0 ? (
         <section className="space-y-3">

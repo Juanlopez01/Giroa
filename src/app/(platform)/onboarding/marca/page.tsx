@@ -33,7 +33,7 @@ export default async function BrandPage({ searchParams }: PageProps<"/onboarding
     <div className="space-y-8 pt-8">
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted">Paso 2 de 2</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Dale tu marca</h1>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Dale tu marca</h1>
         <p className="text-muted">Así ven tu estudio los alumnos en la app. Lo podés cambiar cuando quieras.</p>
       </div>
       <BrandForm

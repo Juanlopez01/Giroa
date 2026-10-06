@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <div className="space-y-8 pt-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Entrá a Giroa</h1>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Entrá a Giroa</h1>
         <p className="text-muted">Te mandamos un link a tu email. Sin contraseñas.</p>
       </div>
       {params.error === "link" ? (
