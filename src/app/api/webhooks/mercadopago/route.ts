@@ -6,13 +6,14 @@ import { verifyMpSignature } from "@/lib/mp/signature";
 import { getPayment } from "@/lib/mp/api";
 import { getStudioAccessToken } from "@/lib/mp/connections";
 import { cancelPreapproval, decodeRef, getAuthorizedPayment, getPreapproval } from "@/lib/mp/subscriptions";
+import { EVENT_REF_PREFIX } from "@/lib/events";
 
 // Webhook de Mercado Pago. Nunca se confía en el body:
 //   1. se valida la firma x-signature,
 //   2. se consulta el recurso a la API de MP,
 //   3. se aplica con una RPC idempotente.
 // Topics:
-//   payment                          → venta de un pack de un estudio (?studio=…)
+//   payment                          → venta de un pack o de entradas de un estudio (?studio=…)
 //   subscription_preapproval         → suscripción de un estudio a Giroa
 //   subscription_authorized_payment  → cobro periódico de esa suscripción
 // Si algo falla se responde 500 para que MP reintente.
@@ -100,8 +101,12 @@ async function handlePackPayment(admin: Admin, studioId: string, paymentId: stri
   const payment = await getPayment(token, paymentId);
   if (!payment.external_reference) throw new Error("Pago sin external_reference");
 
-  const { error } = await admin.rpc("mp_apply_payment", {
-    p_external_reference: payment.external_reference,
+  // Compra de entradas de un evento ("evento:<uuid>") o pack (uuid solo).
+  const isEvent = payment.external_reference.startsWith(EVENT_REF_PREFIX);
+  const { error } = await admin.rpc(isEvent ? "mp_apply_event_payment" : "mp_apply_payment", {
+    p_external_reference: isEvent
+      ? payment.external_reference.slice(EVENT_REF_PREFIX.length)
+      : payment.external_reference,
     p_mp_payment_id: payment.id,
     p_mp_status: payment.status,
     p_amount_cents: Math.round(payment.transaction_amount * 100),

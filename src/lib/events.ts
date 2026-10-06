@@ -34,3 +34,9 @@ export const ORDER_STATUS_LABEL = {
   cancelled: "Cancelada",
   refunded: "Reintegrada",
 } as const;
+
+/** external_reference de MP para una compra de entradas: "evento:<uuid>". Los packs usan el uuid solo. */
+export const EVENT_REF_PREFIX = "evento:";
+
+/** Contenido del QR de una entrada: "giroa-entrada:<token>" (el del alumno es "giroa:<token>"). */
+export const TICKET_QR_PREFIX = "giroa-entrada:";

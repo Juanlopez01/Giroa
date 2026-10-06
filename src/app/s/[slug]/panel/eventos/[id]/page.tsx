@@ -30,11 +30,12 @@ export default async function EventPage({ params, searchParams }: PageProps<"/s/
   const tz = studio.timezone;
   const supabase = await createClient();
 
-  const [{ data: event }, { data: types }, { data: availability }, { data: orders }] = await Promise.all([
+  const [{ data: event }, { data: types }, { data: availability }, { data: orders }, { data: online }] = await Promise.all([
     supabase.from("events").select("*").eq("id", id).eq("studio_id", studio.id).maybeSingle(),
     supabase.from("event_ticket_types").select("*").eq("event_id", id).order("sort").order("price_cents"),
     supabase.rpc("event_availability", { p_event_id: id }),
     supabase.from("event_orders").select("quantity, amount_cents, status").eq("event_id", id),
+    supabase.rpc("studio_accepts_online_payments", { p_studio_id: studio.id }),
   ]);
   if (!event) notFound();
 
@@ -100,6 +101,15 @@ export default async function EventPage({ params, searchParams }: PageProps<"/s/
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Entradas</h2>
+        {!online && types?.some((t) => t.price_cents > 0) ? (
+          <p className="rounded-xl bg-[var(--gold)]/15 px-4 py-3 text-sm">
+            Para vender las entradas pagas online, vinculá tu Mercado Pago en{" "}
+            <Link href="/panel/ajustes" className="font-medium underline">
+              Ajustes
+            </Link>
+            . Mientras tanto, se pueden conseguir en el estudio.
+          </p>
+        ) : null}
         {!types?.length ? (
           <p className="text-muted">Todavía no hay entradas. Agregá al menos una para poder publicar.</p>
         ) : (
