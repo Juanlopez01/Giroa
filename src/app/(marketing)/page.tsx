@@ -10,6 +10,19 @@ export const metadata: Metadata = {
     "Dejá de perseguir a los alumnos para que paguen y de anotar clases en un cuaderno. Reservas online, packs, pagos con Mercado Pago y balance de roles para danzas en pareja.",
 };
 
+// Lo que todavía no está construido se muestra como "Próximamente": nadie paga por algo que no existe.
+const SOON = new Set([
+  "Especiales y eventos con entradas",
+  "Formaciones y audiciones",
+  "Lista de espera y clase de prueba",
+  "Cupones, gift cards y referidos",
+  "Varios profes con permisos",
+  "Certificados y jurado en audiciones",
+  "Liquidación de profes",
+  "Multi-sede y dominio propio",
+  "Facturación ARCA",
+]);
+
 const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight?: boolean }> = {
   profe: {
     tagline: "Para profes independientes",
@@ -171,7 +184,14 @@ export default async function LandingPage() {
                 </p>
                 <ul className="mt-5 flex-1 space-y-2 text-sm">
                   {copy?.features.map((f) => (
-                    <li key={f}>✓ {f}</li>
+                    <li key={f} className={SOON.has(f) ? "text-muted" : undefined}>
+                      {SOON.has(f) ? "○" : "✓"} {f}
+                      {SOON.has(f) ? (
+                        <span className="ml-1.5 rounded-full bg-[var(--gold)]/20 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-foreground">
+                          Próximamente
+                        </span>
+                      ) : null}
+                    </li>
                   ))}
                 </ul>
               </article>
@@ -179,7 +199,8 @@ export default async function LandingPage() {
           })}
         </div>
         <p className="mt-4 text-sm text-muted">
-          “Alumnos activos” son los que tienen un pack vigente o vinieron en los últimos 30 días.
+          “Alumnos activos” son los que tienen un pack vigente o vinieron en los últimos 30 días. Lo que figura como
+          “Próximamente” se suma a tu plan sin costo extra apenas esté listo.
         </p>
       </section>
 
