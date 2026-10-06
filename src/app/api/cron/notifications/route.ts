@@ -9,6 +9,7 @@ import {
   packExpiringEmail,
   packGrantedEmail,
   sessionCancelledEmail,
+  waitlistSpotEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -122,6 +123,11 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
       const startsAt = str("starts_at");
       if (!startsAt || new Date(startsAt).getTime() < Date.now()) return null; // ya empezó
       return classReminderEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt });
+    }
+    case "waitlist_spot": {
+      const startsAt = str("starts_at");
+      if (!startsAt || new Date(startsAt).getTime() < Date.now()) return null;
+      return waitlistSpotEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt });
     }
     case "session_cancelled": {
       const startsAt = str("starts_at");

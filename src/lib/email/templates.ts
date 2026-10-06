@@ -110,3 +110,17 @@ export function sessionCancelledEmail(
     { label: "Reservar otra clase", href: studio.url("/app/clases") },
   );
 }
+
+export function waitlistSpotEmail(studio: StudioInfo, studentName: string | null, d: { title: string; startsAt: string }): EmailContent {
+  return build(
+    studio,
+    `Se liberó un lugar en ${d.title}`,
+    [
+      hola(studentName),
+      `Estabas en la lista de espera de <strong>${esc(d.title)}</strong> del ${esc(when(d.startsAt, studio.timezone))} y se liberó un lugar.`,
+      "El primero que reserva se lo queda: si querés ir, reservá ya.",
+    ],
+    { label: "Reservar mi lugar", href: studio.url("/app/clases") },
+    `¡Se liberó un lugar! ${d.title}, ${formatTime(d.startsAt, studio.timezone)}`,
+  );
+}

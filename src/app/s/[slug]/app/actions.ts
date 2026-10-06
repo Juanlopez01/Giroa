@@ -71,3 +71,27 @@ export async function updateProfile(slug: string, _prev: ActionState, formData: 
   revalidatePath(`/s/${slug}/app`, "layout");
   return { ok: true, message: "Guardamos tus datos." };
 }
+
+export async function joinWaitlist(slug: string, sessionId: string, role: "leader" | "follower" | null): Promise<ActionState> {
+  await requireStudent(slug, "/app/clases");
+  if (!z.uuid().safeParse(sessionId).success) return { ok: false, message: "No encontramos esa clase." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("join_waitlist", { p_session_id: sessionId, p_role: role ?? undefined });
+  if (error) return fromSupabaseError(error, "joinWaitlist");
+
+  revalidatePath(`/s/${slug}/app`, "layout");
+  return { ok: true, message: "Te anotamos. Si se libera un lugar, te avisamos por mail." };
+}
+
+export async function leaveWaitlist(slug: string, sessionId: string): Promise<ActionState> {
+  await requireStudent(slug, "/app/clases");
+  if (!z.uuid().safeParse(sessionId).success) return { ok: false, message: "No encontramos esa clase." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("leave_waitlist", { p_session_id: sessionId });
+  if (error) return fromSupabaseError(error, "leaveWaitlist");
+
+  revalidatePath(`/s/${slug}/app`, "layout");
+  return { ok: true, message: "Saliste de la lista de espera." };
+}

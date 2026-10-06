@@ -36,3 +36,12 @@ describe("mails de avisos", () => {
     expect(m.text).toContain("Vence el sábado 10/10. Te queda 1 clase.");
   });
 });
+
+describe("lista de espera", () => {
+  it("avisa que se liberó un lugar con link para reservar", async () => {
+    const { waitlistSpotEmail } = await import("@/lib/email/templates");
+    const m = waitlistSpotEmail(studio, "Beto", { title: "Yoga", startsAt: "2026-10-08T22:00:00.000Z" });
+    expect(m.subject).toBe("¡Se liberó un lugar! Yoga, 19:00");
+    expect(m.html).toContain("https://demo.giroa.com.ar/app/clases");
+  });
+});

@@ -20,7 +20,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
   const tz = studio.timezone;
   const supabase = await createClient();
 
-  const [{ data: occ }, { data: bookings }, { data: students }] = await Promise.all([
+  const [{ data: occ }, { data: bookings }, { data: students }, { data: waitlist }] = await Promise.all([
     supabase.from("session_occupancy").select("*").eq("session_id", id).eq("studio_id", studio.id).maybeSingle(),
     supabase
       .from("bookings")
@@ -30,6 +30,13 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
       .in("status", ["booked", "attended", "no_show"])
       .order("created_at"),
     supabase.from("students").select("id, full_name").eq("studio_id", studio.id).eq("is_active", true).order("full_name").limit(2000),
+    supabase
+      .from("session_waitlist")
+      .select("id, dance_role, notified_at, students!session_waitlist_studio_id_student_id_fkey(full_name, phone)")
+      .eq("studio_id", studio.id)
+      .eq("session_id", id)
+      .eq("status", "waiting")
+      .order("created_at"),
   ]);
   if (!occ?.session_id || !occ.starts_at || !occ.ends_at) notFound();
 
@@ -105,6 +112,28 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
           </ul>
         )}
       </section>
+
+      {waitlist?.length ? (
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold">Lista de espera</h2>
+          <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            {waitlist.map((w, i) => (
+              <li key={w.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">
+                    {i + 1}. {w.students?.full_name ?? "Alumno"}
+                  </p>
+                  <p className="text-sm text-muted">
+                    {w.dance_role ? ROLE_LABELS[w.dance_role] : "Sin rol"}
+                    {w.notified_at ? " · ya le avisamos que se liberó un lugar" : ""}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="text-xs text-muted">Cuando alguien cancela, les avisamos por mail y el primero que reserva se queda el lugar.</p>
+        </section>
+      ) : null}
     </div>
   );
 }

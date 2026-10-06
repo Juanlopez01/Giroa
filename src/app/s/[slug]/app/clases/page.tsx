@@ -5,7 +5,9 @@ import { listPublicSessions, type PublicSession } from "@/lib/public-schedule.se
 import { balanceHeadline, myBalances, myUpcomingBookings } from "@/lib/student-data.server";
 import { addDaysYmd, formatDayLabel, isYmd, nowMs, startOfDay, todayYmd, toYmd } from "@/lib/datetime";
 import { SessionCard } from "@/components/studio/session-card";
-import { bookSession } from "../actions";
+import { createClient } from "@/lib/supabase/server";
+import { can } from "@/lib/gating";
+import { bookSession, joinWaitlist, leaveWaitlist } from "../actions";
 import { BookButton } from "../booking-buttons";
 
 export const metadata: Metadata = { title: "Reservar" };
@@ -20,11 +22,15 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
   const desde = (await searchParams).desde;
   const from = isYmd(desde) && desde >= today ? desde : today;
 
-  const [sessions, bookings, balances] = await Promise.all([
+  const supabase = await createClient();
+  const [sessions, bookings, balances, waitlistOn, { data: myWaitlist }] = await Promise.all([
     listPublicSessions(slug, from === today ? new Date(now) : startOfDay(from, tz), startOfDay(addDaysYmd(from, 7), tz)),
     myUpcomingBookings(studio.id, student.id, new Date(now)),
     myBalances(studio.id, student.id),
+    can(studio.id, "waitlist"),
+    supabase.rpc("my_waitlist", { p_studio_id: studio.id }),
   ]);
+  const waitingAt = new Map((myWaitlist ?? []).map((w) => [w.session_id, w.position]));
   const booked = new Set(bookings.map((b) => b.sessionId));
 
   const byDay = new Map<string, PublicSession[]>();
@@ -67,6 +73,15 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
                       maxDiff={s.maxDiff}
                       defaultRole={student.default_role}
                       full={s.spotsLeft <= 0}
+                      waitlist={
+                        waitlistOn
+                          ? {
+                              position: waitingAt.get(s.id) ?? null,
+                              join: joinWaitlist.bind(null, slug, s.id),
+                              leave: leaveWaitlist.bind(null, slug, s.id),
+                            }
+                          : undefined
+                      }
                     />
                   )
                 }
