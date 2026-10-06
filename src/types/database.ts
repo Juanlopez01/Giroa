@@ -730,6 +730,9 @@ isOneToOne: false
 "remove_schedule":
 { Args: { "p_schedule_id": string }; Returns: number
                            },
+"studio_accepts_online_payments":
+{ Args: { "p_studio_id": string }; Returns: boolean
+                           },
 "studio_has_feature":
 { Args: { "p_feature": string,"p_studio_id": string }; Returns: boolean
                            },

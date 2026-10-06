@@ -35,10 +35,10 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
         >
           <p className="text-xl font-semibold">{balanceHeadline(balances)}</p>
           {nextExpiry ? <p className="text-sm opacity-80">Vence el {shortDate(nextExpiry)}</p> : null}
-          {balances.length === 0 ? (
-            <p className="mt-1 text-sm text-muted">Comprá un pack para reservar. Podés pagarlo en el estudio.</p>
-          ) : null}
         </div>
+        <Link href="/app/packs" className="block text-sm font-medium text-brand">
+          {balances.length === 0 ? "Comprá un pack para reservar →" : "Comprar otro pack →"}
+        </Link>
         {balances.length > 1 ? (
           <ul className="space-y-1 text-sm text-muted">
             {balances.map((b) => (

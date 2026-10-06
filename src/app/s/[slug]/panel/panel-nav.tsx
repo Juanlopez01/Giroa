@@ -13,6 +13,7 @@ const ITEMS: Item[] = [
   { href: "/panel/pagos", label: "Pagos", adminOnly: true },
   { href: "/panel/clases", label: "Clases", secondary: true },
   { href: "/panel/packs", label: "Packs", secondary: true },
+  { href: "/panel/ajustes", label: "Ajustes", secondary: true, adminOnly: true },
 ];
 
 const SECONDARY_ITEMS = ITEMS.filter((i) => i.secondary);

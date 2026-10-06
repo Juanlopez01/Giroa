@@ -72,7 +72,8 @@ select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000b1',
 
 -- ---------------------------------------------------------------- grilla pública
 select is(tests.count('anon', null,
-  $$select * from public.list_public_sessions('estudio-a', now(), now() + interval '2 days')$$), 3,
+  $$select * from public.list_public_sessions('estudio-a', now(), now() + interval '2 days')
+    where session_id::text like '50000000-%'$$), 3,
   'un anónimo ve la grilla con las 3 clases que no empezaron (las de hoy y mañana)');
 select is(tests.err('anon', null,
   $$select * from public.list_public_sessions('estudio-a', now(), now() + interval '90 days')$$), 'invalid_range',

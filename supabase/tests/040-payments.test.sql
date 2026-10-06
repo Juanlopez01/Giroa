@@ -1,7 +1,7 @@
 -- Pagos: manuales, grant_pack idempotente, checkout de MP, aplicación del
 -- webhook y vencimiento de packs.
 begin;
-select plan(25);
+select plan(27);
 select tests.fixture();
 
 -- ---------------------------------------------------------------- pago manual
@@ -47,8 +47,12 @@ select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a3',
   $$select public.create_pack_payment('60000000-0000-0000-0000-0000000000a1')$$),
   'mp_not_connected', 'sin MP vinculado no se puede comprar online');
 
+select is(public.studio_accepts_online_payments('10000000-0000-0000-0000-00000000000a'), false,
+  'sin MP vinculado el estudio no cobra online');
 insert into public.mp_connections (studio_id, mp_user_id, access_token_enc, refresh_token_enc, expires_at)
 values ('10000000-0000-0000-0000-00000000000a', '123', 'enc', 'enc', now() + interval '180 days');
+select is(tests.q('anon', null, $$select public.studio_accepts_online_payments('10000000-0000-0000-0000-00000000000a') as v$$) -> 0 ->> 'v', 'true',
+  'con MP vinculado cobra online (y se puede consultar sin login)');
 
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a3',
   $$select public.create_pack_payment('60000000-0000-0000-0000-0000000000a1')$$),
