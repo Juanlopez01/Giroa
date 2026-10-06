@@ -103,7 +103,9 @@ npm run typecheck && npm run lint
 - No correr `next typegen` ni `next build` con `next dev` prendido: comparten `.next` y el dev
   empieza a dar 404 en rutas anidadas. Si pasa: frenar dev, `rm -rf .next`, volver a arrancar.
 - Tailwind 4: las fuentes custom se registran en `@theme` (`--font-serif`) y se usan como
-  `font-serif`; la sintaxis `font-[family-name:var(...)]` de Tailwind 3 no genera nada.
+  `font-serif`. La sintaxis de fuente arbitraria de Tailwind 3 (corchetes con family-name) no
+  funciona. Ojo: Tailwind escanea TODOS los archivos, incluidos los .md; no escribas clases
+  inválidas literales en la documentación porque rompen el CSS de toda la app.
 - Formularios con server actions: usar `ActionForm` (`src/components/ui/action-form.tsx`), que no
   resetea los campos si hay error de validación.
 - En producción el magic link necesita SMTP propio en Supabase (ver `docs/deploy.md`).

@@ -5,6 +5,7 @@ import { balanceHeadline, myBalances, myUpcomingBookings, shortDate } from "@/li
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { FormMessage } from "@/components/ui/field";
+import { InstallPrompt } from "@/components/studio/install-prompt";
 import { cancelBooking } from "./actions";
 import { CancelBookingButton } from "./booking-buttons";
 
@@ -27,6 +28,7 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
   return (
     <div className="space-y-8">
       {welcome ? <FormMessage ok message={`¡Listo, ${firstName}! Ya sos parte de ${studio.name}.`} /> : null}
+      <InstallPrompt studioName={studio.name} />
 
       <section className="space-y-3">
         <h1 className="text-2xl font-semibold">Hola, {firstName}</h1>
