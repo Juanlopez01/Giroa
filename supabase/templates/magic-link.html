@@ -1,0 +1,16 @@
+<!-- Plantilla de Supabase Auth para "Magic Link" y "Confirm signup" (se pega en el dashboard).
+     Usa token_hash en vez de {{ .ConfirmationURL }} para que el link funcione aunque se abra
+     en otro dispositivo o navegador (por ejemplo, pedido en la compu y abierto en el celular). -->
+<div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #1f1a17;">
+  <h1 style="font-size: 22px; margin: 0 0 16px;">Entrá a Giroa</h1>
+  <p style="font-size: 16px; line-height: 1.5; margin: 0 0 24px;">
+    Tocá el botón para entrar. El link vale por una hora y sirve una sola vez.
+  </p>
+  <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email"
+     style="display: inline-block; background: #6b1f2e; color: #ffffff; text-decoration: none; font-weight: 600; padding: 14px 24px; border-radius: 12px;">
+    Entrar
+  </a>
+  <p style="font-size: 13px; line-height: 1.5; color: #6f6259; margin: 24px 0 0;">
+    Si no pediste este mail, ignoralo: nadie puede entrar sin este link.
+  </p>
+</div>
