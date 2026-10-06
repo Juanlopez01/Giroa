@@ -72,8 +72,8 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
 
       {selected === "estudio" || selected === "pro" ? (
         <p className="text-sm text-muted">
-          Hoy {selected === "pro" ? "Pro" : "Estudio"} te suma más alumnos. Las funciones extra del plan (eventos,
-          formaciones, lista de espera y más) se van activando sin costo extra a medida que salen.
+          Hoy {selected === "pro" ? "Pro" : "Estudio"} te suma más alumnos y eventos con entradas. El resto de las funciones
+          del plan (formaciones, lista de espera y más) se van activando sin costo extra a medida que salen.
         </p>
       ) : null}
 

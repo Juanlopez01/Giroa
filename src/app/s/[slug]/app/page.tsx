@@ -6,6 +6,8 @@ import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { FormMessage } from "@/components/ui/field";
 import { InstallPrompt } from "@/components/studio/install-prompt";
+import { MyTickets } from "@/components/studio/my-tickets";
+import { UpcomingEvents } from "@/components/studio/upcoming-events";
 import { cancelBooking } from "./actions";
 import { CancelBookingButton } from "./booking-buttons";
 
@@ -94,6 +96,9 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
         )}
         <p className="text-xs text-muted">Podés cancelar hasta {studio.cancel_window_hours} h antes y te devolvemos la clase.</p>
       </section>
+
+      <MyTickets studentId={student.id} timeZone={tz} />
+      <UpcomingEvents studioId={studio.id} timeZone={tz} />
     </div>
   );
 }
