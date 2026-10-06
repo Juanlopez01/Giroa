@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "bookings": {
                   Row: {
-                    "cancelled_at": string | null,"cancelled_by": string | null,"checked_in_at": string | null,"created_at": string,"created_by": string | null,"credit_refunded": boolean,"dance_role": Database["public"]['Enums']["dance_role"] | null,"id": string,"session_id": string,"status": Database["public"]['Enums']["booking_status"],"student_id": string,"student_pack_id": string | null,"studio_id": string,"updated_at": string
+                    "cancelled_at": string | null,"cancelled_by": string | null,"checked_in_at": string | null,"created_at": string,"created_by": string | null,"credit_refunded": boolean,"dance_role": Database["public"]['Enums']["dance_role"] | null,"id": string,"is_trial": boolean,"session_id": string,"status": Database["public"]['Enums']["booking_status"],"student_id": string,"student_pack_id": string | null,"studio_id": string,"updated_at": string
                   }
                   Insert: {
-                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"checked_in_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"credit_refunded"?: boolean,"dance_role"?: Database["public"]['Enums']["dance_role"] | null,"id"?: string,"session_id": string,"status"?: Database["public"]['Enums']["booking_status"],"student_id": string,"student_pack_id"?: string | null,"studio_id": string,"updated_at"?: string
+                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"checked_in_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"credit_refunded"?: boolean,"dance_role"?: Database["public"]['Enums']["dance_role"] | null,"id"?: string,"is_trial"?: boolean,"session_id": string,"status"?: Database["public"]['Enums']["booking_status"],"student_id": string,"student_pack_id"?: string | null,"studio_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"checked_in_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"credit_refunded"?: boolean,"dance_role"?: Database["public"]['Enums']["dance_role"] | null,"id"?: string,"session_id"?: string,"status"?: Database["public"]['Enums']["booking_status"],"student_id"?: string,"student_pack_id"?: string | null,"studio_id"?: string,"updated_at"?: string
+                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"checked_in_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"credit_refunded"?: boolean,"dance_role"?: Database["public"]['Enums']["dance_role"] | null,"id"?: string,"is_trial"?: boolean,"session_id"?: string,"status"?: Database["public"]['Enums']["booking_status"],"student_id"?: string,"student_pack_id"?: string | null,"studio_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -643,13 +643,13 @@ isOneToOne: true
                   ]
                 },"studios": {
                   Row: {
-                    "brand_color": string,"cancel_window_hours": number,"created_at": string,"id": string,"is_active": boolean,"logo_path": string | null,"name": string,"plan": Database["public"]['Enums']["studio_plan"],"slug": string,"timezone": string,"updated_at": string
+                    "brand_color": string,"cancel_window_hours": number,"created_at": string,"id": string,"is_active": boolean,"logo_path": string | null,"name": string,"plan": Database["public"]['Enums']["studio_plan"],"slug": string,"timezone": string,"trial_class_enabled": boolean,"updated_at": string
                   }
                   Insert: {
-                    "brand_color"?: string,"cancel_window_hours"?: number,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name": string,"plan"?: Database["public"]['Enums']["studio_plan"],"slug": string,"timezone"?: string,"updated_at"?: string
+                    "brand_color"?: string,"cancel_window_hours"?: number,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name": string,"plan"?: Database["public"]['Enums']["studio_plan"],"slug": string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
                   }
                   Update: {
-                    "brand_color"?: string,"cancel_window_hours"?: number,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name"?: string,"plan"?: Database["public"]['Enums']["studio_plan"],"slug"?: string,"timezone"?: string,"updated_at"?: string
+                    "brand_color"?: string,"cancel_window_hours"?: number,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name"?: string,"plan"?: Database["public"]['Enums']["studio_plan"],"slug"?: string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -714,7 +714,7 @@ isOneToOne: false
 { Args: { "p_studio_id": string }; Returns: number
                            },
 "book_session":
-{ Args: { "p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id": string,"p_student_id"?: string }; Returns: {
+{ Args: { "p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id": string,"p_student_id"?: string,"p_trial"?: boolean }; Returns: {
               "cancelled_at": string | null,
 "cancelled_by": string | null,
 "checked_in_at": string | null,
@@ -723,6 +723,7 @@ isOneToOne: false
 "credit_refunded": boolean,
 "dance_role": Database["public"]['Enums']["dance_role"] | null,
 "id": string,
+"is_trial": boolean,
 "session_id": string,
 "status": Database["public"]['Enums']["booking_status"],
 "student_id": string,
@@ -746,6 +747,7 @@ isOneToOne: false
 "credit_refunded": boolean,
 "dance_role": Database["public"]['Enums']["dance_role"] | null,
 "id": string,
+"is_trial": boolean,
 "session_id": string,
 "status": Database["public"]['Enums']["booking_status"],
 "student_id": string,
@@ -805,6 +807,7 @@ isOneToOne: false
 "credit_refunded": boolean,
 "dance_role": Database["public"]['Enums']["dance_role"] | null,
 "id": string,
+"is_trial": boolean,
 "session_id": string,
 "status": Database["public"]['Enums']["booking_status"],
 "student_id": string,
@@ -908,6 +911,7 @@ isOneToOne: false
 "plan": Database["public"]['Enums']["studio_plan"],
 "slug": string,
 "timezone": string,
+"trial_class_enabled": boolean,
 "updated_at": string
             }
                           SetofOptions: {
@@ -1028,6 +1032,9 @@ isOneToOne: false
 { Args: { "p_studio_id": string }; Returns: {
               "connected": boolean,"expires_at": string,"live_mode": boolean,"mp_user_id": string
             }[]
+                           },
+"my_trial_available":
+{ Args: { "p_studio_id": string }; Returns: boolean
                            },
 "my_waitlist":
 { Args: { "p_studio_id": string }; Returns: {
