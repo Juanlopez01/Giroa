@@ -13,6 +13,7 @@ const ITEMS: Item[] = [
   { href: "/panel/pagos", label: "Pagos", adminOnly: true },
   { href: "/panel/clases", label: "Clases", secondary: true },
   { href: "/panel/packs", label: "Packs", secondary: true },
+  { href: "/panel/eventos", label: "Eventos", secondary: true },
   { href: "/panel/ajustes", label: "Ajustes", secondary: true, adminOnly: true },
   { href: "/panel/plan", label: "Tu plan", secondary: true, adminOnly: true },
 ];

@@ -85,3 +85,18 @@ export function trimTime(time: string): string {
 export function nowMs(): number {
   return Date.now();
 }
+
+/** Instante (UTC) de una fecha y hora locales del estudio ("2026-10-10", "21:30"). */
+export function zonedDateTime(ymd: string, hhmm: string, timeZone: string): Date {
+  const [y, m, d] = ymd.split("-").map(Number) as [number, number, number];
+  const [h, mi] = hhmm.split(":").map(Number) as [number, number];
+  const guess = Date.UTC(y, m - 1, d, h, mi);
+  const first = guess - offsetMs(new Date(guess), timeZone);
+  return new Date(guess - offsetMs(new Date(first), timeZone));
+}
+
+/** "21:30" en la zona (para precargar un input type="time"). */
+export function toHhmm(date: Date | string, timeZone: string): string {
+  const p = parts(new Date(date), timeZone);
+  return `${pad(p.hour)}:${pad(p.minute)}`;
+}

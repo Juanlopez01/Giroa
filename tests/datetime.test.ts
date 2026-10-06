@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDaysYmd, formatDayLabel, formatTime, startOfDay, todayYmd, toYmd, weekdayOf } from "@/lib/datetime";
+import { addDaysYmd, formatDayLabel, formatTime, startOfDay, todayYmd, toHhmm, toYmd, weekdayOf, zonedDateTime } from "@/lib/datetime";
 
 const BA = "America/Argentina/Buenos_Aires";
 
@@ -28,5 +28,24 @@ describe("fechas en la zona del estudio", () => {
   it("respeta zonas con horario de verano", () => {
     // Madrid: 26/10/2026 ya en horario de invierno (UTC+1).
     expect(startOfDay("2026-10-26", "Europe/Madrid").toISOString()).toBe("2026-10-25T23:00:00.000Z");
+  });
+});
+
+describe("fecha y hora locales", () => {
+  it("21:30 del sábado en Buenos Aires es 00:30 UTC del domingo", () => {
+    const d = zonedDateTime("2026-10-10", "21:30", BA);
+    expect(d.toISOString()).toBe("2026-10-11T00:30:00.000Z");
+    expect(toYmd(d, BA)).toBe("2026-10-10");
+    expect(toHhmm(d, BA)).toBe("21:30");
+  });
+});
+
+describe("horario de un evento", () => {
+  it("si termina antes de la hora de inicio, termina al día siguiente", async () => {
+    const { eventInstants, formatEventWhen } = await import("@/lib/events");
+    const { startsAt, endsAt } = eventInstants("2026-10-10", "21:30", "03:00", BA);
+    expect(endsAt?.toISOString()).toBe("2026-10-11T06:00:00.000Z");
+    expect(formatEventWhen(startsAt, endsAt, BA)).toBe("Sábado 10/10 · 21:30 a 03:00");
+    expect(eventInstants("2026-10-10", "18:00", null, BA).endsAt).toBeNull();
   });
 });
