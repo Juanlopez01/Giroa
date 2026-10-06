@@ -42,3 +42,15 @@ export function giroaMercadoPagoEnv() {
   cachedGiroaMp ??= giroaMpSchema.parse(process.env);
   return cachedGiroaMp;
 }
+
+// Resend (mails de avisos: entradas, recordatorios, packs). Opcional: sin la
+// key, los avisos quedan en la cola hasta que se configure.
+const emailSchema = z.object({
+  RESEND_API_KEY: z.string().min(1),
+  EMAIL_FROM_ADDRESS: z.string().email().default("hola@giroa.com.ar"),
+});
+
+export function emailEnv(): z.infer<typeof emailSchema> | null {
+  const parsed = emailSchema.safeParse(process.env);
+  return parsed.success ? parsed.data : null;
+}

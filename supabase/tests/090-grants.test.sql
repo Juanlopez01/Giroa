@@ -21,7 +21,9 @@ select ok(
   not has_function_privilege('authenticated', 'public.mp_apply_payment(uuid, text, text, bigint, timestamptz)', 'execute')
   and not has_function_privilege('authenticated', 'public.expire_packs()', 'execute')
   and not has_function_privilege('authenticated', 'public.mp_apply_event_payment(uuid, text, text, bigint, timestamptz)', 'execute')
-  and not has_function_privilege('authenticated', 'public.expire_event_orders()', 'execute'),
+  and not has_function_privilege('authenticated', 'public.expire_event_orders()', 'execute')
+  and not has_function_privilege('authenticated', 'public.claim_notifications(integer)', 'execute')
+  and not has_function_privilege('authenticated', 'public.finish_notification(bigint, boolean, text)', 'execute'),
   'las funciones del webhook y del cron son solo para el servidor');
 
 select * from finish();

@@ -43,10 +43,18 @@ Dominio: `giroa.com.ar` (registrado en NIC Argentina).
    | `MP_CLIENT_ID` / `MP_CLIENT_SECRET` | credenciales de producción de la app de MP |
    | `MP_WEBHOOK_SECRET` | clave secreta de Webhooks de la app de MP (paso 4) |
    | `MP_ACCESS_TOKEN` | Access Token de producción de la cuenta de MP de Giroa (cobra las suscripciones) |
+   | `RESEND_API_KEY` | API key de Resend (mails de entradas, recordatorios y packs) |
 
 3. **Settings → Domains**: agregá `giroa.com.ar`, `app.giroa.com.ar` y `*.giroa.com.ar`.
    El comodín (`*`) exige que el dominio use los **nameservers de Vercel**: Vercel te muestra cuáles
    poner en nic.ar → tu dominio → **Delegaciones** (reemplazá las de NIC por las de Vercel).
+
+4. **Mails de avisos**: en el SQL Editor de Supabase guardá en Vault la URL de la app y el
+   `CRON_SECRET` (el mismo de Vercel), así pg_cron le avisa a la app cuando hay mails para mandar:
+   ```sql
+   select vault.create_secret('https://app.giroa.com.ar', 'giroa_app_url');
+   select vault.create_secret('<CRON_SECRET>', 'giroa_cron_secret');
+   ```
 
 ## 3. Probar
 

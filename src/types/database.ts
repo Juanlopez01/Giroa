@@ -793,6 +793,11 @@ isOneToOne: false
 "choose_trial_plan":
 { Args: { "p_plan": Database["public"]['Enums']["studio_plan"],"p_studio_id": string }; Returns: undefined
                            },
+"claim_notifications":
+{ Args: { "p_limit"?: number }; Returns: {
+              "attempts": number,"id": number,"payload": Json,"student_name": string,"studio_name": string,"studio_slug": string,"studio_timezone": string,"template": string,"to_address": string
+            }[]
+                           },
 "create_event_order":
 { Args: { "p_buyer_email": string,"p_buyer_name": string,"p_buyer_phone"?: string,"p_quantity": number,"p_ticket_type_id": string }; Returns: {
               "access_token": string,
@@ -884,6 +889,9 @@ isOneToOne: false
                            },
 "expire_packs":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"finish_notification":
+{ Args: { "p_error"?: string,"p_id": number,"p_ok": boolean }; Returns: undefined
                            },
 "generate_sessions":
 { Args: { "p_from"?: string,"p_studio_id": string,"p_weeks"?: number }; Returns: number
