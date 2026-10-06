@@ -110,6 +110,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"founder_leads": {
+                  Row: {
+                    "created_at": string,"disciplines": string | null,"email": string,"id": number,"kind": string,"message": string | null,"name": string,"phone": string | null,"students_count": string | null,"studio_name": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"disciplines"?: string | null,"email": string,"id"?: never,"kind": string,"message"?: string | null,"name": string,"phone"?: string | null,"students_count"?: string | null,"studio_name"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"disciplines"?: string | null,"email"?: string,"id"?: never,"kind"?: string,"message"?: string | null,"name"?: string,"phone"?: string | null,"students_count"?: string | null,"studio_name"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"mp_connections": {
                   Row: {
                     "access_token_enc": string,"connected_by": string | null,"created_at": string,"expires_at": string,"live_mode": boolean,"mp_user_id": string,"public_key": string | null,"refresh_token_enc": string,"scope": string | null,"studio_id": string,"updated_at": string

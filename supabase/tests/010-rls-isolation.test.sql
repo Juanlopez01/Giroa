@@ -1,7 +1,7 @@
 -- Aislamiento RLS: un estudio no ve datos de otro, un alumno solo ve lo suyo,
 -- un anónimo solo ve la info pública y nadie toca mp_connections.
 begin;
-select plan(36);
+select plan(38);
 select tests.fixture();
 
 -- Datos para tener filas sensibles en ambos estudios.
@@ -114,6 +114,11 @@ select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1', 'se
   'ni el owner puede leer mp_connections');
 select is(tests.err('anon', null, 'select * from public.mp_connections'), '42501',
   'anónimo no puede leer mp_connections');
+select is(tests.err('anon', null,
+  $$insert into public.founder_leads (name, email, kind) values ('Spam', 'spam@x.com', 'studio')$$), '42501',
+  'anónimo no puede escribir contactos directo (va por el servidor)');
+select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1', 'select * from public.founder_leads'), '42501',
+  'ningún usuario puede leer los contactos de la landing');
 select is((tests.q('authenticated', '00000000-0000-0000-0000-0000000000a1',
   $$select * from public.mp_connection_status('10000000-0000-0000-0000-00000000000a')$$) -> 0 ->> 'connected'), 'true',
   'el owner ve si MP está vinculado, sin tokens');
