@@ -110,6 +110,124 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"event_orders": {
+                  Row: {
+                    "access_token": string,"amount_cents": number,"buyer_email": string | null,"buyer_name": string,"buyer_phone": string | null,"created_at": string,"created_by": string | null,"event_id": string,"external_reference": string,"hold_expires_at": string | null,"id": string,"marketplace_fee_cents": number,"method": Database["public"]['Enums']["payment_method"] | null,"mp_payment_id": string | null,"mp_preference_id": string | null,"notes": string | null,"paid_at": string | null,"quantity": number,"status": Database["public"]['Enums']["event_order_status"],"student_id": string | null,"studio_id": string,"ticket_type_id": string,"unit_price_cents": number,"updated_at": string
+                  }
+                  Insert: {
+                    "access_token"?: string,"amount_cents": number,"buyer_email"?: string | null,"buyer_name": string,"buyer_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"event_id": string,"external_reference"?: string,"hold_expires_at"?: string | null,"id"?: string,"marketplace_fee_cents"?: number,"method"?: Database["public"]['Enums']["payment_method"] | null,"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"paid_at"?: string | null,"quantity": number,"status"?: Database["public"]['Enums']["event_order_status"],"student_id"?: string | null,"studio_id": string,"ticket_type_id": string,"unit_price_cents": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "access_token"?: string,"amount_cents"?: number,"buyer_email"?: string | null,"buyer_name"?: string,"buyer_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"event_id"?: string,"external_reference"?: string,"hold_expires_at"?: string | null,"id"?: string,"marketplace_fee_cents"?: number,"method"?: Database["public"]['Enums']["payment_method"] | null,"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"paid_at"?: string | null,"quantity"?: number,"status"?: Database["public"]['Enums']["event_order_status"],"student_id"?: string | null,"studio_id"?: string,"ticket_type_id"?: string,"unit_price_cents"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_orders_studio_id_event_id_fkey"
+      columns: ["studio_id","event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "event_orders_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "event_orders_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "event_orders_studio_id_ticket_type_id_fkey"
+      columns: ["studio_id","ticket_type_id"]
+isOneToOne: false
+      referencedRelation: "event_ticket_types"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"event_ticket_types": {
+                  Row: {
+                    "created_at": string,"event_id": string,"id": string,"is_active": boolean,"max_per_order": number,"name": string,"price_cents": number,"quantity": number | null,"sales_end_at": string | null,"sort": number,"studio_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"event_id": string,"id"?: string,"is_active"?: boolean,"max_per_order"?: number,"name": string,"price_cents": number,"quantity"?: number | null,"sales_end_at"?: string | null,"sort"?: number,"studio_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string,"id"?: string,"is_active"?: boolean,"max_per_order"?: number,"name"?: string,"price_cents"?: number,"quantity"?: number | null,"sales_end_at"?: string | null,"sort"?: number,"studio_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_ticket_types_studio_id_event_id_fkey"
+      columns: ["studio_id","event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "event_ticket_types_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"event_tickets": {
+                  Row: {
+                    "checked_in_at": string | null,"checked_in_by": string | null,"created_at": string,"event_id": string,"id": string,"number": number,"order_id": string,"qr_token": string,"status": Database["public"]['Enums']["event_ticket_status"],"studio_id": string,"ticket_type_id": string
+                  }
+                  Insert: {
+                    "checked_in_at"?: string | null,"checked_in_by"?: string | null,"created_at"?: string,"event_id": string,"id"?: string,"number": number,"order_id": string,"qr_token"?: string,"status"?: Database["public"]['Enums']["event_ticket_status"],"studio_id": string,"ticket_type_id": string
+                  }
+                  Update: {
+                    "checked_in_at"?: string | null,"checked_in_by"?: string | null,"created_at"?: string,"event_id"?: string,"id"?: string,"number"?: number,"order_id"?: string,"qr_token"?: string,"status"?: Database["public"]['Enums']["event_ticket_status"],"studio_id"?: string,"ticket_type_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_tickets_studio_id_event_id_fkey"
+      columns: ["studio_id","event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "event_tickets_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "event_tickets_studio_id_order_id_fkey"
+      columns: ["studio_id","order_id"]
+isOneToOne: false
+      referencedRelation: "event_orders"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "event_tickets_studio_id_ticket_type_id_fkey"
+      columns: ["studio_id","ticket_type_id"]
+isOneToOne: false
+      referencedRelation: "event_ticket_types"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"events": {
+                  Row: {
+                    "created_at": string,"description": string | null,"ends_at": string | null,"id": string,"starts_at": string,"status": Database["public"]['Enums']["event_status"],"studio_id": string,"title": string,"updated_at": string,"venue": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"starts_at": string,"status"?: Database["public"]['Enums']["event_status"],"studio_id": string,"title": string,"updated_at"?: string,"venue"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"starts_at"?: string,"status"?: Database["public"]['Enums']["event_status"],"studio_id"?: string,"title"?: string,"updated_at"?: string,"venue"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "events_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"founder_leads": {
                   Row: {
                     "created_at": string,"disciplines": string | null,"email": string,"id": number,"kind": string,"message": string | null,"name": string,"phone": string | null,"students_count": string | null,"studio_name": string | null
@@ -604,6 +722,39 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"cancel_event_order":
+{ Args: { "p_order_id": string,"p_reason"?: string }; Returns: {
+              "access_token": string,
+"amount_cents": number,
+"buyer_email": string | null,
+"buyer_name": string,
+"buyer_phone": string | null,
+"created_at": string,
+"created_by": string | null,
+"event_id": string,
+"external_reference": string,
+"hold_expires_at": string | null,
+"id": string,
+"marketplace_fee_cents": number,
+"method": Database["public"]['Enums']["payment_method"] | null,
+"mp_payment_id": string | null,
+"mp_preference_id": string | null,
+"notes": string | null,
+"paid_at": string | null,
+"quantity": number,
+"status": Database["public"]['Enums']["event_order_status"],
+"student_id": string | null,
+"studio_id": string,
+"ticket_type_id": string,
+"unit_price_cents": number,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "event_orders"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "cancel_session":
 { Args: { "p_reason"?: string,"p_session_id": string }; Returns: number
                            },
@@ -633,12 +784,48 @@ isOneToOne: false
 "check_in_by_qr":
 { Args: { "p_qr_token": string,"p_session_id": string }; Returns: Json
                            },
+"check_in_ticket":
+{ Args: { "p_event_id": string,"p_qr_token": string }; Returns: Json
+                           },
 "check_slug":
 { Args: { "p_slug": string }; Returns: string
                            },
 "choose_trial_plan":
 { Args: { "p_plan": Database["public"]['Enums']["studio_plan"],"p_studio_id": string }; Returns: undefined
                            },
+"create_event_order":
+{ Args: { "p_buyer_email": string,"p_buyer_name": string,"p_buyer_phone"?: string,"p_quantity": number,"p_ticket_type_id": string }; Returns: {
+              "access_token": string,
+"amount_cents": number,
+"buyer_email": string | null,
+"buyer_name": string,
+"buyer_phone": string | null,
+"created_at": string,
+"created_by": string | null,
+"event_id": string,
+"external_reference": string,
+"hold_expires_at": string | null,
+"id": string,
+"marketplace_fee_cents": number,
+"method": Database["public"]['Enums']["payment_method"] | null,
+"mp_payment_id": string | null,
+"mp_preference_id": string | null,
+"notes": string | null,
+"paid_at": string | null,
+"quantity": number,
+"status": Database["public"]['Enums']["event_order_status"],
+"student_id": string | null,
+"studio_id": string,
+"ticket_type_id": string,
+"unit_price_cents": number,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "event_orders"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_pack_payment":
 { Args: { "p_pack_product_id": string }; Returns: {
               "amount_cents": number,
@@ -687,11 +874,22 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"event_availability":
+{ Args: { "p_event_id": string }; Returns: {
+              "on_sale": boolean,"remaining": number,"ticket_type_id": string
+            }[]
+                           },
+"expire_event_orders":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "expire_packs":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "generate_sessions":
 { Args: { "p_from"?: string,"p_studio_id": string,"p_weeks"?: number }; Returns: number
+                           },
+"get_event_order":
+{ Args: { "p_access_token": string }; Returns: Json
                            },
 "giroa_apply_preapproval":
 { Args: { "p_amount_cents": number,"p_coupon": string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_discount_pct": number,"p_next_payment_at"?: string,"p_plan": Database["public"]['Enums']["studio_plan"],"p_preapproval_id": string,"p_status": string,"p_studio_id": string }; Returns: Json
@@ -754,6 +952,9 @@ isOneToOne: false
               "booked_count": number,"capacity": number,"description": string,"discipline_key": string,"discipline_name": string,"ends_at": string,"follower_count": number,"leader_count": number,"level": string,"offering_id": string,"role_balance": boolean,"role_balance_max_diff": number,"session_id": string,"spots_left": number,"starts_at": string,"status": Database["public"]['Enums']["session_status"],"teacher_name": string,"title": string
             }[]
                            },
+"mp_apply_event_payment":
+{ Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string,"p_paid_at"?: string }; Returns: Json
+                           },
 "mp_apply_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string,"p_paid_at"?: string }; Returns: Json
                            },
@@ -768,6 +969,39 @@ isOneToOne: false
 "remove_schedule":
 { Args: { "p_schedule_id": string }; Returns: number
                            },
+"sell_event_tickets_manual":
+{ Args: { "p_buyer_email"?: string,"p_buyer_name": string,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_quantity": number,"p_ticket_type_id": string }; Returns: {
+              "access_token": string,
+"amount_cents": number,
+"buyer_email": string | null,
+"buyer_name": string,
+"buyer_phone": string | null,
+"created_at": string,
+"created_by": string | null,
+"event_id": string,
+"external_reference": string,
+"hold_expires_at": string | null,
+"id": string,
+"marketplace_fee_cents": number,
+"method": Database["public"]['Enums']["payment_method"] | null,
+"mp_payment_id": string | null,
+"mp_preference_id": string | null,
+"notes": string | null,
+"paid_at": string | null,
+"quantity": number,
+"status": Database["public"]['Enums']["event_order_status"],
+"student_id": string | null,
+"studio_id": string,
+"ticket_type_id": string,
+"unit_price_cents": number,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "event_orders"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "studio_accepts_online_payments":
 { Args: { "p_studio_id": string }; Returns: boolean
                            },
@@ -802,7 +1036,7 @@ isOneToOne: false
       } }
           }
           Enums: {
-            "billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled"
+            "billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -922,7 +1156,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"]
+            "billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"]
           }
         }
 } as const
