@@ -1,7 +1,7 @@
 -- Lista de espera: gating, anotarse con la clase llena o sin lugar para el rol,
 -- aviso al liberarse un lugar, salida al reservar y aislamiento.
 begin;
-select plan(17);
+select plan(18);
 select tests.fixture();
 
 -- Yoga A (cupo 2) mañana: el profe anota a Carla y Dani → completa.
@@ -27,6 +27,10 @@ select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a3',
   'OK', 'anotarse dos veces no falla');
 select is((select count(*)::integer from public.session_waitlist
   where session_id = '50000000-0000-0000-0000-0000000000a2' and status = 'waiting'), 2, 'y no duplica');
+
+select is(tests.q('authenticated', '00000000-0000-0000-0000-0000000000a4',
+  $$select position from public.my_waitlist('10000000-0000-0000-0000-00000000000a')$$) -> 0 ->> 'position', '2',
+  'Beto ve que es el segundo de la lista');
 
 -- RLS
 select is(tests.count('authenticated', '00000000-0000-0000-0000-0000000000a3',

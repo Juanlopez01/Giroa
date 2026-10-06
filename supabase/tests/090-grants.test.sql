@@ -14,7 +14,7 @@ select is(
   (select string_agg(p.proname, ', ' order by p.proname)
    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public' and has_function_privilege('authenticated', p.oid, 'execute')),
-  'active_students_count, book_session, cancel_booking, cancel_event_order, cancel_session, check_in, check_in_by_qr, check_in_ticket, check_slug, choose_trial_plan, create_event_order, create_pack_payment, create_studio, event_availability, generate_sessions, get_event_order, giroa_quote, grant_pack, import_students, join_studio, join_waitlist, leave_waitlist, list_public_sessions, mp_connection_status, record_manual_payment, remove_schedule, sell_event_tickets_manual, studio_accepts_online_payments, studio_access, studio_has_feature, studio_usage, update_my_student_profile',
+  'active_students_count, book_session, cancel_booking, cancel_event_order, cancel_session, check_in, check_in_by_qr, check_in_ticket, check_slug, choose_trial_plan, create_event_order, create_pack_payment, create_studio, event_availability, generate_sessions, get_event_order, giroa_quote, grant_pack, import_students, join_studio, join_waitlist, leave_waitlist, list_public_sessions, mp_connection_status, my_waitlist, record_manual_payment, remove_schedule, sell_event_tickets_manual, studio_accepts_online_payments, studio_access, studio_has_feature, studio_usage, update_my_student_profile',
   'authenticated ejecuta solo las RPC previstas');
 
 select ok(

@@ -178,6 +178,25 @@ begin
 end;
 $$;
 
+-- Mis lugares en listas de espera de clases futuras, con la posición (el
+-- alumno no ve a los demás de la lista, solo en qué lugar está).
+create function public.my_waitlist(p_studio_id uuid)
+returns table (session_id uuid, "position" integer, dance_role public.dance_role)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select w.session_id,
+    (select count(*)::integer from public.session_waitlist o
+     where o.session_id = w.session_id and o.status = 'waiting' and o.created_at <= w.created_at),
+    w.dance_role
+  from public.session_waitlist w
+  join public.sessions s on s.id = w.session_id
+  where w.studio_id = p_studio_id and w.status = 'waiting' and s.starts_at > now()
+    and w.student_id in (select private.my_student_ids());
+$$;
+
 -- -----------------------------------------------------------------------------
 -- Aviso: al cancelarse una reserva de una clase que todavía no empezó, se les
 -- manda un mail a los que esperan (una vez por cada lugar que se libera).
@@ -250,3 +269,4 @@ create trigger bookings_waitlist_booked
 
 grant execute on function public.join_waitlist(uuid, public.dance_role) to authenticated;
 grant execute on function public.leave_waitlist(uuid) to authenticated;
+grant execute on function public.my_waitlist(uuid) to authenticated;

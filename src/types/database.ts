@@ -1029,6 +1029,11 @@ isOneToOne: false
               "connected": boolean,"expires_at": string,"live_mode": boolean,"mp_user_id": string
             }[]
                            },
+"my_waitlist":
+{ Args: { "p_studio_id": string }; Returns: {
+              "dance_role": Database["public"]['Enums']["dance_role"],"position": number,"session_id": string
+            }[]
+                           },
 "record_manual_payment":
 { Args: { "p_amount_cents"?: number,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_pack_product_id": string,"p_partner_student_id"?: string,"p_student_id": string }; Returns: Json
                            },
