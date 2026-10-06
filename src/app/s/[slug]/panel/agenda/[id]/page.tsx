@@ -7,9 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { can } from "@/lib/gating";
-import { checkInByQr, checkInStudent } from "./actions";
+import { checkInStudent, scanStudentQr } from "./actions";
 import { MarkPresentButton, WalkInPicker } from "./attendance";
-import { QrScanner } from "./qr-scanner";
+import { QrScanner } from "@/components/panel/qr-scanner";
 
 export const metadata: Metadata = { title: "Asistencia" };
 
@@ -65,7 +65,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
         <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">Esta clase está cancelada.</p>
       ) : canCheckIn ? (
         <section className="space-y-4">
-          {qrAllowed ? <QrScanner checkIn={checkInByQr.bind(null, slug, id)} /> : null}
+          {qrAllowed ? <QrScanner scan={scanStudentQr.bind(null, slug, id)} hint="Apuntá al QR del alumno." /> : null}
           <WalkInPicker
             students={(students ?? []).filter((s) => !bookedIds.has(s.id)).map((s) => ({ id: s.id, name: s.full_name }))}
             mark={checkInStudent.bind(null, slug, id)}

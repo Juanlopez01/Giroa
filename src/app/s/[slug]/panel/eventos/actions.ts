@@ -6,9 +6,11 @@ import { z } from "zod";
 import { requireAdmin, requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { addDaysYmd, startOfDay } from "@/lib/datetime";
-import { eventInstants } from "@/lib/events";
+import { eventInstants, TICKET_QR_PREFIX } from "@/lib/events";
 import { eventSchema, manualSaleSchema, ticketTypeSchema } from "@/lib/validation/event";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
+import { getStudioBySlug } from "@/lib/studio.server";
+import type { ScanFeedback } from "@/components/panel/qr-scanner";
 
 function readEvent(formData: FormData) {
   return eventSchema.safeParse({
@@ -222,34 +224,26 @@ export async function cancelOrder(slug: string, orderId: string): Promise<Action
   return { ok: true, message: "Compra cancelada. Si correspondía, hacé el reintegro desde Mercado Pago." };
 }
 
-export type TicketCheckIn =
-  | { ok: true; alreadyCheckedIn: boolean; buyerName: string; ticketType: string; number: number; quantity: number; checkedInAt: string }
-  | { ok: false; message: string };
-
-export async function checkInTicket(slug: string, eventId: string, qrToken: string): Promise<TicketCheckIn> {
+/** Lector de QR en la puerta. Acepta "giroa-entrada:<token>" o el token solo. */
+export async function scanTicket(slug: string, eventId: string, scanned: string): Promise<ScanFeedback> {
   await requireStaff(slug);
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("check_in_ticket", { p_event_id: eventId, p_qr_token: qrToken.trim() });
-  if (error) {
-    const r = fromSupabaseError(error, "checkInTicket");
-    return { ok: false, message: r.message ?? "No pudimos validar la entrada." };
+  const raw = scanned.trim();
+  if (raw.startsWith("giroa:")) return { kind: "error", text: "Ese es el QR de alumno, no una entrada." };
+  const token = raw.startsWith(TICKET_QR_PREFIX) ? raw.slice(TICKET_QR_PREFIX.length) : raw;
+  if (!z.uuid().safeParse(eventId).success || !/^[a-f0-9]{32}$/.test(token)) {
+    return { kind: "error", text: "Ese QR no es una entrada de Giroa." };
   }
-  const r = data as {
-    already_checked_in: boolean;
-    buyer_name: string;
-    ticket_type: string;
-    number: number;
-    quantity: number;
-    checked_in_at: string;
-  };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("check_in_ticket", { p_event_id: eventId, p_qr_token: token });
+  if (error) return { kind: "error", text: fromSupabaseError(error, "scanTicket").message ?? "No pudimos validar la entrada." };
+
+  const r = data as { already_checked_in: boolean; buyer_name: string; ticket_type: string; number: number; quantity: number; checked_in_at: string };
+  const who = `${r.buyer_name} · ${r.ticket_type}${r.quantity > 1 ? ` (${r.number} de ${r.quantity})` : ""}`;
   refresh(slug);
-  return {
-    ok: true,
-    alreadyCheckedIn: r.already_checked_in,
-    buyerName: r.buyer_name,
-    ticketType: r.ticket_type,
-    number: r.number,
-    quantity: r.quantity,
-    checkedInAt: r.checked_in_at,
-  };
+  if (r.already_checked_in) {
+    const at = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: (await getStudioBySlug(slug))?.timezone }).format(new Date(r.checked_in_at));
+    return { kind: "warn", text: `⚠ Ya ingresó a las ${at}: ${who}` };
+  }
+  return { kind: "ok", text: `✓ Entrada válida: ${who}` };
 }

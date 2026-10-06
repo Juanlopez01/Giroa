@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { fromSupabaseError } from "@/lib/errors";
+import type { ScanFeedback } from "@/components/panel/qr-scanner";
 
 export type CheckInResult =
   | { ok: true; studentName: string; walkIn: boolean; creditsRemaining: number | null; expiresOn: string | null }
@@ -36,6 +37,17 @@ export async function checkInByQr(slug: string, sessionId: string, scanned: stri
     creditsRemaining: r.credits_remaining,
     expiresOn: r.expires_on,
   };
+}
+
+/** Para el lector de QR: el check-in con el texto ya armado. */
+export async function scanStudentQr(slug: string, sessionId: string, scanned: string): Promise<ScanFeedback> {
+  const result = await checkInByQr(slug, sessionId, scanned);
+  if (!result.ok) return { kind: "error", text: result.message };
+  const saldo =
+    result.creditsRemaining === null
+      ? ""
+      : ` · le ${result.creditsRemaining === 1 ? "queda 1 clase" : `quedan ${result.creditsRemaining} clases`}`;
+  return { kind: "ok", text: `✓ ${result.studentName} presente${result.walkIn ? " (sin reserva)" : ""}${saldo}` };
 }
 
 /** Marcar presente a mano (con o sin reserva). */

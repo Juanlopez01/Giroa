@@ -6,7 +6,8 @@ import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { centsToInput, formatArs } from "@/lib/money";
 import { todayYmd, toHhmm, toYmd } from "@/lib/datetime";
-import { EVENT_STATUS_LABEL, formatEventWhen } from "@/lib/events";
+import { EVENT_STATUS_LABEL, formatEventWhen, ORDER_STATUS_LABEL } from "@/lib/events";
+import { formatDayLabel, formatTime } from "@/lib/datetime";
 import { studioUrl } from "@/lib/urls";
 import { FormMessage } from "@/components/ui/field";
 import {
@@ -16,11 +17,15 @@ import {
   setTicketTypeActive,
   updateEvent,
   updateTicketType,
+  cancelOrder,
 } from "../actions";
+import { CancelOrderButton } from "./sales";
 import { EventForm } from "../event-form";
 import { CopyLink, EventStatusControls, TicketTypeForm } from "./controls";
 
 export const metadata: Metadata = { title: "Evento" };
+
+const METHOD = { mercadopago: "Mercado Pago", cash: "Efectivo", transfer: "Transferencia" } as const;
 
 export default async function EventPage({ params, searchParams }: PageProps<"/s/[slug]/panel/eventos/[id]">) {
   const { slug, id } = await params;
@@ -34,7 +39,11 @@ export default async function EventPage({ params, searchParams }: PageProps<"/s/
     supabase.from("events").select("*").eq("id", id).eq("studio_id", studio.id).maybeSingle(),
     supabase.from("event_ticket_types").select("*").eq("event_id", id).order("sort").order("price_cents"),
     supabase.rpc("event_availability", { p_event_id: id }),
-    supabase.from("event_orders").select("quantity, amount_cents, status").eq("event_id", id),
+    supabase
+      .from("event_orders")
+      .select("id, quantity, amount_cents, status, method, buyer_name, buyer_email, buyer_phone, created_at, notes, ticket_type_id")
+      .eq("event_id", id)
+      .order("created_at", { ascending: false }),
     supabase.rpc("studio_accepts_online_payments", { p_studio_id: studio.id }),
   ]);
   if (!event) notFound();
@@ -44,6 +53,9 @@ export default async function EventPage({ params, searchParams }: PageProps<"/s/
   const soldCount = paid.reduce((n, o) => n + o.quantity, 0);
   const income = paid.reduce((n, o) => n + o.amount_cents, 0);
   const publicUrl = studioUrl(slug, `/eventos/${event.id}`);
+  const typeName = new Map((types ?? []).map((t) => [t.id, t.name]));
+  // Las reservas que vencieron sin pagar no aportan nada a la lista.
+  const visibleOrders = (orders ?? []).filter((o) => o.status !== "expired");
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -88,6 +100,15 @@ export default async function EventPage({ params, searchParams }: PageProps<"/s/
           <CopyLink url={publicUrl} />
           <p className="text-sm text-muted">Mandalo por WhatsApp o ponelo en tu Instagram. No hace falta tener cuenta para comprar.</p>
         </section>
+      ) : null}
+
+      {event.status !== "draft" ? (
+        <Link
+          href={`/panel/eventos/${event.id}/puerta`}
+          className="flex h-14 w-full items-center justify-center rounded-2xl bg-brand text-base font-semibold text-brand-foreground"
+        >
+          Puerta: escanear entradas y vender
+        </Link>
       ) : null}
 
       {isAdmin ? (
@@ -167,6 +188,38 @@ export default async function EventPage({ params, searchParams }: PageProps<"/s/
             </div>
           </details>
         ) : null}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Compras</h2>
+        {!visibleOrders.length ? (
+          <p className="text-muted">Todavía no hay compras.</p>
+        ) : (
+          <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
+            {visibleOrders.map((o) => (
+              <li key={o.id} className="flex items-start justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="font-medium">
+                    {o.buyer_name} · {o.quantity} × {typeName.get(o.ticket_type_id) ?? "Entrada"}
+                  </p>
+                  <p className="text-sm text-muted">
+                    {formatDayLabel(toYmd(new Date(o.created_at), tz))} {formatTime(o.created_at, tz)} ·{" "}
+                    {o.amount_cents ? formatArs(o.amount_cents) : "Gratis"}
+                    {o.method ? ` · ${METHOD[o.method]}` : ""}
+                    {o.status !== "paid" ? ` · ${ORDER_STATUS_LABEL[o.status]}` : ""}
+                  </p>
+                  {o.buyer_email || o.buyer_phone ? (
+                    <p className="truncate text-sm text-muted">{[o.buyer_email, o.buyer_phone].filter(Boolean).join(" · ")}</p>
+                  ) : null}
+                  {o.notes ? <p className="text-sm whitespace-pre-line text-danger">{o.notes}</p> : null}
+                </div>
+                {isAdmin && (o.status === "paid" || o.status === "pending") ? (
+                  <CancelOrderButton cancel={cancelOrder.bind(null, slug, o.id)} />
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {isAdmin ? (

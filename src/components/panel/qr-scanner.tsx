@@ -3,23 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import jsQR from "jsqr";
-import type { CheckInResult } from "./actions";
 
-type Status = { kind: "idle" | "ok" | "error"; text: string };
+/** Lo que se muestra después de leer un QR. "warn" = válido pero con aviso (p. ej. ya ingresó). */
+export type ScanFeedback = { kind: "ok" | "warn" | "error"; text: string };
+
+type Status = { kind: "idle" | ScanFeedback["kind"]; text: string };
 
 /**
  * Lector de QR con la cámara trasera. Lee cuadros del video, decodifica con
- * jsQR (anda en Android y iPhone) y llama al check-in. Necesita https (o
- * localhost) para acceder a la cámara.
+ * jsQR (anda en Android y iPhone) y se lo pasa a `scan` (una server action).
+ * Necesita https (o localhost) para acceder a la cámara.
  */
-export function QrScanner({ checkIn }: { checkIn: (code: string) => Promise<CheckInResult> }) {
+export function QrScanner({ scan, hint }: { scan: (code: string) => Promise<ScanFeedback>; hint: string }) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const busyRef = useRef(false);
   const lastRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<Status>({ kind: "idle", text: "Apuntá al QR del alumno." });
+  const [status, setStatus] = useState<Status>({ kind: "idle", text: hint });
 
   useEffect(() => {
     if (!open) return;
@@ -60,17 +62,12 @@ export function QrScanner({ checkIn }: { checkIn: (code: string) => Promise<Chec
         lastRef.current = { code: qr.data, at: now };
 
         busyRef.current = true;
-        const result = await checkIn(qr.data);
-        if (result.ok) {
-          navigator.vibrate?.(120);
-          const saldo =
-            result.creditsRemaining === null ? "" : ` · le ${result.creditsRemaining === 1 ? "queda 1 clase" : `quedan ${result.creditsRemaining} clases`}`;
-          setStatus({ kind: "ok", text: `✓ ${result.studentName} presente${result.walkIn ? " (sin reserva)" : ""}${saldo}` });
-          router.refresh();
-        } else {
-          navigator.vibrate?.([80, 60, 80]);
-          setStatus({ kind: "error", text: result.message });
-        }
+        const result = await scan(qr.data).catch(
+          (): ScanFeedback => ({ kind: "error", text: "No pudimos validar. Revisá la conexión." }),
+        );
+        navigator.vibrate?.(result.kind === "ok" ? 120 : [80, 60, 80]);
+        setStatus(result);
+        if (result.kind === "ok") router.refresh();
         busyRef.current = false;
       }, 250);
     })();
@@ -80,7 +77,7 @@ export function QrScanner({ checkIn }: { checkIn: (code: string) => Promise<Chec
       if (timer) clearInterval(timer);
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, [open, checkIn, router]);
+  }, [open, scan, router]);
 
   if (!open) {
     return (
@@ -104,7 +101,13 @@ export function QrScanner({ checkIn }: { checkIn: (code: string) => Promise<Chec
       <p
         role="status"
         className={`rounded-xl px-4 py-3 text-center font-medium ${
-          status.kind === "ok" ? "bg-success/10 text-success" : status.kind === "error" ? "bg-danger/10 text-danger" : "bg-surface text-muted"
+          status.kind === "ok"
+            ? "bg-success/10 text-success"
+            : status.kind === "warn"
+              ? "bg-[var(--gold)]/20 text-foreground"
+              : status.kind === "error"
+                ? "bg-danger/10 text-danger"
+                : "bg-surface text-muted"
         }`}
       >
         {status.text}

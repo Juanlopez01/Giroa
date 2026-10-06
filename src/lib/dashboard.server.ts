@@ -31,17 +31,35 @@ export async function incomeSummary(studioId: string, tz: string, now: Date): Pr
   const prevDays = new Date(Date.UTC(Number(prev.slice(0, 4)), Number(prev.slice(5, 7)), 0)).getUTCDate();
   const prevCut = startOfDay(addDaysYmd(`${prev}-${String(Math.min(day, prevDays)).padStart(2, "0")}`, 1), tz);
 
-  const { data } = await supabase
-    .from("payments")
-    .select("amount_cents, method, paid_at")
-    .eq("studio_id", studioId)
-    .eq("status", "approved")
-    .gte("paid_at", monthStart(prev, tz).toISOString())
-    .lt("paid_at", monthStart(shiftMonth(ym, 1), tz).toISOString());
+  const from = monthStart(prev, tz).toISOString();
+  const to = monthStart(shiftMonth(ym, 1), tz).toISOString();
+  // Packs + entradas de eventos (las gratis no suman).
+  const [{ data: packs }, { data: tickets }] = await Promise.all([
+    supabase
+      .from("payments")
+      .select("amount_cents, method, paid_at")
+      .eq("studio_id", studioId)
+      .eq("status", "approved")
+      .gte("paid_at", from)
+      .lt("paid_at", to),
+    supabase
+      .from("event_orders")
+      .select("amount_cents, method, paid_at")
+      .eq("studio_id", studioId)
+      .eq("status", "paid")
+      .gt("amount_cents", 0)
+      .gte("paid_at", from)
+      .lt("paid_at", to),
+  ]);
+  const data = [...(packs ?? []), ...(tickets ?? []).filter((t) => t.method !== null)] as {
+    amount_cents: number;
+    method: "cash" | "transfer" | "mercadopago";
+    paid_at: string | null;
+  }[];
 
   const thisStart = monthStart(ym, tz).getTime();
   const summary: IncomeSummary = { thisMonth: 0, lastMonthSameDay: 0, count: 0, byMethod: { cash: 0, transfer: 0, mercadopago: 0 } };
-  for (const p of data ?? []) {
+  for (const p of data) {
     const t = new Date(p.paid_at ?? 0).getTime();
     if (t >= thisStart) {
       summary.thisMonth += p.amount_cents;
