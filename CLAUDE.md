@@ -97,3 +97,14 @@ npm run dev         # http://app.lvh.me:3000 · estudios en http://{slug}.lvh.me
 npm test            # Vitest
 npm run typecheck && npm run lint
 ```
+
+## Gotchas aprendidos
+
+- No correr `next typegen` ni `next build` con `next dev` prendido: comparten `.next` y el dev
+  empieza a dar 404 en rutas anidadas. Si pasa: frenar dev, `rm -rf .next`, volver a arrancar.
+- Tailwind 4: las fuentes custom se registran en `@theme` (`--font-serif`) y se usan como
+  `font-serif`; la sintaxis `font-[family-name:var(...)]` de Tailwind 3 no genera nada.
+- Formularios con server actions: usar `ActionForm` (`src/components/ui/action-form.tsx`), que no
+  resetea los campos si hay error de validación.
+- En producción el magic link necesita SMTP propio en Supabase (ver `docs/deploy.md`).
+- Deploy: `docs/deploy.md`. Estudio demo: `supabase/seed-demo.sql`.
