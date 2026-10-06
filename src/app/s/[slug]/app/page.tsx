@@ -1,63 +1,97 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { requireUserOnStudio } from "@/lib/auth";
-import { getMyStudent, getStudioBySlug } from "@/lib/studio.server";
-import { createClient } from "@/lib/supabase/server";
-import { StudioHeader } from "@/components/studio/studio-header";
+import { requireStudent } from "@/lib/student-app";
+import { balanceHeadline, myBalances, myUpcomingBookings, shortDate } from "@/lib/student-data.server";
+import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
+import { ROLE_LABELS } from "@/lib/disciplines";
 import { FormMessage } from "@/components/ui/field";
+import { cancelBooking } from "./actions";
+import { CancelBookingButton } from "./booking-buttons";
 
 export const metadata: Metadata = { title: "Mi cuenta" };
 
-// Provisorio: la app del alumno (reservar, cancelar, QR) llega en el paso 7.
 export default async function StudentHomePage({ params, searchParams }: PageProps<"/s/[slug]/app">) {
   const { slug } = await params;
-  const studio = await getStudioBySlug(slug);
-  if (!studio) notFound();
-
-  const user = await requireUserOnStudio("/app");
-  const student = await getMyStudent(studio.id, user.id);
-  if (!student) redirect("/sumate");
-
+  const { studio, student } = await requireStudent(slug, "/app");
+  const tz = studio.timezone;
   const welcome = (await searchParams).bienvenida === "1";
-  const supabase = await createClient();
-  const { data: balances } = await supabase
-    .from("student_balances")
-    .select("student_pack_id, name, credits_remaining, expires_on")
-    .eq("studio_id", studio.id)
-    // Explícito: si además es staff, RLS le dejaría ver el saldo de todos.
-    .or(`student_id.eq.${student.id},partner_student_id.eq.${student.id}`)
-    .eq("is_usable", true)
-    .order("expires_at");
+  const now = nowMs();
+
+  const [balances, bookings] = await Promise.all([
+    myBalances(studio.id, student.id),
+    myUpcomingBookings(studio.id, student.id, new Date(now)),
+  ]);
+  const firstName = student.full_name.split(" ")[0];
+  const nextExpiry = balances.find((b) => b.expiresOn)?.expiresOn;
 
   return (
-    <div className="flex flex-1 flex-col">
-      <StudioHeader studio={studio} />
-      <main className="mx-auto w-full max-w-md flex-1 space-y-6 px-5 py-8">
-        {welcome ? <FormMessage ok message={`¡Listo, ${student.full_name.split(" ")[0]}! Ya sos parte de ${studio.name}.`} /> : null}
-        <h1 className="text-2xl font-semibold">Hola, {student.full_name.split(" ")[0]}</h1>
-        <section className="space-y-2">
-          <h2 className="font-semibold">Tu saldo</h2>
-          {balances?.length ? (
-            balances.map((b) => {
-              const [, m, d] = (b.expires_on ?? "").split("-").map(Number);
+    <div className="space-y-8">
+      {welcome ? <FormMessage ok message={`¡Listo, ${firstName}! Ya sos parte de ${studio.name}.`} /> : null}
+
+      <section className="space-y-3">
+        <h1 className="text-2xl font-semibold">Hola, {firstName}</h1>
+        <div
+          className={`rounded-2xl p-5 ${balances.length ? "bg-brand text-brand-foreground" : "border border-border bg-surface"}`}
+        >
+          <p className="text-xl font-semibold">{balanceHeadline(balances)}</p>
+          {nextExpiry ? <p className="text-sm opacity-80">Vence el {shortDate(nextExpiry)}</p> : null}
+          {balances.length === 0 ? (
+            <p className="mt-1 text-sm text-muted">Comprá un pack para reservar. Podés pagarlo en el estudio.</p>
+          ) : null}
+        </div>
+        {balances.length > 1 ? (
+          <ul className="space-y-1 text-sm text-muted">
+            {balances.map((b) => (
+              <li key={b.id}>
+                {b.name}: {b.remaining === null ? "libre" : `${b.remaining} ${b.remaining === 1 ? "clase" : "clases"}`}
+                {b.expiresOn ? `, vence el ${shortDate(b.expiresOn)}` : ""}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">Tus próximas clases</h2>
+          <Link href="/app/clases" className="text-sm font-medium text-brand">
+            Reservar
+          </Link>
+        </div>
+        {bookings.length === 0 ? (
+          <p className="text-muted">No tenés clases reservadas.</p>
+        ) : (
+          <ul className="space-y-2">
+            {bookings.map((b) => {
+              const startsMs = new Date(b.startsAt).getTime();
+              const started = startsMs <= now;
+              const insideWindow = startsMs - now < studio.cancel_window_hours * 3_600_000;
               return (
-                <p key={b.student_pack_id} className="rounded-2xl border border-border bg-surface p-4">
-                  {b.credits_remaining === null
-                    ? "Clases libres"
-                    : `Te quedan ${b.credits_remaining} ${b.credits_remaining === 1 ? "clase" : "clases"}`}
-                  {b.expires_on ? `, vence el ${d}/${m}` : ""}.
-                </p>
+                <li key={b.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4">
+                  <div className="min-w-0">
+                    <p className="font-medium">{b.title}</p>
+                    <p className="text-sm text-muted">
+                      {formatDayLabel(toYmd(new Date(b.startsAt), tz))} · {formatTime(b.startsAt, tz)}
+                      {b.role ? ` · ${ROLE_LABELS[b.role]}` : ""}
+                    </p>
+                    {b.sessionCancelled ? <p className="text-sm text-danger">El estudio canceló esta clase</p> : null}
+                  </div>
+                  {b.status === "attended" ? (
+                    <span className="text-sm text-success">Presente ✓</span>
+                  ) : !started && !b.sessionCancelled ? (
+                    <CancelBookingButton
+                      cancel={cancelBooking.bind(null, slug, b.id)}
+                      insideWindow={insideWindow}
+                      windowHours={studio.cancel_window_hours}
+                    />
+                  ) : null}
+                </li>
               );
-            })
-          ) : (
-            <p className="text-muted">Todavía no tenés clases disponibles.</p>
-          )}
-        </section>
-        <Link href="/" className="inline-flex h-12 items-center rounded-xl bg-brand px-5 font-medium text-brand-foreground">
-          Ver las clases
-        </Link>
-      </main>
+            })}
+          </ul>
+        )}
+        <p className="text-xs text-muted">Podés cancelar hasta {studio.cancel_window_hours} h antes y te devolvemos la clase.</p>
+      </section>
     </div>
   );
 }
