@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { AgendaSession } from "@/lib/agenda.server";
 import { formatTime } from "@/lib/datetime";
 
@@ -19,7 +20,7 @@ export function SessionRow({
         <p className="text-lg font-semibold tabular-nums">{formatTime(session.startsAt, timeZone)}</p>
         <p className="text-xs text-muted tabular-nums">{formatTime(session.endsAt, timeZone)}</p>
       </div>
-      <div className="min-w-0 flex-1">
+      <Link href={`/panel/agenda/${session.id}`} className="min-w-0 flex-1">
         <p className={`truncate font-medium ${cancelled ? "line-through" : ""}`}>{session.title}</p>
         <p className="text-sm text-muted">
           {cancelled ? (
@@ -38,7 +39,7 @@ export function SessionRow({
             </>
           )}
         </p>
-      </div>
+      </Link>
       {action}
     </div>
   );
