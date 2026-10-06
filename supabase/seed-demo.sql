@@ -41,6 +41,8 @@ declare
   i integer;
   v_session record;
   v_taken integer;
+  v_leaders integer;
+  v_followers integer;
   v_target integer;
   v_role public.dance_role;
   v_paid_at timestamptz;
@@ -145,10 +147,11 @@ begin
       continue;
     end if;
 
-    v_product := case when i % 6 = 0 then plibre when i % 4 = 0 then p4 else p8 end;
+    v_product := case when i % 5 = 0 then plibre when i % 7 = 0 then p4 else p8 end;
     select price_cents, credits into v_price, v_credits from public.pack_products where id = v_product;
     -- Algunos compraron hace casi un mes (vencen en pocos días).
-    v_days_ago := case when i in (3, 10, 18) then 28 else (i * 3) % 20 end;
+    -- La mayoría compró antes de las 2 semanas de historia (así el pack cubre esas clases).
+    v_days_ago := case when i in (3, 10, 18) then 28 else 15 + (i % 8) end;
     v_paid_at := now() - make_interval(days => v_days_ago, hours => 2);
 
     insert into public.payments (studio_id, student_id, pack_product_id, amount_cents, method, status, paid_at, created_at)
@@ -169,19 +172,29 @@ begin
 
   -- ---------------------------------------------------------------- asistencia pasada y reservas futuras
   for v_session in
-    select s.id, s.starts_at, s.offering_id, o.capacity, o.discipline_key
+    select s.id, s.starts_at, s.offering_id, o.capacity, o.discipline_key, o.title
     from public.sessions s join public.offerings o on o.id = s.offering_id
     where s.studio_id = v_studio and s.starts_at < now() + interval '7 days'
-    order by s.starts_at
+    -- Primero Tango inicial (la clase "que se llena" del demo).
+    order by (o.title = 'Tango inicial') desc, s.starts_at
   loop
-    -- Ocupación entre 55% y 90% (yoga más chica), balanceada por rol.
-    v_target := greatest(4, floor(v_session.capacity * (0.55 + random() * 0.35))::integer);
+    -- Tango inicial se llena (para mostrar "conviene abrir otro horario"); el resto, valores realistas.
+    v_target := greatest(4, floor(v_session.capacity *
+      case when v_session.title = 'Tango inicial' then 0.85 + random() * 0.15 else 0.5 + random() * 0.3 end)::integer);
     v_taken := 0;
-    for i in select g from generate_series(1, array_length(v_students, 1)) g order by random() loop
+    v_leaders := 0;
+    v_followers := 0;
+    -- Varias pasadas en orden aleatorio; en tango se respeta la misma regla de
+    -- balance que book_session (diferencia máxima 1).
+    for i in
+      select g from generate_series(1, array_length(v_students, 1)) g, generate_series(1, 3) pass
+      order by pass, random()
+    loop
       exit when v_taken >= v_target;
-      -- Alterna roles para que la clase quede balanceada.
-      if v_session.discipline_key = 'tango' and v_roles[i] <> (case when v_taken % 2 = 0 then 'leader' else 'follower' end)::public.dance_role then
-        continue;
+      continue when exists (select 1 from public.bookings b where b.session_id = v_session.id and b.student_id = v_students[i]);
+      if v_session.discipline_key = 'tango' then
+        continue when v_roles[i] = 'leader' and (v_leaders + 1) - v_followers > 1;
+        continue when v_roles[i] = 'follower' and (v_followers + 1) - v_leaders > 1;
       end if;
 
       select sp.id into v_pack
@@ -209,6 +222,7 @@ begin
       insert into public.pack_credit_events (studio_id, student_pack_id, kind, delta, created_at)
       values (v_studio, v_pack, 'consume', -1, v_session.starts_at - interval '1 day');
       v_taken := v_taken + 1;
+      if v_roles[i] = 'leader' then v_leaders := v_leaders + 1; else v_followers := v_followers + 1; end if;
     end loop;
   end loop;
 
