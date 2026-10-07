@@ -7,14 +7,14 @@ select is(
   (select string_agg(p.proname, ', ' order by p.proname)
    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')),
-  'check_slug, create_event_order, event_availability, get_event_order, get_invite, list_public_sessions, preview_coupon, studio_accepts_online_payments, studio_has_feature',
+  'check_slug, create_event_order, create_gift_card_order, event_availability, get_event_order, get_gift_card, get_invite, list_public_sessions, preview_coupon, studio_accepts_online_payments, studio_has_feature',
   'anon solo ejecuta las RPC públicas');
 
 select is(
   (select string_agg(p.proname, ', ' order by p.proname)
    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public' and has_function_privilege('authenticated', p.oid, 'execute')),
-  'accept_invite, active_students_count, book_session, cancel_booking, cancel_event_order, cancel_invite, cancel_session, check_in, check_in_by_qr, check_in_ticket, check_slug, choose_trial_plan, create_event_order, create_pack_payment, create_studio, event_availability, generate_sessions, get_event_order, get_invite, giroa_quote, grant_pack, import_students, invite_member, join_studio, join_waitlist, leave_waitlist, list_public_sessions, mp_connection_status, my_trial_available, my_waitlist, preview_coupon, record_manual_payment, remove_member, remove_schedule, sell_event_tickets_manual, studio_accepts_online_payments, studio_access, studio_has_feature, studio_usage, update_member, update_my_student_profile',
+  'accept_invite, active_students_count, book_session, cancel_booking, cancel_event_order, cancel_gift_card, cancel_invite, cancel_session, check_in, check_in_by_qr, check_in_ticket, check_slug, choose_trial_plan, create_event_order, create_gift_card_order, create_pack_payment, create_studio, event_availability, generate_sessions, get_event_order, get_gift_card, get_invite, giroa_quote, grant_pack, import_students, invite_member, join_studio, join_waitlist, leave_waitlist, list_public_sessions, mp_connection_status, my_trial_available, my_waitlist, preview_coupon, record_manual_payment, redeem_gift_card, remove_member, remove_schedule, sell_event_tickets_manual, sell_gift_card_manual, studio_accepts_online_payments, studio_access, studio_has_feature, studio_usage, update_member, update_my_student_profile',
   'authenticated ejecuta solo las RPC previstas');
 
 select ok(
