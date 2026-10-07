@@ -76,6 +76,19 @@ export default async function FormationPage({ params, searchParams }: PageProps<
         <span className="shrink-0 font-medium text-brand">Ver →</span>
       </Link>
 
+      {isAdmin ? (
+        <Link
+          href={`/panel/formaciones/${f.id}/audicion`}
+          className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-foreground"
+        >
+          <span>
+            <span className="block font-semibold">Audición</span>
+            <span className="block text-sm text-muted">Convocatoria, formulario, turnos y resultados.</span>
+          </span>
+          <span className="shrink-0 font-medium text-brand">Configurar →</span>
+        </Link>
+      ) : null}
+
       {f.status === "published" ? (
         <section className="space-y-2">
           <h2 className="text-lg font-semibold">Link para compartir</h2>
