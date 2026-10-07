@@ -10,6 +10,8 @@ import { nowMs } from "@/lib/datetime";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { buyTickets } from "./actions";
 import { BuyForm } from "./buy-form";
+import { previewCoupon } from "../../coupon-actions";
+import { can } from "@/lib/gating";
 
 async function loadEvent(slug: string, id: string) {
   if (!z.uuid().safeParse(id).success) return null;
@@ -45,7 +47,7 @@ export default async function PublicEventPage({ params }: PageProps<"/s/[slug]/e
   const tz = studio.timezone;
   const supabase = await createClient();
 
-  const [{ data: types }, { data: availability }, { data: online }, user] = await Promise.all([
+  const [{ data: types }, { data: availability }, { data: online }, user, couponsOn] = await Promise.all([
     supabase
       .from("event_ticket_types")
       .select("id, name, price_cents, max_per_order")
@@ -56,6 +58,7 @@ export default async function PublicEventPage({ params }: PageProps<"/s/[slug]/e
     supabase.rpc("event_availability", { p_event_id: event.id }),
     supabase.rpc("studio_accepts_online_payments", { p_studio_id: studio.id }),
     getCurrentUser(),
+    can(studio.id, "coupons"),
   ]);
   const [student, staffRole] = user
     ? await Promise.all([getMyStudent(studio.id, user.id), getMyStaffRole(studio.id, user.id)])
@@ -96,6 +99,7 @@ export default async function PublicEventPage({ params }: PageProps<"/s/[slug]/e
             <h2 className="text-xl font-semibold">Entradas</h2>
             <BuyForm
               action={buyTickets.bind(null, slug)}
+              previewCoupon={couponsOn ? previewCoupon.bind(null, slug, "events") : undefined}
               options={types.map((t) => ({
                 id: t.id,
                 name: t.name,

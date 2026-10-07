@@ -6,6 +6,8 @@ import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input } from "@/components/ui/field";
 import { initialActionState, type ActionState } from "@/lib/errors";
 import { formatArs } from "@/lib/money";
+import type { CouponPreview } from "@/app/s/[slug]/coupon-actions";
+import { CouponField, type AppliedCoupon } from "@/components/studio/coupon-field";
 
 export type BuyOption = {
   id: string;
@@ -21,9 +23,11 @@ type Props = {
   options: BuyOption[];
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
   defaults: { name: string; email: string; phone: string };
+  /** Solo si el estudio tiene cupones: previewCoupon atado al estudio y a "events". */
+  previewCoupon?: (baseCents: number, code: string) => Promise<CouponPreview>;
 };
 
-export function BuyForm({ options, action, defaults }: Props) {
+export function BuyForm({ options, action, defaults, previewCoupon }: Props) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const isAvailable = (o: BuyOption) => o.onSale && !o.offline && o.remaining !== 0;
   const available = options.filter(isAvailable);
@@ -32,7 +36,12 @@ export function BuyForm({ options, action, defaults }: Props) {
   const selected = options.find((o) => o.id === selectedId);
   const max = selected ? Math.min(selected.maxPerOrder, selected.remaining ?? selected.maxPerOrder) : 1;
   const qty = Math.min(quantity, max);
-  const total = (selected?.priceCents ?? 0) * qty;
+  const base = (selected?.priceCents ?? 0) * qty;
+  const [couponState, setCoupon] = useState<{ key: string; c: AppliedCoupon } | null>(null);
+  // El descuento vale para esta combinación de entrada y cantidad; si cambia, se vuelve a aplicar.
+  const key = `${selectedId}:${qty}`;
+  const coupon = couponState?.key === key ? couponState.c : null;
+  const total = coupon ? coupon.finalCents : base;
   const errors = state.fieldErrors ?? {};
 
   return (
@@ -117,6 +126,15 @@ export function BuyForm({ options, action, defaults }: Props) {
           <Field label="Celular" hint="Opcional, por si el estudio necesita avisarte algo." error={errors.phone}>
             <Input name="phone" type="tel" defaultValue={defaults.phone} autoComplete="tel" inputMode="tel" />
           </Field>
+
+          {previewCoupon && base > 0 ? (
+            <CouponField
+              preview={(code) => previewCoupon(base, code)}
+              applied={coupon}
+              onChange={(c) => setCoupon(c ? { key, c } : null)}
+            />
+          ) : null}
+          <input type="hidden" name="coupon" value={coupon?.code ?? ""} />
 
           <FormMessage ok={false} message={state.message} />
           <Button type="submit" disabled={pending || !selected}>

@@ -39,6 +39,7 @@ export async function buyTickets(slug: string, _prev: ActionState, formData: For
     p_buyer_name: b.name,
     p_buyer_email: b.email,
     p_buyer_phone: b.phone ?? undefined,
+    p_coupon: String(formData.get("coupon") ?? "").trim() || undefined,
   });
   if (error) return fromSupabaseError(error, "buyTickets");
 

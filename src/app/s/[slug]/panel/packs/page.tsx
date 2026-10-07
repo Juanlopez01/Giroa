@@ -27,12 +27,17 @@ export default async function PacksPage({ params, searchParams }: PageProps<"/s/
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Packs</h1>
         {isAdmin ? (
+          <div className="flex shrink-0 items-center gap-3">
+          <Link href="/panel/packs/cupones" className="text-sm font-medium text-brand">
+            Cupones
+          </Link>
           <Link
             href="/panel/packs/nuevo"
             className="inline-flex h-11 shrink-0 items-center rounded-xl bg-brand px-4 font-medium text-brand-foreground"
           >
             + Nuevo pack
           </Link>
+          </div>
         ) : null}
       </div>
 

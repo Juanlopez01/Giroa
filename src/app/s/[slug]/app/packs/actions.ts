@@ -17,12 +17,15 @@ import { platformUrl, studioUrl } from "@/lib/urls";
  *  2. se arma la preferencia con el token del estudio,
  *  3. se redirige a Mercado Pago. El webhook acredita el pack.
  */
-export async function buyPack(slug: string, packProductId: string): Promise<ActionState> {
+export async function buyPack(slug: string, packProductId: string, coupon: string | null = null): Promise<ActionState> {
   const { studio, user } = await requireStudent(slug, "/app/packs");
   if (!z.uuid().safeParse(packProductId).success) return { ok: false, message: "Este pack ya no está disponible." };
 
   const supabase = await createClient();
-  const { data: payment, error } = await supabase.rpc("create_pack_payment", { p_pack_product_id: packProductId });
+  const { data: payment, error } = await supabase.rpc("create_pack_payment", {
+    p_pack_product_id: packProductId,
+    p_coupon: coupon?.trim() || undefined,
+  });
   if (error) return fromSupabaseError(error, "buyPack");
 
   const { data: product } = await supabase.from("pack_products").select("name").eq("id", packProductId).single();
