@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { GIROA_BRAND, studioFromRequest } from "@/lib/pwa.server";
 import { logoUrl } from "@/lib/studio";
+import { readableOn } from "@/lib/color";
 
 const SIZES = new Set([180, 192, 512]);
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
           alignItems: "center",
           justifyContent: "center",
           background: color,
-          color: "#ffffff",
+          color: readableOn(color),
           fontSize: Math.round(size * (maskable ? 0.42 : 0.55)),
           fontWeight: 700,
         }}

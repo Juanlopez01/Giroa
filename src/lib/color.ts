@@ -33,7 +33,7 @@ export function readableOn(hex: string): string {
 
 /** El color es demasiado claro para usarlo como acento sobre fondo claro (bordes, links, barras). */
 export function isTooLight(hex: string): boolean {
-  return contrastRatio(hex, "#fffdf9") < 2.2;
+  return contrastRatio(hex, "#fffdf9") < 3;
 }
 
 /** Oscurece un color multiplicando sus canales (0..1). */

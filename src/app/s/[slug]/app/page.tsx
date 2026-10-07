@@ -39,10 +39,10 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
       <section className="space-y-3">
         <h1 className="text-2xl font-semibold">Hola, {firstName}</h1>
         <div
-          className={`rounded-2xl p-5 ${balances.length ? "bg-brand text-brand-foreground" : "border border-border bg-surface"}`}
+          className={`rounded-2xl border border-border bg-surface p-5 ${balances.length ? "border-l-4 border-l-brand" : ""}`}
         >
           <p className="text-xl font-semibold">{balanceHeadline(balances)}</p>
-          {nextExpiry ? <p className="text-sm opacity-80">Vence el {shortDate(nextExpiry)}</p> : null}
+          {nextExpiry ? <p className="text-sm text-muted">Vence el {shortDate(nextExpiry)}</p> : null}
         </div>
         {trial ? (
           <Link href="/app/clases" className="block rounded-2xl bg-success/10 p-4 text-success">

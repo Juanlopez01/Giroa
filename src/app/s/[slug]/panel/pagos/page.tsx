@@ -75,10 +75,10 @@ export default async function PaymentsPage({ params, searchParams }: PageProps<"
       </div>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div className="col-span-2 rounded-2xl bg-brand p-4 text-brand-foreground md:col-span-1">
-          <p className="text-sm opacity-80">Total cobrado</p>
+        <div className="col-span-2 rounded-2xl border border-border border-l-4 border-l-brand bg-surface p-4 md:col-span-1">
+          <p className="text-sm text-muted">Total cobrado</p>
           <p className="text-2xl font-semibold tabular-nums">{formatArs(total)}</p>
-          <p className="text-sm opacity-80">
+          <p className="text-sm text-muted">
             {list.length} {list.length === 1 ? "pago" : "pagos"}
           </p>
         </div>

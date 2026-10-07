@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { getStudioBySlug } from "@/lib/studio.server";
+import { brandVars } from "@/lib/color";
 
 export async function generateMetadata({ params }: LayoutProps<"/s/[slug]">): Promise<Metadata> {
   const studio = await getStudioBySlug((await params).slug);
@@ -23,13 +24,14 @@ export async function generateViewport({ params }: LayoutProps<"/s/[slug]">): Pr
   return { themeColor: studio?.brand_color ?? "#6b1f2e" };
 }
 
-// Todo lo que está bajo el subdominio de un estudio usa su color de marca.
+// Todo lo que está bajo el subdominio de un estudio usa su color de marca, como
+// acento: si es muy claro se oscurece y el texto encima se elige por contraste.
 export default async function StudioLayout({ children, params }: LayoutProps<"/s/[slug]">) {
   const studio = await getStudioBySlug((await params).slug);
   if (!studio) notFound();
 
   return (
-    <div className="flex flex-1 flex-col" style={{ "--brand": studio.brand_color } as React.CSSProperties}>
+    <div className="flex flex-1 flex-col" style={brandVars(studio.brand_color) as React.CSSProperties}>
       {children}
     </div>
   );

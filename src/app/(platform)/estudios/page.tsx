@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { logoUrl } from "@/lib/studio";
 import { studioUrl } from "@/lib/urls";
 import { signOut } from "../login/actions";
+import { readableOn } from "@/lib/color";
 
 export const metadata: Metadata = { title: "Tus estudios" };
 
@@ -89,8 +90,8 @@ function StudioLink({ studio, href, caption }: { studio: StudioCard; href: strin
         <img src={logo} alt="" className="h-11 w-11 rounded-lg object-contain" />
       ) : (
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-lg font-semibold text-white"
-          style={{ backgroundColor: studio.brand_color }}
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-lg font-semibold"
+          style={{ backgroundColor: studio.brand_color, color: readableOn(studio.brand_color) }}
         >
           {studio.name.slice(0, 1).toUpperCase()}
         </div>

@@ -90,10 +90,13 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
       {/* ---------------------------------------------------------- números */}
       {income && usage ? (
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Link href="/panel/pagos" className="col-span-2 rounded-2xl bg-brand p-4 text-brand-foreground">
-            <p className="text-sm opacity-80">Cobrado este mes</p>
+          <Link
+            href="/panel/pagos"
+            className="col-span-2 rounded-2xl border border-border border-l-4 border-l-brand bg-surface p-4 transition hover:border-foreground hover:border-l-brand"
+          >
+            <p className="text-sm text-muted">Cobrado este mes</p>
             <p className="text-3xl font-semibold tabular-nums">{formatArs(income.thisMonth)}</p>
-            <p className="text-sm opacity-80">
+            <p className={`text-sm ${income.lastMonthSameDay > 0 ? (delta >= 0 ? "text-success" : "text-danger") : "text-muted"}`}>
               {income.lastMonthSameDay > 0
                 ? `${delta >= 0 ? "▲" : "▼"} ${formatArs(Math.abs(delta))} vs. el mes pasado a esta altura`
                 : `${income.count} ${income.count === 1 ? "pago" : "pagos"}`}
