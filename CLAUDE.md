@@ -71,6 +71,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   `create_event_order` (reserva el cupo 20 min, bloquea el tipo de entrada para no sobrevender). Las
   pagas van por MP con `external_reference = "evento:<uuid>"` y las confirma `mp_apply_event_payment`.
   "Tus entradas" es un link privado (`access_token`). QR de entrada: `giroa-entrada:<token>`.
+- Lista de espera (`waitlist`): `join_waitlist` solo si no hay lugar (o no para su rol); al cancelarse
+  una reserva, un trigger encola `waitlist_spot` para los que esperan. Clase de prueba (`trial_class`):
+  `book_session(..., p_trial => true)`, una por persona sin packs; `studios.trial_class_enabled`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

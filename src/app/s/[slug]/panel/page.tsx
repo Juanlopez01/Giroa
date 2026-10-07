@@ -9,6 +9,7 @@ import { studioUrl } from "@/lib/urls";
 import {
   activeWithoutBalance,
   expiringSoon,
+  trialNotConverted,
   incomeSummary,
   occupancyBySlot,
   whatsappLink,
@@ -47,6 +48,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
         expiringSoon(studio.id, tz, now),
         activeWithoutBalance(studio.id, now),
         occupancyBySlot(studio.id, tz, now),
+        trialNotConverted(studio.id, now),
       ])
     : null;
   const usage = (owner?.[0].data ?? null) as Usage | null;
@@ -54,6 +56,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   const expiring = owner?.[2] ?? [];
   const noBalance = owner?.[3] ?? [];
   const slots = owner?.[4] ?? [];
+  const trials = owner?.[5] ?? [];
 
 
   if (offeringsCount === 0) {
@@ -117,7 +120,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
       </section>
 
       {/* ---------------------------------------------------------- a quién escribirle */}
-      {isAdmin && (expiring.length > 0 || noBalance.length > 0) ? (
+      {isAdmin && (expiring.length > 0 || noBalance.length > 0 || trials.length > 0) ? (
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Para escribirles</h2>
           <div className="grid gap-4 md:grid-cols-2">
@@ -133,6 +136,14 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
               people={noBalance}
               message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: se te terminaron las clases del pack. ¿Te cargamos uno nuevo?`}
             />
+            {trials.length > 0 ? (
+              <FollowUpList
+                title="Probaron y no compraron"
+                empty=""
+                people={trials}
+                message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: ¿qué te pareció la clase de prueba? Si querés seguir, te paso los packs.`}
+              />
+            ) : null}
           </div>
         </section>
       ) : null}

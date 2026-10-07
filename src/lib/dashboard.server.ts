@@ -118,6 +118,7 @@ export async function activeWithoutBalance(studioId: string, now: Date): Promise
       .select("student_id, checked_in_at")
       .eq("studio_id", studioId)
       .eq("status", "attended")
+      .eq("is_trial", false) // los de clase de prueba van en trialNotConverted
       .gte("checked_in_at", since)
       .order("checked_in_at", { ascending: false }),
     supabase.from("student_balances").select("student_id, partner_student_id").eq("studio_id", studioId).eq("is_usable", true),
@@ -144,6 +145,41 @@ export async function activeWithoutBalance(studioId: string, now: Date): Promise
         name: s.full_name,
         phone: s.phone,
         detail: `Sin clases disponibles · vino ${days === 0 ? "hoy" : days === 1 ? "ayer" : `hace ${days} días`}`,
+      };
+    });
+}
+
+/** Vinieron a la clase de prueba (últimos 30 días) y todavía no compraron ningún pack. */
+export async function trialNotConverted(studioId: string, now: Date): Promise<FollowUp[]> {
+  const supabase = await createClient();
+  const since = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+  const { data: trials } = await supabase
+    .from("bookings")
+    .select("student_id, checked_in_at")
+    .eq("studio_id", studioId)
+    .eq("is_trial", true)
+    .eq("status", "attended")
+    .gte("checked_in_at", since)
+    .order("checked_in_at", { ascending: false });
+  const ids = [...new Set((trials ?? []).map((t) => t.student_id))];
+  if (!ids.length) return [];
+
+  const [{ data: students }, { data: packs }] = await Promise.all([
+    supabase.from("students").select("id, full_name, phone, is_active").in("id", ids),
+    supabase.from("student_packs").select("student_id, partner_student_id").eq("studio_id", studioId),
+  ]);
+  const bought = new Set((packs ?? []).flatMap((p) => [p.student_id, p.partner_student_id]).filter(Boolean));
+  const visit = new Map((trials ?? []).map((t) => [t.student_id, t.checked_in_at]));
+
+  return (students ?? [])
+    .filter((s) => s.is_active && !bought.has(s.id))
+    .map((s) => {
+      const days = Math.floor((now.getTime() - new Date(visit.get(s.id) ?? 0).getTime()) / 86_400_000);
+      return {
+        studentId: s.id,
+        name: s.full_name,
+        phone: s.phone,
+        detail: `Probó una clase ${days === 0 ? "hoy" : days === 1 ? "ayer" : `hace ${days} días`} y no compró`,
       };
     });
 }

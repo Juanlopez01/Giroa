@@ -75,7 +75,6 @@ export function BookButton({ book, roleBalance, leaders, followers, maxDiff, def
     if (!waitlist) return <span className="text-sm text-muted">Completa</span>;
     return (
       <div className="text-right">
-        <p className="text-xs text-muted">Completa</p>
         <button
           type="button"
           disabled={pending}

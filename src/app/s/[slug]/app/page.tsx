@@ -9,6 +9,7 @@ import { InstallPrompt } from "@/components/studio/install-prompt";
 import { MyTickets } from "@/components/studio/my-tickets";
 import { UpcomingEvents } from "@/components/studio/upcoming-events";
 import { cancelBooking } from "./actions";
+import { createClient } from "@/lib/supabase/server";
 import { CancelBookingButton } from "./booking-buttons";
 
 export const metadata: Metadata = { title: "Mi cuenta" };
@@ -20,10 +21,13 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
   const welcome = (await searchParams).bienvenida === "1";
   const now = nowMs();
 
-  const [balances, bookings] = await Promise.all([
+  const supabase = await createClient();
+  const [balances, bookings, { data: trialAvailable }] = await Promise.all([
     myBalances(studio.id, student.id),
     myUpcomingBookings(studio.id, student.id, new Date(now)),
+    supabase.rpc("my_trial_available", { p_studio_id: studio.id }),
   ]);
+  const trial = Boolean(trialAvailable) && balances.length === 0;
   const firstName = student.full_name.split(" ")[0];
   const nextExpiry = balances.find((b) => b.expiresOn)?.expiresOn;
 
@@ -40,6 +44,12 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
           <p className="text-xl font-semibold">{balanceHeadline(balances)}</p>
           {nextExpiry ? <p className="text-sm opacity-80">Vence el {shortDate(nextExpiry)}</p> : null}
         </div>
+        {trial ? (
+          <Link href="/app/clases" className="block rounded-2xl bg-success/10 p-4 text-success">
+            <span className="block font-semibold">Tu primera clase es gratis</span>
+            <span className="block text-sm">Elegí qué clase querés probar →</span>
+          </Link>
+        ) : null}
         <Link href="/app/packs" className="block text-sm font-medium text-brand">
           {balances.length === 0 ? "Comprá un pack para reservar →" : "Comprar otro pack →"}
         </Link>

@@ -10,6 +10,7 @@ export type PublicStudio = {
   logo_path: string | null;
   timezone: string;
   cancel_window_hours: number;
+  trial_class_enabled: boolean;
 };
 
 /** Estudio por slug (lectura pública con RLS). Memoizado por request. */
@@ -17,7 +18,7 @@ export const getStudioBySlug = cache(async (slug: string): Promise<PublicStudio 
   const supabase = await createClient();
   const { data } = await supabase
     .from("studios")
-    .select("id, name, slug, brand_color, logo_path, timezone, cancel_window_hours")
+    .select("id, name, slug, brand_color, logo_path, timezone, cancel_window_hours, trial_class_enabled")
     .eq("slug", slug)
     .maybeSingle();
   return data;

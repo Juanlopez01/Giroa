@@ -95,3 +95,17 @@ export async function leaveWaitlist(slug: string, sessionId: string): Promise<Ac
   revalidatePath(`/s/${slug}/app`, "layout");
   return { ok: true, message: "Saliste de la lista de espera." };
 }
+
+/** Clase de prueba gratis: book_session con p_trial (la base valida que corresponda). */
+export async function bookTrialClass(slug: string, sessionId: string, role: "leader" | "follower" | null): Promise<ActionState> {
+  await requireStudent(slug, "/app/clases");
+  if (!z.uuid().safeParse(sessionId).success) return { ok: false, message: "No encontramos esa clase." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("book_session", { p_session_id: sessionId, p_role: role ?? undefined, p_trial: true });
+  if (error) return fromSupabaseError(error, "bookTrialClass");
+
+  revalidatePath(`/s/${slug}/app`, "layout");
+  revalidatePath(`/s/${slug}`);
+  return { ok: true, message: "¡Listo! Te esperamos en tu clase de prueba." };
+}

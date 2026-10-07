@@ -10,6 +10,7 @@ import { packSummary } from "@/lib/packs.server";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { SessionCard } from "@/components/studio/session-card";
 import { UpcomingEvents } from "@/components/studio/upcoming-events";
+import { can } from "@/lib/gating";
 
 // Página pública del estudio ({slug}.giroa.com.ar): grilla, packs y "Sumate".
 export default async function StudioPublicPage({ params, searchParams }: PageProps<"/s/[slug]">) {
@@ -40,6 +41,7 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
     getCurrentUser(),
   ]);
 
+  const trialOn = studio.trial_class_enabled && (await can(studio.id, "trial_class"));
   const [student, staffRole] = user
     ? await Promise.all([getMyStudent(studio.id, user.id), getMyStaffRole(studio.id, user.id)])
     : [null, null];
@@ -74,15 +76,17 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
 
         {!student ? (
           <section className="space-y-3">
-            <h1 className="text-2xl font-semibold">Reservá tu clase online</h1>
+            <h1 className="text-2xl font-semibold">{trialOn ? "Tu primera clase es gratis" : "Reservá tu clase online"}</h1>
             <p className="text-muted">
-              Sumate a {studio.name}, comprá tu pack y reservá tu lugar desde el celular. Sin llamadas ni mensajes.
+              {trialOn
+                ? `Sumate a ${studio.name} y elegí qué clase querés probar. Si te gusta, comprás tu pack y reservás desde el celular.`
+                : `Sumate a ${studio.name}, comprá tu pack y reservá tu lugar desde el celular. Sin llamadas ni mensajes.`}
             </p>
             <Link
               href="/sumate"
               className="inline-flex h-12 items-center rounded-xl bg-brand px-5 font-medium text-brand-foreground"
             >
-              Sumate a {studio.name}
+              {trialOn ? "Probá una clase gratis" : `Sumate a ${studio.name}`}
             </Link>
           </section>
         ) : null}

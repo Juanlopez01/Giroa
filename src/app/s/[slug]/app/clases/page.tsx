@@ -7,7 +7,7 @@ import { addDaysYmd, formatDayLabel, isYmd, nowMs, startOfDay, todayYmd, toYmd }
 import { SessionCard } from "@/components/studio/session-card";
 import { createClient } from "@/lib/supabase/server";
 import { can } from "@/lib/gating";
-import { bookSession, joinWaitlist, leaveWaitlist } from "../actions";
+import { bookSession, bookTrialClass, joinWaitlist, leaveWaitlist } from "../actions";
 import { BookButton } from "../booking-buttons";
 
 export const metadata: Metadata = { title: "Reservar" };
@@ -23,13 +23,16 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
   const from = isYmd(desde) && desde >= today ? desde : today;
 
   const supabase = await createClient();
-  const [sessions, bookings, balances, waitlistOn, { data: myWaitlist }] = await Promise.all([
+  const [sessions, bookings, balances, waitlistOn, { data: myWaitlist }, { data: trialAvailable }] = await Promise.all([
     listPublicSessions(slug, from === today ? new Date(now) : startOfDay(from, tz), startOfDay(addDaysYmd(from, 7), tz)),
     myUpcomingBookings(studio.id, student.id, new Date(now)),
     myBalances(studio.id, student.id),
     can(studio.id, "waitlist"),
     supabase.rpc("my_waitlist", { p_studio_id: studio.id }),
+    supabase.rpc("my_trial_available", { p_studio_id: studio.id }),
   ]);
+  // Clase de prueba: solo para quien nunca compró un pack (lo valida la base).
+  const trial = Boolean(trialAvailable) && balances.length === 0;
   const waitingAt = new Map((myWaitlist ?? []).map((w) => [w.session_id, w.position]));
   const booked = new Set(bookings.map((b) => b.sessionId));
 
@@ -44,7 +47,13 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold">Reservar</h1>
-        <p className={`text-sm ${balances.length ? "text-muted" : "text-danger"}`}>{balanceHeadline(balances)}.</p>
+        {trial ? (
+          <p className="rounded-xl bg-success/10 px-4 py-3 text-sm text-success">
+            Tenés una <span className="font-semibold">clase de prueba gratis</span>: elegí cuál querés probar.
+          </p>
+        ) : (
+          <p className={`text-sm ${balances.length ? "text-muted" : "text-danger"}`}>{balanceHeadline(balances)}.</p>
+        )}
       </div>
 
       {days.length === 0 ? (
@@ -66,7 +75,8 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
                     <span className="text-sm font-medium text-success">Reservada ✓</span>
                   ) : (
                     <BookButton
-                      book={bookSession.bind(null, slug, s.id)}
+                      book={(trial ? bookTrialClass : bookSession).bind(null, slug, s.id)}
+                      label={trial ? "Probar gratis" : undefined}
                       roleBalance={s.roleBalance}
                       leaders={s.leaders}
                       followers={s.followers}

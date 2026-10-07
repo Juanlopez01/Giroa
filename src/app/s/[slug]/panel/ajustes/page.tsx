@@ -5,7 +5,7 @@ import { UpgradeNotice } from "@/components/panel/upgrade-notice";
 import { createClient } from "@/lib/supabase/server";
 import { platformUrl } from "@/lib/urls";
 import { FormMessage } from "@/components/ui/field";
-import { disconnectMercadoPago, updateSettings } from "./actions";
+import { disconnectMercadoPago, setTrialClass, updateSettings } from "./actions";
 import { SettingsForm } from "./settings-form";
 
 export const metadata: Metadata = { title: "Ajustes" };
@@ -25,7 +25,7 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
   const supabase = await createClient();
   const { data: mp } = await supabase.rpc("mp_connection_status", { p_studio_id: studio.id });
   const connection = mp?.[0];
-  const mpAllowed = await can(studio.id, "mp_checkout");
+  const [mpAllowed, trialAllowed] = await Promise.all([can(studio.id, "mp_checkout"), can(studio.id, "trial_class")]);
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
@@ -67,6 +67,33 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Reservas</h2>
         <SettingsForm action={updateSettings.bind(null, slug)} cancelWindowHours={studio.cancel_window_hours} />
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
+        <h2 className="text-lg font-semibold">Clase de prueba gratis</h2>
+        {!trialAllowed ? (
+          <UpgradeNotice feature="trial_class" what="La clase de prueba" />
+        ) : (
+          <>
+            <p className="text-muted">
+              Quien nunca compró un pack puede reservar una clase gratis para conocerte. Es una sola por persona; si
+              cancela a tiempo, la puede volver a usar. Después le aparece en tu Inicio para que le escribas.
+            </p>
+            <form action={setTrialClass.bind(null, slug, !studio.trial_class_enabled)} className="flex items-center justify-between gap-4">
+              <span className={`font-medium ${studio.trial_class_enabled ? "text-success" : "text-muted"}`}>
+                {studio.trial_class_enabled ? "Activada" : "Desactivada"}
+              </span>
+              <button
+                type="submit"
+                className={`h-11 rounded-xl px-4 text-sm font-medium ${
+                  studio.trial_class_enabled ? "border border-border bg-surface" : "bg-brand text-brand-foreground"
+                }`}
+              >
+                {studio.trial_class_enabled ? "Desactivar" : "Activar clase de prueba"}
+              </button>
+            </form>
+          </>
+        )}
       </section>
     </div>
   );

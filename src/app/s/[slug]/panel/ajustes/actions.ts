@@ -36,3 +36,11 @@ export async function disconnectMercadoPago(slug: string): Promise<void> {
   await deleteConnection(studio.id);
   revalidatePath(`/s/${slug}/panel/ajustes`);
 }
+
+export async function setTrialClass(slug: string, enabled: boolean): Promise<void> {
+  const { studio } = await requireAdmin(slug);
+  const supabase = await createClient();
+  const { error } = await supabase.from("studios").update({ trial_class_enabled: enabled }).eq("id", studio.id);
+  if (error) console.error("[setTrialClass]", error);
+  revalidatePath(`/s/${slug}`, "layout");
+}

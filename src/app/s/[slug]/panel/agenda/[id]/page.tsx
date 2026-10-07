@@ -24,7 +24,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
     supabase.from("session_occupancy").select("*").eq("session_id", id).eq("studio_id", studio.id).maybeSingle(),
     supabase
       .from("bookings")
-      .select("id, status, dance_role, checked_in_at, students!bookings_studio_id_student_id_fkey(id, full_name)")
+      .select("id, status, dance_role, checked_in_at, is_trial, students!bookings_studio_id_student_id_fkey(id, full_name)")
       .eq("studio_id", studio.id)
       .eq("session_id", id)
       .in("status", ["booked", "attended", "no_show"])
@@ -94,7 +94,12 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
               <li key={b.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{b.students?.full_name ?? "Alumno"}</p>
-                  <p className="text-sm text-muted">{b.dance_role ? ROLE_LABELS[b.dance_role] : "Sin rol"}</p>
+                  <p className="text-sm text-muted">
+                    {b.dance_role ? ROLE_LABELS[b.dance_role] : "Sin rol"}
+                    {b.is_trial ? (
+                      <span className="ml-2 rounded-full bg-[var(--gold)]/20 px-2 py-0.5 text-xs font-medium text-foreground">Prueba</span>
+                    ) : null}
+                  </p>
                 </div>
                 {b.status === "attended" ? (
                   <span className="text-sm font-medium text-success">
