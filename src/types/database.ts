@@ -296,6 +296,205 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"formation_assessments": {
+                  Row: {
+                    "created_at": string,"due_on": string | null,"formation_id": string,"id": string,"kind": Database["public"]['Enums']["assessment_kind"],"studio_id": string,"title": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"due_on"?: string | null,"formation_id": string,"id"?: string,"kind"?: Database["public"]['Enums']["assessment_kind"],"studio_id": string,"title": string
+                  }
+                  Update: {
+                    "created_at"?: string,"due_on"?: string | null,"formation_id"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["assessment_kind"],"studio_id"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_assessments_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "formation_assessments_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"formation_attendance": {
+                  Row: {
+                    "checked_in_at": string,"checked_in_by": string | null,"enrollment_id": string,"formation_session_id": string,"studio_id": string
+                  }
+                  Insert: {
+                    "checked_in_at"?: string,"checked_in_by"?: string | null,"enrollment_id": string,"formation_session_id": string,"studio_id": string
+                  }
+                  Update: {
+                    "checked_in_at"?: string,"checked_in_by"?: string | null,"enrollment_id"?: string,"formation_session_id"?: string,"studio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_attendance_studio_id_enrollment_id_fkey"
+      columns: ["studio_id","enrollment_id"]
+isOneToOne: false
+      referencedRelation: "formation_enrollments"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_attendance_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "formation_attendance_studio_id_formation_session_id_fkey"
+      columns: ["studio_id","formation_session_id"]
+isOneToOne: false
+      referencedRelation: "formation_sessions"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"formation_charges": {
+                  Row: {
+                    "amount_cents": number,"created_at": string,"created_by": string | null,"due_on": string,"enrollment_id": string,"external_reference": string,"formation_id": string,"id": string,"kind": Database["public"]['Enums']["formation_charge_kind"],"method": Database["public"]['Enums']["payment_method"] | null,"mp_payment_id": string | null,"mp_preference_id": string | null,"notes": string | null,"number": number,"paid_at": string | null,"status": Database["public"]['Enums']["formation_charge_status"],"studio_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "amount_cents": number,"created_at"?: string,"created_by"?: string | null,"due_on": string,"enrollment_id": string,"external_reference"?: string,"formation_id": string,"id"?: string,"kind": Database["public"]['Enums']["formation_charge_kind"],"method"?: Database["public"]['Enums']["payment_method"] | null,"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"number"?: number,"paid_at"?: string | null,"status"?: Database["public"]['Enums']["formation_charge_status"],"studio_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"created_at"?: string,"created_by"?: string | null,"due_on"?: string,"enrollment_id"?: string,"external_reference"?: string,"formation_id"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["formation_charge_kind"],"method"?: Database["public"]['Enums']["payment_method"] | null,"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"number"?: number,"paid_at"?: string | null,"status"?: Database["public"]['Enums']["formation_charge_status"],"studio_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_charges_studio_id_enrollment_id_fkey"
+      columns: ["studio_id","enrollment_id"]
+isOneToOne: false
+      referencedRelation: "formation_enrollments"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_charges_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "formation_charges_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"formation_enrollments": {
+                  Row: {
+                    "application_message": string | null,"applied_at": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"enrolled_at": string | null,"formation_id": string,"id": string,"staff_notes": string | null,"status": Database["public"]['Enums']["enrollment_status"],"student_id": string,"studio_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "application_message"?: string | null,"applied_at"?: string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"enrolled_at"?: string | null,"formation_id": string,"id"?: string,"staff_notes"?: string | null,"status"?: Database["public"]['Enums']["enrollment_status"],"student_id": string,"studio_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "application_message"?: string | null,"applied_at"?: string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"enrolled_at"?: string | null,"formation_id"?: string,"id"?: string,"staff_notes"?: string | null,"status"?: Database["public"]['Enums']["enrollment_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_enrollments_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "formation_enrollments_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_enrollments_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"formation_grades": {
+                  Row: {
+                    "assessment_id": string,"enrollment_id": string,"feedback": string | null,"grade": number | null,"passed": boolean | null,"studio_id": string,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "assessment_id": string,"enrollment_id": string,"feedback"?: string | null,"grade"?: number | null,"passed"?: boolean | null,"studio_id": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "assessment_id"?: string,"enrollment_id"?: string,"feedback"?: string | null,"grade"?: number | null,"passed"?: boolean | null,"studio_id"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_grades_studio_id_assessment_id_fkey"
+      columns: ["studio_id","assessment_id"]
+isOneToOne: false
+      referencedRelation: "formation_assessments"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_grades_studio_id_enrollment_id_fkey"
+      columns: ["studio_id","enrollment_id"]
+isOneToOne: false
+      referencedRelation: "formation_enrollments"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_grades_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"formation_sessions": {
+                  Row: {
+                    "created_at": string,"ends_at": string,"formation_id": string,"id": string,"location": string | null,"notes": string | null,"online_url": string | null,"starts_at": string,"studio_id": string,"teacher_member_id": string | null,"teacher_name": string | null,"title": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"ends_at": string,"formation_id": string,"id"?: string,"location"?: string | null,"notes"?: string | null,"online_url"?: string | null,"starts_at": string,"studio_id": string,"teacher_member_id"?: string | null,"teacher_name"?: string | null,"title": string
+                  }
+                  Update: {
+                    "created_at"?: string,"ends_at"?: string,"formation_id"?: string,"id"?: string,"location"?: string | null,"notes"?: string | null,"online_url"?: string | null,"starts_at"?: string,"studio_id"?: string,"teacher_member_id"?: string | null,"teacher_name"?: string | null,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_sessions_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "formation_sessions_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_sessions_studio_id_teacher_member_id_fkey"
+      columns: ["studio_id","teacher_member_id"]
+isOneToOne: false
+      referencedRelation: "studio_members"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"formations": {
+                  Row: {
+                    "capacity": number | null,"created_at": string,"description": string | null,"ends_on": string,"enrollment_fee_cents": number,"enrollment_open": boolean,"first_due_on": string | null,"full_payment_cents": number | null,"id": string,"installment_cents": number,"installments_count": number,"min_attendance_pct": number,"requires_approval": boolean,"starts_on": string,"status": Database["public"]['Enums']["formation_status"],"studio_id": string,"title": string,"updated_at": string
+                  }
+                  Insert: {
+                    "capacity"?: number | null,"created_at"?: string,"description"?: string | null,"ends_on": string,"enrollment_fee_cents"?: number,"enrollment_open"?: boolean,"first_due_on"?: string | null,"full_payment_cents"?: number | null,"id"?: string,"installment_cents"?: number,"installments_count"?: number,"min_attendance_pct"?: number,"requires_approval"?: boolean,"starts_on": string,"status"?: Database["public"]['Enums']["formation_status"],"studio_id": string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "capacity"?: number | null,"created_at"?: string,"description"?: string | null,"ends_on"?: string,"enrollment_fee_cents"?: number,"enrollment_open"?: boolean,"first_due_on"?: string | null,"full_payment_cents"?: number | null,"id"?: string,"installment_cents"?: number,"installments_count"?: number,"min_attendance_pct"?: number,"requires_approval"?: boolean,"starts_on"?: string,"status"?: Database["public"]['Enums']["formation_status"],"studio_id"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formations_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"founder_leads": {
                   Row: {
                     "created_at": string,"disciplines": string | null,"email": string,"id": number,"kind": string,"message": string | null,"name": string,"phone": string | null,"students_count": string | null,"studio_name": string | null
@@ -852,6 +1051,28 @@ isOneToOne: false
 "active_students_count":
 { Args: { "p_studio_id": string }; Returns: number
                            },
+"apply_to_formation":
+{ Args: { "p_formation_id": string,"p_message"?: string }; Returns: {
+              "application_message": string | null,
+"applied_at": string,
+"created_at": string,
+"decided_at": string | null,
+"decided_by": string | null,
+"enrolled_at": string | null,
+"formation_id": string,
+"id": string,
+"staff_notes": string | null,
+"status": Database["public"]['Enums']["enrollment_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "formation_enrollments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "book_session":
 { Args: { "p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id": string,"p_student_id"?: string,"p_trial"?: boolean }; Returns: {
               "cancelled_at": string | null,
@@ -977,6 +1198,33 @@ isOneToOne: false
 "check_slug":
 { Args: { "p_slug": string }; Returns: string
                            },
+"choose_full_payment":
+{ Args: { "p_enrollment_id": string }; Returns: {
+              "amount_cents": number,
+"created_at": string,
+"created_by": string | null,
+"due_on": string,
+"enrollment_id": string,
+"external_reference": string,
+"formation_id": string,
+"id": string,
+"kind": Database["public"]['Enums']["formation_charge_kind"],
+"method": Database["public"]['Enums']["payment_method"] | null,
+"mp_payment_id": string | null,
+"mp_preference_id": string | null,
+"notes": string | null,
+"number": number,
+"paid_at": string | null,
+"status": Database["public"]['Enums']["formation_charge_status"],
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "formation_charges"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "choose_trial_plan":
 { Args: { "p_plan": Database["public"]['Enums']["studio_plan"],"p_studio_id": string }; Returns: undefined
                            },
@@ -1108,6 +1356,31 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"decide_enrollment":
+{ Args: { "p_approve": boolean,"p_enrollment_id": string,"p_notes"?: string }; Returns: {
+              "application_message": string | null,
+"applied_at": string,
+"created_at": string,
+"decided_at": string | null,
+"decided_by": string | null,
+"enrolled_at": string | null,
+"formation_id": string,
+"id": string,
+"staff_notes": string | null,
+"status": Database["public"]['Enums']["enrollment_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "formation_enrollments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"enrollment_progress":
+{ Args: { "p_enrollment_id": string }; Returns: Json
+                           },
 "event_availability":
 { Args: { "p_event_id": string }; Returns: {
               "on_sale": boolean,"remaining": number,"ticket_type_id": string
@@ -1124,6 +1397,12 @@ isOneToOne: false
                            },
 "finish_notification":
 { Args: { "p_error"?: string,"p_id": number,"p_ok": boolean }; Returns: undefined
+                           },
+"formation_check_in":
+{ Args: { "p_enrollment_id"?: string,"p_qr_token"?: string,"p_session_id": string }; Returns: Json
+                           },
+"formation_set_grade":
+{ Args: { "p_assessment_id": string,"p_enrollment_id": string,"p_feedback"?: string,"p_grade": number,"p_passed": boolean }; Returns: undefined
                            },
 "generate_sessions":
 { Args: { "p_from"?: string,"p_studio_id": string,"p_weeks"?: number }; Returns: number
@@ -1244,6 +1523,9 @@ isOneToOne: false
 "mp_apply_event_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string,"p_paid_at"?: string }; Returns: Json
                            },
+"mp_apply_formation_payment":
+{ Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string }; Returns: Json
+                           },
 "mp_apply_gift_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string }; Returns: Json
                            },
@@ -1266,6 +1548,33 @@ isOneToOne: false
 "preview_coupon":
 { Args: { "p_base_cents": number,"p_code": string,"p_studio_id": string,"p_target": Database["public"]['Enums']["coupon_target"] }; Returns: Json
                            },
+"record_formation_payment":
+{ Args: { "p_charge_id": string,"p_method": Database["public"]['Enums']["payment_method"] }; Returns: {
+              "amount_cents": number,
+"created_at": string,
+"created_by": string | null,
+"due_on": string,
+"enrollment_id": string,
+"external_reference": string,
+"formation_id": string,
+"id": string,
+"kind": Database["public"]['Enums']["formation_charge_kind"],
+"method": Database["public"]['Enums']["payment_method"] | null,
+"mp_payment_id": string | null,
+"mp_preference_id": string | null,
+"notes": string | null,
+"number": number,
+"paid_at": string | null,
+"status": Database["public"]['Enums']["formation_charge_status"],
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "formation_charges"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "record_manual_payment":
 { Args: { "p_amount_cents"?: number,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_pack_product_id": string,"p_partner_student_id"?: string,"p_student_id": string }; Returns: Json
                            },
@@ -1396,10 +1705,13 @@ isOneToOne: false
         to: "students"
         isOneToOne: true
         isSetofReturn: false
-      } }
+      } },
+"withdraw_enrollment":
+{ Args: { "p_enrollment_id": string }; Returns: undefined
+                           }
           }
           Enums: {
-            "billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","coupon_kind": "percent"|"amount","coupon_redemption_status": "pending"|"confirmed"|"void","coupon_target": "all"|"packs"|"events","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","gift_card_status": "pending"|"active"|"redeemed"|"cancelled"|"expired","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
+            "assessment_kind": "grade"|"pass_fail","billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","coupon_kind": "percent"|"amount","coupon_redemption_status": "pending"|"confirmed"|"void","coupon_target": "all"|"packs"|"events","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","enrollment_status": "applied"|"approved"|"enrolled"|"rejected"|"withdrawn","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","formation_charge_kind": "enrollment"|"installment"|"full","formation_charge_status": "pending"|"paid"|"cancelled","formation_status": "draft"|"published"|"archived","gift_card_status": "pending"|"active"|"redeemed"|"cancelled"|"expired","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1519,7 +1831,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"coupon_kind": ["percent", "amount"],"coupon_redemption_status": ["pending", "confirmed", "void"],"coupon_target": ["all", "packs", "events"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"gift_card_status": ["pending", "active", "redeemed", "cancelled", "expired"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
+            "assessment_kind": ["grade", "pass_fail"],"billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"coupon_kind": ["percent", "amount"],"coupon_redemption_status": ["pending", "confirmed", "void"],"coupon_target": ["all", "packs", "events"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"enrollment_status": ["applied", "approved", "enrolled", "rejected", "withdrawn"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"formation_charge_kind": ["enrollment", "installment", "full"],"formation_charge_status": ["pending", "paid", "cancelled"],"formation_status": ["draft", "published", "archived"],"gift_card_status": ["pending", "active", "redeemed", "cancelled", "expired"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
           }
         }
 } as const
