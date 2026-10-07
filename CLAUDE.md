@@ -77,6 +77,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Equipo (`teacher_permissions`): owner > admin (encargado) > teacher (profe). Se invita por email
   (`invite_member`, `accept_invite` con el mismo email). Pagos manuales: admin o profe con
   `can_take_payments` (`private.can_take_payments`). "Tu plan" solo el owner (`requireOwner`).
+- Cupones (`coupons`): `create_pack_payment` y `create_event_order` reciben `p_coupon`; los usos van en
+  `coupon_redemptions` (triggers los confirman o anulan según el pago). Gift cards (`gift_cards`): un pack
+  de regalo; MP con `external_reference = "regalo:<uuid>"`, canje con `redeem_gift_card`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

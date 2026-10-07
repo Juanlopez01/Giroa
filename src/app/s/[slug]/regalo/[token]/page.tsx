@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getStudioBySlug } from "@/lib/studio.server";
 import { createClient } from "@/lib/supabase/server";
-import { formatDayLabel, toYmd } from "@/lib/datetime";
+import { toYmd } from "@/lib/datetime";
 import { studioUrl } from "@/lib/urls";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { AutoRefresh } from "../../entradas/[token]/auto-refresh";
@@ -39,7 +39,10 @@ export default async function GiftCardPage({ params }: PageProps<"/s/[slug]/rega
   const redeemUrl = studioUrl(slug, `/app/packs?regalo=${encodeURIComponent(gift.code)}`);
   const qr = await QRCode.toString(redeemUrl, { type: "svg", margin: 1, errorCorrectionLevel: "M", color: { dark: "#1c1917", light: "#ffffff" } });
   const shareText = `${gift.recipient_name ? `¡${gift.recipient_name}! ` : ""}Te regalo ${gift.pack_name} en ${studio.name} 🎁 Canjealo con el código ${gift.code} acá: ${redeemUrl}`;
-  const until = gift.expires_at ? formatDayLabel(toYmd(new Date(gift.expires_at), studio.timezone)).toLowerCase() : null;
+  // Con año: vence dentro de 12 meses.
+  const until = gift.expires_at
+    ? toYmd(new Date(gift.expires_at), studio.timezone).split("-").reverse().map(Number).join("/")
+    : null;
 
   return (
     <div className="flex flex-1 flex-col">

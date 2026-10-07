@@ -55,3 +55,13 @@ describe("invitación al equipo", () => {
     expect(m.html).toContain("https://app.giroa.com.ar/invitacion/abc");
   });
 });
+
+describe("gift card", () => {
+  it("le manda a quien la compró el código y el link de la tarjeta", async () => {
+    const { giftCardEmail } = await import("@/lib/email/templates");
+    const m = giftCardEmail(studio, { buyerName: "Juan Pérez", recipientName: "Lía", packName: "8 clases", code: "REGALO-7K2M-Q9XA", cardUrl: "https://demo.giroa.com.ar/regalo/abc" });
+    expect(m.subject).toBe("Tu regalo para Lía está listo");
+    expect(m.text).toContain("REGALO-7K2M-Q9XA");
+    expect(m.html).toContain("https://demo.giroa.com.ar/regalo/abc");
+  });
+});

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 // Lo que todavía no está construido se muestra como "Próximamente": nadie paga por algo que no existe.
 const SOON = new Set([
   "Formaciones y audiciones",
-  "Cupones, gift cards y referidos",
+  "Referidos",
   "Certificados y jurado en audiciones",
   "Liquidación de profes",
   "Multi-sede y dominio propio",
@@ -45,7 +45,8 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
       "Eventos con entradas y control por QR",
       "Formaciones y audiciones",
       "Lista de espera y clase de prueba",
-      "Cupones, gift cards y referidos",
+      "Cupones y gift cards",
+      "Referidos",
       "Varios profes con permisos",
     ],
   },

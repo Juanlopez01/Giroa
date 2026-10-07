@@ -31,6 +31,9 @@ export default async function PacksPage({ params, searchParams }: PageProps<"/s/
           <Link href="/panel/packs/cupones" className="text-sm font-medium text-brand">
             Cupones
           </Link>
+          <Link href="/panel/packs/regalos" className="text-sm font-medium text-brand">
+            Gift cards
+          </Link>
           <Link
             href="/panel/packs/nuevo"
             className="inline-flex h-11 shrink-0 items-center rounded-xl bg-brand px-4 font-medium text-brand-foreground"

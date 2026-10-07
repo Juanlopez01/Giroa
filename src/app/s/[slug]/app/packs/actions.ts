@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
@@ -51,4 +52,18 @@ export async function buyPack(slug: string, packProductId: string, coupon: strin
   }
 
   redirect(initPoint);
+}
+
+/** Canje de una gift card: la base valida el código, el estudio y que no esté usada. */
+export async function redeemGiftCard(slug: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireStudent(slug, "/app/packs");
+  const code = String(formData.get("code") ?? "").trim().toUpperCase();
+  if (code.replace(/^REGALO-/, "").replace(/-/g, "").length !== 8) {
+    return { ok: false, fieldErrors: { code: "El código tiene la forma REGALO-XXXX-XXXX." } };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("redeem_gift_card", { p_code: code });
+  if (error) return fromSupabaseError(error, "redeemGiftCard");
+  revalidatePath(`/s/${slug}/app`, "layout");
+  return { ok: true, message: `¡Listo! Te acreditamos ${(data as { pack_name: string }).pack_name}. Ya podés reservar.` };
 }

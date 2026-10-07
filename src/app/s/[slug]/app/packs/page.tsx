@@ -3,19 +3,23 @@ import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
 import { formatArs } from "@/lib/money";
 import { packSummary } from "@/lib/packs.server";
-import { buyPack } from "./actions";
+import { buyPack, redeemGiftCard } from "./actions";
+import { RedeemGiftForm } from "./redeem-form";
 import { BuyButton } from "./buy-button";
 import { previewCoupon } from "../../coupon-actions";
 import { can } from "@/lib/gating";
 
 export const metadata: Metadata = { title: "Packs" };
 
-export default async function StudentPacksPage({ params }: PageProps<"/s/[slug]/app/packs">) {
+export default async function StudentPacksPage({ params, searchParams }: PageProps<"/s/[slug]/app/packs">) {
   const { slug } = await params;
-  const { studio } = await requireStudent(slug, "/app/packs");
+  const regalo = (await searchParams).regalo;
+  const giftCode = typeof regalo === "string" && /^[A-Za-z0-9-]{4,30}$/.test(regalo) ? regalo.toUpperCase() : "";
+  // Si viene del QR de una gift card, se conserva el código al pedir login.
+  const { studio } = await requireStudent(slug, giftCode ? `/app/packs?regalo=${giftCode}` : "/app/packs");
   const supabase = await createClient();
 
-  const [{ data: packs }, { data: canPayOnline }, couponsOn] = await Promise.all([
+  const [{ data: packs }, { data: canPayOnline }, couponsOn, giftsOn] = await Promise.all([
     supabase
       .from("pack_products")
       .select("id, name, description, credits, validity_days, price_cents")
@@ -25,6 +29,7 @@ export default async function StudentPacksPage({ params }: PageProps<"/s/[slug]/
       .order("price_cents"),
     supabase.rpc("studio_accepts_online_payments", { p_studio_id: studio.id }),
     can(studio.id, "coupons"),
+    can(studio.id, "gift_cards"),
   ]);
 
   return (
@@ -33,6 +38,8 @@ export default async function StudentPacksPage({ params }: PageProps<"/s/[slug]/
         <h1 className="text-2xl font-semibold">Comprá tu pack</h1>
         <p className="text-sm text-muted">Vale para todas las clases del estudio.</p>
       </div>
+
+      {giftsOn || giftCode ? <RedeemGiftForm action={redeemGiftCard.bind(null, slug)} initialCode={giftCode} /> : null}
 
       {!packs?.length ? (
         <p className="text-muted">El estudio todavía no publicó packs.</p>
