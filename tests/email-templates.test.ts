@@ -65,3 +65,14 @@ describe("gift card", () => {
     expect(m.html).toContain("https://demo.giroa.com.ar/regalo/abc");
   });
 });
+
+describe("formaciones", () => {
+  it("aprobado con matrícula y cuota vencida", async () => {
+    const { formationEmail } = await import("@/lib/email/templates");
+    const a = formationEmail(studio, "Ana", { kind: "approved", title: "Profesorado", feeCents: 3000000, url: "https://x/app/formaciones/1" });
+    expect(a.subject).toBe("¡Quedaste en Profesorado!");
+    expect(a.text).toContain("pagá la matrícula de $ 30.000");
+    const o = formationEmail(studio, "Ana", { kind: "overdue", title: "Profesorado", number: 2, amountCents: 4000000, dueOn: "2026-11-01", url: "https://x" });
+    expect(o.text).toContain("venció el 1/11/2026");
+  });
+});

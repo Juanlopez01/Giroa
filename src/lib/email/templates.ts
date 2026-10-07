@@ -157,3 +157,61 @@ export function giftCardEmail(
     { label: "Ver la tarjeta", href: d.cardUrl },
   );
 }
+
+export type FormationMail =
+  | { kind: "approved"; title: string; feeCents: number | null; url: string }
+  | { kind: "rejected"; title: string; url: string }
+  | { kind: "enrolled"; title: string; url: string }
+  | { kind: "due"; title: string; number: number; amountCents: number; dueOn: string; url: string }
+  | { kind: "overdue"; title: string; number: number; amountCents: number; dueOn: string; url: string };
+
+const ars = (cents: number) => `$ ${Math.round(cents / 100).toLocaleString("es-AR")}`;
+const ymdLabel = (ymd: string) => ymd.split("-").reverse().map(Number).join("/");
+
+export function formationEmail(studio: StudioInfo, studentName: string | null, d: FormationMail): EmailContent {
+  switch (d.kind) {
+    case "approved":
+      return build(
+        studio,
+        `¡Quedaste en ${d.title}!`,
+        [
+          hola(studentName),
+          `${esc(studio.name)} aceptó tu postulación a <strong>${esc(d.title)}</strong>.`,
+          d.feeCents ? `Para asegurar tu lugar, pagá la matrícula de ${ars(d.feeCents)} en los próximos 7 días.` : "Ya podés ver el cronograma.",
+        ],
+        { label: d.feeCents ? "Pagar la matrícula" : "Ver mi formación", href: d.url },
+      );
+    case "rejected":
+      return build(
+        studio,
+        `Sobre tu postulación a ${d.title}`,
+        [hola(studentName), `Gracias por postularte a <strong>${esc(d.title)}</strong>. Esta vez no quedaste.`, "Podés consultar con el estudio por próximas convocatorias."],
+        { label: "Ver detalle", href: d.url },
+      );
+    case "enrolled":
+      return build(
+        studio,
+        `Ya estás inscripto/a en ${d.title}`,
+        [hola(studentName), `¡Bienvenido/a a <strong>${esc(d.title)}</strong>! En tu app tenés el cronograma, tus cuotas y tu asistencia.`],
+        { label: "Ver mi formación", href: d.url },
+      );
+    case "due":
+      return build(
+        studio,
+        `Tu cuota ${d.number} de ${d.title} vence el ${ymdLabel(d.dueOn)}`,
+        [hola(studentName), `Te recordamos que la cuota ${d.number} (${ars(d.amountCents)}) vence el ${ymdLabel(d.dueOn)}.`, "La podés pagar desde la app con Mercado Pago."],
+        { label: "Pagar la cuota", href: d.url },
+      );
+    case "overdue":
+      return build(
+        studio,
+        `Tenés la cuota ${d.number} de ${d.title} vencida`,
+        [
+          hola(studentName),
+          `La cuota ${d.number} (${ars(d.amountCents)}) venció el ${ymdLabel(d.dueOn)}.`,
+          "Hasta que la pagues, el acceso a la formación queda en pausa. Tus clases regulares las seguís reservando.",
+        ],
+        { label: "Pagar ahora", href: d.url },
+      );
+  }
+}

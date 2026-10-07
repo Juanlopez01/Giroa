@@ -60,8 +60,10 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   de clase en hora local del estudio (`studios.timezone`).
 - Packs: valen para todas las clases regulares del estudio; se consume primero
   el que vence antes; `pack_credit_events` es el historial de créditos.
-- El bloqueo por deuda aplica solo a cuotas de formaciones (Fase 2): si al
-  día 10 del mes no pagó.
+- Formaciones (`formations`): postulación → el estudio aprueba (`decide_enrollment`) → matrícula →
+  inscripto (se generan las cuotas). Cobros en `formation_charges` (MP con `"formacion:<uuid>"` o
+  mostrador). Deuda: cuota impaga al día 10 del mes en que vence (`private.enrollment_in_debt`); bloquea
+  solo lo de la formación (asistencia y "Mi formación"), nunca las clases regulares.
 - Todo estudio nuevo arranca en plan **Inicial con 14 días de prueba** (sin tarjeta). Durante la
   prueba elige qué plan probar (`choose_trial_plan`). Después se suscribe solo con MP
   Suscripciones (cobra en la cuenta de Giroa); el plan lo activa el webhook vía

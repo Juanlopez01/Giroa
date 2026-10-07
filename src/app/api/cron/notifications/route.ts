@@ -12,6 +12,7 @@ import {
   waitlistSpotEmail,
   staffInviteEmail,
   giftCardEmail,
+  formationEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -125,6 +126,45 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
       const startsAt = str("starts_at");
       if (!startsAt || new Date(startsAt).getTime() < Date.now()) return null; // ya empezó
       return classReminderEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt });
+    }
+    case "formation_approved":
+    case "formation_rejected":
+    case "formation_enrolled": {
+      const enrollmentId = str("enrollment_id");
+      const { data: e } = await admin
+        .from("formation_enrollments")
+        .select("id, formations(title)")
+        .eq("id", enrollmentId ?? "")
+        .maybeSingle();
+      if (!e?.formations) return null;
+      const url = studio.url(`/app/formaciones/${e.id}`);
+      if (n.template === "formation_approved") {
+        const { data: fee } = await admin
+          .from("formation_charges")
+          .select("amount_cents")
+          .eq("enrollment_id", e.id)
+          .eq("kind", "enrollment")
+          .maybeSingle();
+        return formationEmail(studio, n.student_name, { kind: "approved", title: e.formations.title, feeCents: fee?.amount_cents ?? null, url });
+      }
+      return formationEmail(studio, n.student_name, {
+        kind: n.template === "formation_rejected" ? "rejected" : "enrolled",
+        title: e.formations.title,
+        url,
+      });
+    }
+    case "formation_due":
+    case "formation_overdue": {
+      const { data: c } = await admin.from("formation_charges").select("enrollment_id, status").eq("id", str("charge_id") ?? "").maybeSingle();
+      if (!c || c.status !== "pending") return null; // ya la pagó
+      return formationEmail(studio, n.student_name, {
+        kind: n.template === "formation_due" ? "due" : "overdue",
+        title: str("title") ?? "tu formación",
+        number: num("number") ?? 1,
+        amountCents: num("amount_cents") ?? 0,
+        dueOn: str("due_on") ?? "",
+        url: studio.url(`/app/formaciones/${c.enrollment_id}`),
+      });
     }
     case "gift_card": {
       const { data: g } = await admin
