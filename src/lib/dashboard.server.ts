@@ -34,7 +34,7 @@ export async function incomeSummary(studioId: string, tz: string, now: Date): Pr
   const from = monthStart(prev, tz).toISOString();
   const to = monthStart(shiftMonth(ym, 1), tz).toISOString();
   // Packs + entradas de eventos (las gratis no suman) + gift cards.
-  const [{ data: packs }, { data: tickets }, { data: gifts }] = await Promise.all([
+  const [{ data: packs }, { data: tickets }, { data: gifts }, { data: formation }] = await Promise.all([
     supabase
       .from("payments")
       .select("amount_cents, method, paid_at")
@@ -58,8 +58,16 @@ export async function incomeSummary(studioId: string, tz: string, now: Date): Pr
       .in("status", ["active", "redeemed", "expired"])
       .gte("paid_at", from)
       .lt("paid_at", to),
+    // Matrículas y cuotas de formaciones.
+    supabase
+      .from("formation_charges")
+      .select("amount_cents, method, paid_at")
+      .eq("studio_id", studioId)
+      .eq("status", "paid")
+      .gte("paid_at", from)
+      .lt("paid_at", to),
   ]);
-  const data = [...(packs ?? []), ...[...(tickets ?? []), ...(gifts ?? [])].filter((t) => t.method !== null)] as {
+  const data = [...(packs ?? []), ...[...(tickets ?? []), ...(gifts ?? []), ...(formation ?? [])].filter((t) => t.method !== null)] as {
     amount_cents: number;
     method: "cash" | "transfer" | "mercadopago";
     paid_at: string | null;
