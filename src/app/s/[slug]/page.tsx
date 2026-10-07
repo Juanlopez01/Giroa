@@ -41,7 +41,10 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
     getCurrentUser(),
   ]);
 
-  const trialOn = studio.trial_class_enabled && (await can(studio.id, "trial_class"));
+  const [trialOn, giftsOn] = await Promise.all([
+    can(studio.id, "trial_class").then((ok) => ok && studio.trial_class_enabled),
+    can(studio.id, "gift_cards"),
+  ]);
   const [student, staffRole] = user
     ? await Promise.all([getMyStudent(studio.id, user.id), getMyStaffRole(studio.id, user.id)])
     : [null, null];
@@ -133,6 +136,16 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
         </section>
 
         <UpcomingEvents studioId={studio.id} timeZone={tz} />
+
+        {giftsOn && packs?.length ? (
+          <Link href="/regalar" className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 transition hover:border-brand">
+            <span>
+              <span className="block text-lg font-semibold">🎁 Regalá clases</span>
+              <span className="block text-sm text-muted">Una gift card con un pack para quien quieras.</span>
+            </span>
+            <span className="shrink-0 font-medium text-brand">Regalar →</span>
+          </Link>
+        ) : null}
 
         {packs?.length ? (
           <section className="space-y-4">

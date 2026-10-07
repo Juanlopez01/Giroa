@@ -7,6 +7,7 @@ import { getPayment } from "@/lib/mp/api";
 import { getStudioAccessToken } from "@/lib/mp/connections";
 import { cancelPreapproval, decodeRef, getAuthorizedPayment, getPreapproval } from "@/lib/mp/subscriptions";
 import { EVENT_REF_PREFIX } from "@/lib/events";
+import { GIFT_REF_PREFIX } from "@/lib/gift-cards";
 
 // Webhook de Mercado Pago. Nunca se confía en el body:
 //   1. se valida la firma x-signature,
@@ -100,6 +101,18 @@ async function handlePackPayment(admin: Admin, studioId: string, paymentId: stri
 
   const payment = await getPayment(token, paymentId);
   if (!payment.external_reference) throw new Error("Pago sin external_reference");
+
+  // Gift card ("regalo:<uuid>"): RPC propia.
+  if (payment.external_reference.startsWith(GIFT_REF_PREFIX)) {
+    const { error } = await admin.rpc("mp_apply_gift_payment", {
+      p_external_reference: payment.external_reference.slice(GIFT_REF_PREFIX.length),
+      p_mp_payment_id: payment.id,
+      p_mp_status: payment.status,
+      p_amount_cents: Math.round(payment.transaction_amount * 100),
+    });
+    if (error) throw error;
+    return;
+  }
 
   // Compra de entradas de un evento ("evento:<uuid>") o pack (uuid solo).
   const isEvent = payment.external_reference.startsWith(EVENT_REF_PREFIX);

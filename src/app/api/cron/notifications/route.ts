@@ -11,6 +11,7 @@ import {
   sessionCancelledEmail,
   waitlistSpotEmail,
   staffInviteEmail,
+  giftCardEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -124,6 +125,21 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
       const startsAt = str("starts_at");
       if (!startsAt || new Date(startsAt).getTime() < Date.now()) return null; // ya empezó
       return classReminderEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt });
+    }
+    case "gift_card": {
+      const { data: g } = await admin
+        .from("gift_cards")
+        .select("buyer_name, recipient_name, pack_name, code, access_token, status")
+        .eq("id", str("gift_card_id") ?? "")
+        .maybeSingle();
+      if (!g || g.status !== "active") return null;
+      return giftCardEmail(studio, {
+        buyerName: g.buyer_name,
+        recipientName: g.recipient_name,
+        packName: g.pack_name,
+        code: g.code,
+        cardUrl: studio.url(`/regalo/${g.access_token}`),
+      });
     }
     case "staff_invite": {
       const token = str("token");

@@ -141,3 +141,19 @@ export function staffInviteEmail(
     { label: "Aceptar invitación", href: d.acceptUrl },
   );
 }
+
+export function giftCardEmail(
+  studio: StudioInfo,
+  d: { buyerName: string; recipientName: string | null; packName: string; code: string; cardUrl: string },
+): EmailContent {
+  return build(
+    studio,
+    d.recipientName ? `Tu regalo para ${d.recipientName} está listo` : "Tu gift card está lista",
+    [
+      hola(d.buyerName),
+      `Ya está la gift card de <strong>${esc(d.packName)}</strong> en ${esc(studio.name)}. El código es <strong>${esc(d.code)}</strong>.`,
+      "En este link tenés la tarjeta para mandarla por WhatsApp o imprimirla. Vale 12 meses y las clases corren desde que se canjea.",
+    ],
+    { label: "Ver la tarjeta", href: d.cardUrl },
+  );
+}
