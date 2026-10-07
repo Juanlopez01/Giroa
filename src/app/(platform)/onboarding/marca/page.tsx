@@ -5,7 +5,8 @@ import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { logoUrl } from "@/lib/studio";
 import { studioUrl } from "@/lib/urls";
-import { BrandForm } from "./brand-form";
+import { StudioBrandForm } from "@/components/brand/studio-brand-form";
+import { saveBrand } from "@/lib/brand.actions";
 
 export const metadata: Metadata = { title: "La marca de tu estudio" };
 
@@ -19,7 +20,7 @@ export default async function BrandPage({ searchParams }: PageProps<"/onboarding
 
   const { data: membership } = await supabase
     .from("studio_members")
-    .select("role, studios(id, name, slug, brand_color, logo_path)")
+    .select("role, studios(id, name, slug, brand_color, logo_path, cover_path)")
     .eq("studio_id", studioId.data)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -36,11 +37,14 @@ export default async function BrandPage({ searchParams }: PageProps<"/onboarding
         <h1 className="font-serif text-3xl font-semibold tracking-tight">Dale tu marca</h1>
         <p className="text-muted">Así ven tu estudio los alumnos en la app. Lo podés cambiar cuando quieras.</p>
       </div>
-      <BrandForm
+      <StudioBrandForm
+        action={saveBrand.bind(null, "onboarding")}
         studioId={studio.id}
         studioName={studio.name}
         initialColor={studio.brand_color}
         initialLogoUrl={logoUrl(studio.logo_path)}
+        initialCoverUrl={logoUrl(studio.cover_path)}
+        submitLabel="Guardar y entrar al panel"
         skipHref={studioUrl(studio.slug, "/panel")}
       />
     </div>

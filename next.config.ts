@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["lvh.me", "*.lvh.me", "*.localhost"],
   experimental: {
     serverActions: {
-      // Logos de hasta 2 MB + el overhead del multipart.
+      // Las imágenes (logo, portada) se suben directo a Storage desde el navegador.
       bodySizeLimit: "3mb",
     },
   },

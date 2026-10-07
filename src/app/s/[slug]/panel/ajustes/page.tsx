@@ -7,6 +7,9 @@ import { platformUrl } from "@/lib/urls";
 import { FormMessage } from "@/components/ui/field";
 import { disconnectMercadoPago, setTrialClass, updateSettings } from "./actions";
 import { SettingsForm } from "./settings-form";
+import { StudioBrandForm } from "@/components/brand/studio-brand-form";
+import { saveBrand } from "@/lib/brand.actions";
+import { logoUrl } from "@/lib/studio";
 
 export const metadata: Metadata = { title: "Ajustes" };
 
@@ -30,6 +33,22 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <h1 className="text-2xl font-semibold">Ajustes</h1>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Tu marca</h2>
+          <p className="text-sm text-muted">El color, el logo y la portada que ven tus alumnos en tu página y en la app.</p>
+        </div>
+        <StudioBrandForm
+          action={saveBrand.bind(null, "settings")}
+          studioId={studio.id}
+          studioName={studio.name}
+          initialColor={studio.brand_color}
+          initialLogoUrl={logoUrl(studio.logo_path)}
+          initialCoverUrl={logoUrl(studio.cover_path)}
+          submitLabel="Guardar mi marca"
+        />
+      </section>
 
       <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
         <h2 className="text-lg font-semibold">Mercado Pago</h2>

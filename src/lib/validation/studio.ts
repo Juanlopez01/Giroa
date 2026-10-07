@@ -29,6 +29,7 @@ export const createStudioSchema = z.object({
 export const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 // Sin SVG: puede llevar scripts.
 export const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+export const COVER_MAX_BYTES = 4 * 1024 * 1024;
 
 export const brandSchema = z.object({
   studioId: z.uuid(),

@@ -68,7 +68,7 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
 
   return (
     <div className="flex flex-1 flex-col">
-      <StudioHeader studio={studio} action={cta} />
+      <StudioHeader studio={studio} action={cta} variant="hero" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-10 px-5 py-8">
         {staffRole ? (
