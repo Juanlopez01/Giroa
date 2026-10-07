@@ -45,6 +45,12 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
     can(studio.id, "trial_class").then((ok) => ok && studio.trial_class_enabled),
     can(studio.id, "gift_cards"),
   ]);
+  const { data: formations } = await supabase
+    .from("formations")
+    .select("id, title, starts_on, enrollment_open, requires_approval")
+    .eq("studio_id", studio.id)
+    .eq("status", "published")
+    .order("starts_on");
   const [student, staffRole] = user
     ? await Promise.all([getMyStudent(studio.id, user.id), getMyStaffRole(studio.id, user.id)])
     : [null, null];
@@ -136,6 +142,25 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
         </section>
 
         <UpcomingEvents studioId={studio.id} timeZone={tz} />
+
+        {formations?.length ? (
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold">Formaciones</h2>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {formations.map((fo) => (
+                <li key={fo.id}>
+                  <Link href={`/formaciones/${fo.id}`} className="block space-y-1 rounded-2xl border border-border bg-surface p-4 transition hover:border-brand">
+                    <p className="text-sm font-medium text-brand">Empieza el {fo.starts_on.split("-").reverse().map(Number).join("/")}</p>
+                    <p className="font-semibold">{fo.title}</p>
+                    <p className="pt-1 text-sm font-medium">
+                      {fo.enrollment_open ? (fo.requires_approval ? "Postulaciones abiertas →" : "Inscripción abierta →") : "Ver más →"}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {giftsOn && packs?.length ? (
           <Link href="/regalar" className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 transition hover:border-brand">
