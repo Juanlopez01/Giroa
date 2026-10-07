@@ -32,6 +32,7 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
 
   const logo = logoUrl(studio.logo_path);
   const isAdmin = role === "owner" || role === "admin";
+  const isOwner = role === "owner";
   const access = await getStudioAccess(studio.id);
   const days = daysUntil(access.until, nowMs());
   const notice =
@@ -59,14 +60,14 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
           </a>
         </div>
         <div className="mx-auto hidden max-w-5xl px-3 md:block">
-          <PanelNav variant="top" isAdmin={isAdmin} />
+          <PanelNav variant="top" isAdmin={isAdmin} isOwner={isOwner} />
         </div>
       </header>
 
-      {notice ? (
+      {notice && isOwner ? (
         <div className={`px-5 py-2 text-center text-sm ${access.state === "grace" ? "bg-danger/10 text-danger" : "bg-brand/10"}`}>
           {notice}{" "}
-          {isAdmin ? (
+          {isOwner ? (
             <a href="/panel/plan" className="font-medium underline">
               Elegí tu plan
             </a>
@@ -75,13 +76,13 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
       ) : null}
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6">
-        <AccessGate blocked={access.state === "blocked"} isAdmin={isAdmin}>
+        <AccessGate blocked={access.state === "blocked"} isAdmin={isOwner}>
           {children}
         </AccessGate>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface md:hidden">
-        <PanelNav variant="bottom" isAdmin={isAdmin} />
+        <PanelNav variant="bottom" isAdmin={isAdmin} isOwner={isOwner} />
       </div>
     </div>
   );

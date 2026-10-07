@@ -4,27 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // Las rutas son las del subdominio del estudio (el proxy agrega /s/[slug]).
-type Item = { href: string; label: string; exact?: boolean; adminOnly?: boolean; secondary?: boolean };
+type Item = { href: string; label: string; exact?: boolean; adminOnly?: boolean; ownerOnly?: boolean; secondary?: boolean };
 
 const ITEMS: Item[] = [
   { href: "/panel", label: "Inicio", exact: true },
   { href: "/panel/agenda", label: "Agenda" },
   { href: "/panel/alumnos", label: "Alumnos" },
   { href: "/panel/pagos", label: "Pagos", adminOnly: true },
-  { href: "/panel/clases", label: "Clases", secondary: true },
-  { href: "/panel/packs", label: "Packs", secondary: true },
+  { href: "/panel/clases", label: "Clases", secondary: true, adminOnly: true },
+  { href: "/panel/packs", label: "Packs", secondary: true, adminOnly: true },
   { href: "/panel/eventos", label: "Eventos", secondary: true },
+  { href: "/panel/equipo", label: "Equipo", secondary: true, adminOnly: true },
   { href: "/panel/ajustes", label: "Ajustes", secondary: true, adminOnly: true },
-  { href: "/panel/plan", label: "Tu plan", secondary: true, adminOnly: true },
+  { href: "/panel/plan", label: "Tu plan", secondary: true, ownerOnly: true },
 ];
 
 const SECONDARY_ITEMS = ITEMS.filter((i) => i.secondary);
 
-export function PanelNav({ variant, isAdmin }: { variant: "top" | "bottom"; isAdmin: boolean }) {
+export function PanelNav({ variant, isAdmin, isOwner }: { variant: "top" | "bottom"; isAdmin: boolean; isOwner: boolean }) {
   const pathname = usePathname();
   const isActive = (item: Item) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
-  const visible = ITEMS.filter((i) => isAdmin || !i.adminOnly);
+  const visible = ITEMS.filter((i) => (isAdmin || !i.adminOnly) && (isOwner || !i.ownerOnly));
 
   if (variant === "bottom") {
     // En el celular las secciones secundarias van dentro de "Más".

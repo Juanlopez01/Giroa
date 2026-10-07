@@ -36,14 +36,31 @@ export const getMyStudent = cache(async (studioId: string, userId: string) => {
   return data;
 });
 
-/** Rol del usuario en el estudio, o null si no es staff. */
-export const getMyStaffRole = cache(async (studioId: string, userId: string) => {
+/** Membresía del usuario en el estudio (rol, id y permiso de cobro), o null si no es staff. */
+export const getMyMembership = cache(async (studioId: string, userId: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("studio_members")
-    .select("role")
+    .select("id, role, can_take_payments")
     .eq("studio_id", studioId)
     .eq("user_id", userId)
     .maybeSingle();
-  return data?.role ?? null;
+  return data;
 });
+
+/** Rol del usuario en el estudio, o null si no es staff. */
+export async function getMyStaffRole(studioId: string, userId: string) {
+  return (await getMyMembership(studioId, userId))?.role ?? null;
+}
+
+/** Equipo del estudio para elegir el profe de una clase (nombre o, si no tiene, el rol). */
+export async function listTeamOptions(studioId: string): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("studio_members")
+    .select("id, display_name, role")
+    .eq("studio_id", studioId)
+    .order("created_at");
+  const roleName = { owner: "Dueño/a", admin: "Encargado/a", teacher: "Profe" } as const;
+  return (data ?? []).map((m) => ({ id: m.id, name: m.display_name || `${roleName[m.role]} sin nombre` }));
+}

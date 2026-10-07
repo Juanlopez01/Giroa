@@ -45,3 +45,13 @@ describe("lista de espera", () => {
     expect(m.html).toContain("https://demo.giroa.com.ar/app/clases");
   });
 });
+
+describe("invitación al equipo", () => {
+  it("dice el rol y lleva al link de aceptar", async () => {
+    const { staffInviteEmail } = await import("@/lib/email/templates");
+    const m = staffInviteEmail(studio, { name: "Lucía", role: "teacher", acceptUrl: "https://app.giroa.com.ar/invitacion/abc" });
+    expect(m.subject).toBe("Te sumaron al equipo de Tango del Sur");
+    expect(m.text).toContain("como profe");
+    expect(m.html).toContain("https://app.giroa.com.ar/invitacion/abc");
+  });
+});

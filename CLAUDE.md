@@ -74,6 +74,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Lista de espera (`waitlist`): `join_waitlist` solo si no hay lugar (o no para su rol); al cancelarse
   una reserva, un trigger encola `waitlist_spot` para los que esperan. Clase de prueba (`trial_class`):
   `book_session(..., p_trial => true)`, una por persona sin packs; `studios.trial_class_enabled`.
+- Equipo (`teacher_permissions`): owner > admin (encargado) > teacher (profe). Se invita por email
+  (`invite_member`, `accept_invite` con el mismo email). Pagos manuales: admin o profe con
+  `can_take_payments` (`private.can_take_payments`). "Tu plan" solo el owner (`requireOwner`).
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/panel";
+import { requireOwner } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { daysUntil, getStudioAccess } from "@/lib/subscription.server";
 import { formatArs } from "@/lib/money";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Tu plan" };
 
 export default async function PlanPage({ params, searchParams }: PageProps<"/s/[slug]/panel/plan">) {
   const { slug } = await params;
-  const { studio } = await requireAdmin(slug, "/panel/plan");
+  const { studio } = await requireOwner(slug, "/panel/plan");
   const mpOk = (await searchParams).mp === "ok";
   const supabase = await createClient();
 

@@ -19,6 +19,10 @@ export const offeringSchema = z
     disciplineKey: z.string().regex(/^[a-z][a-z0-9_]{1,39}$/, { error: "Elegí una disciplina." }),
     level: optionalText(60, "El nivel puede tener hasta 60 caracteres."),
     teacherName: optionalText(120, "El nombre del profe puede tener hasta 120 caracteres."),
+    teacherMemberId: z
+      .union([z.literal(""), z.uuid()])
+      .optional()
+      .transform((v) => (v ? v : null)),
     description: optionalText(4000, "La descripción es muy larga."),
     capacity: z.coerce
       .number({ error: "Poné un número." })

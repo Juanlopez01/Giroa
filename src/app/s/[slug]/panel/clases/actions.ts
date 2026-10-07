@@ -19,6 +19,7 @@ function readOffering(formData: FormData) {
     disciplineKey: formData.get("disciplineKey"),
     level: formData.get("level"),
     teacherName: formData.get("teacherName"),
+    teacherMemberId: formData.get("teacherMemberId") ?? "",
     description: formData.get("description"),
     capacity: formData.get("capacity"),
     roleBalance: formData.get("roleBalance"),
@@ -37,13 +38,26 @@ async function toRow(studioId: string, input: OfferingInput) {
     .maybeSingle();
   if (!discipline) return null;
 
+  // Profe del equipo: si no se escribió un nombre, se usa el suyo.
+  let teacherName = input.teacherName ?? null;
+  if (input.teacherMemberId && !teacherName) {
+    const { data: member } = await supabase
+      .from("studio_members")
+      .select("display_name")
+      .eq("id", input.teacherMemberId)
+      .eq("studio_id", studioId)
+      .maybeSingle();
+    teacherName = member?.display_name ?? null;
+  }
+
   const features = parseFeatures(discipline.features);
   const roleBalance = features.role_balance && (await can(studioId, "role_balance"));
   return {
     title: input.title,
     discipline_key: input.disciplineKey,
     level: input.level ?? null,
-    teacher_name: input.teacherName ?? null,
+    teacher_name: teacherName,
+    teacher_member_id: input.teacherMemberId,
     description: input.description ?? null,
     capacity: input.capacity,
     role_balance_max_diff: roleBalance && input.roleBalance ? (input.roleBalanceMaxDiff ?? null) : null,

@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 const SOON = new Set([
   "Formaciones y audiciones",
   "Cupones, gift cards y referidos",
-  "Varios profes con permisos",
   "Certificados y jurado en audiciones",
   "Liquidación de profes",
   "Multi-sede y dominio propio",

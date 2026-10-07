@@ -12,15 +12,21 @@ export const metadata: Metadata = { title: "Agenda" };
 
 export default async function AgendaPage({ params, searchParams }: PageProps<"/s/[slug]/panel/agenda">) {
   const { slug } = await params;
-  const { studio, isAdmin } = await requireStaff(slug, "/panel/agenda");
+  const { studio, isAdmin, role, memberId } = await requireStaff(slug, "/panel/agenda");
   const tz = studio.timezone;
 
   const today = todayYmd(tz);
-  const desdeParam = (await searchParams).desde;
+  const sp = await searchParams;
+  const desdeParam = sp.desde;
   const from = isYmd(desdeParam) ? desdeParam : today;
   const days = Array.from({ length: 7 }, (_, i) => addDaysYmd(from, i));
 
-  const sessions = await listAgenda(studio.id, startOfDay(from, tz), startOfDay(addDaysYmd(from, 7), tz));
+  const all = await listAgenda(studio.id, startOfDay(from, tz), startOfDay(addDaysYmd(from, 7), tz));
+  // El profe arranca viendo sus clases (si tiene alguna asignada); puede ver todas.
+  const mine = all.filter((s) => s.teacherMemberId === memberId);
+  const onlyMine = role === "teacher" && sp.todas !== "1" && mine.length > 0;
+  const sessions = onlyMine ? mine : all;
+  const keep = (q: string) => (sp.todas === "1" ? `${q}&todas=1` : q);
   const byDay = new Map<string, AgendaSession[]>();
   for (const s of sessions) {
     const day = toYmd(new Date(s.startsAt), tz);
@@ -33,7 +39,7 @@ export default async function AgendaPage({ params, searchParams }: PageProps<"/s
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Agenda</h1>
         <div className="flex items-center gap-1 text-sm">
-          <Link href={`/panel/agenda?desde=${addDaysYmd(from, -7)}`} className="rounded-lg px-3 py-2 hover:bg-surface">
+          <Link href={keep(`/panel/agenda?desde=${addDaysYmd(from, -7)}`)} className="rounded-lg px-3 py-2 hover:bg-surface">
             ← Anterior
           </Link>
           {from !== today ? (
@@ -41,13 +47,32 @@ export default async function AgendaPage({ params, searchParams }: PageProps<"/s
               Hoy
             </Link>
           ) : null}
-          <Link href={`/panel/agenda?desde=${addDaysYmd(from, 7)}`} className="rounded-lg px-3 py-2 hover:bg-surface">
+          <Link href={keep(`/panel/agenda?desde=${addDaysYmd(from, 7)}`)} className="rounded-lg px-3 py-2 hover:bg-surface">
             Siguiente →
           </Link>
         </div>
       </div>
 
       {isAdmin ? <GenerateButton generate={generateSessions.bind(null, slug)} /> : null}
+
+      {role === "teacher" && mine.length > 0 ? (
+        <div className="inline-flex rounded-xl border border-border bg-surface p-1 text-sm">
+          <Link
+            href={`/panel/agenda?desde=${from}`}
+            aria-current={onlyMine ? "page" : undefined}
+            className="rounded-lg px-3 py-2 font-medium text-muted aria-[current=page]:bg-brand aria-[current=page]:text-brand-foreground"
+          >
+            Mis clases
+          </Link>
+          <Link
+            href={`/panel/agenda?desde=${from}&todas=1`}
+            aria-current={!onlyMine ? "page" : undefined}
+            className="rounded-lg px-3 py-2 font-medium text-muted aria-[current=page]:bg-brand aria-[current=page]:text-brand-foreground"
+          >
+            Todas
+          </Link>
+        </div>
+      ) : null}
 
       <div className="space-y-6">
         {days.map((day) => {

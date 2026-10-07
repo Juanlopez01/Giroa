@@ -32,7 +32,7 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
   const paymentDone = sp.pago === "1";
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const { studio } = await requireStaff(slug, `/panel/alumnos/${id}`);
+  const { studio, canTakePayments } = await requireStaff(slug, `/panel/alumnos/${id}`);
   const tz = studio.timezone;
   const supabase = await createClient();
 
@@ -78,7 +78,7 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Saldo</h2>
-          {student.is_active ? (
+          {student.is_active && canTakePayments ? (
             <Link
               href={`/panel/pagos/nuevo?alumno=${student.id}`}
               className="inline-flex h-10 items-center rounded-xl bg-brand px-4 text-sm font-medium text-brand-foreground"

@@ -124,3 +124,20 @@ export function waitlistSpotEmail(studio: StudioInfo, studentName: string | null
     `¡Se liberó un lugar! ${d.title}, ${formatTime(d.startsAt, studio.timezone)}`,
   );
 }
+
+export function staffInviteEmail(
+  studio: StudioInfo,
+  d: { name: string | null; role: string; acceptUrl: string },
+): EmailContent {
+  const role = d.role === "admin" ? "encargado/a" : "profe";
+  return build(
+    studio,
+    `Te sumaron al equipo de ${studio.name}`,
+    [
+      hola(d.name),
+      `${esc(studio.name)} te invitó a su panel en Giroa como <strong>${role}</strong>.`,
+      "Aceptá la invitación entrando con este mismo email. El link vence en 7 días.",
+    ],
+    { label: "Aceptar invitación", href: d.acceptUrl },
+  );
+}

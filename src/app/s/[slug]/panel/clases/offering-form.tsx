@@ -12,6 +12,7 @@ export type OfferingFormValues = {
   disciplineKey: string;
   level: string;
   teacherName: string;
+  teacherMemberId: string;
   description: string;
   capacity: number;
   roleBalanceMaxDiff: number | null;
@@ -24,9 +25,11 @@ type Props = {
   submitLabel: string;
   /** El plan incluye balance de roles. */
   allowRoleBalance: boolean;
+  /** Equipo del estudio, para asignar el profe de la clase. */
+  teachers?: { id: string; name: string }[];
 };
 
-export function OfferingForm({ action, disciplines, initial, submitLabel, allowRoleBalance }: Props) {
+export function OfferingForm({ action, disciplines, initial, submitLabel, allowRoleBalance, teachers = [] }: Props) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [disciplineKey, setDisciplineKey] = useState(initial?.disciplineKey ?? "");
   const [roleBalance, setRoleBalance] = useState(initial ? initial.roleBalanceMaxDiff !== null : true);
@@ -128,7 +131,24 @@ export function OfferingForm({ action, disciplines, initial, submitLabel, allowR
         </div>
       ) : null}
 
-      <Field label="Profe" hint="El nombre que ven los alumnos. Opcional." error={errors.teacherName}>
+      {teachers.length ? (
+        <Field label="Profe del equipo" hint="Le aparece en “Mis clases”. Opcional." error={errors.teacherMemberId}>
+          <Select name="teacherMemberId" defaultValue={initial?.teacherMemberId ?? ""}>
+            <option value="">Nadie del equipo</option>
+            {teachers.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
+
+      <Field
+        label={teachers.length ? "Nombre que ven los alumnos" : "Profe"}
+        hint={teachers.length ? "Opcional. Si lo dejás vacío, se usa el del profe del equipo." : "El nombre que ven los alumnos. Opcional."}
+        error={errors.teacherName}
+      >
         <Input name="teacherName" defaultValue={initial?.teacherName} placeholder="Ej.: Lucía Pérez" />
       </Field>
 

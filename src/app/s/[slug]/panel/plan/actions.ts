@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/panel";
+import { requireOwner } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fromSupabaseError, type ActionState } from "@/lib/errors";
@@ -15,7 +15,7 @@ const cycleSchema = z.enum(["monthly", "annual"]);
 
 /** Durante la prueba: cambiar el plan que se está probando. */
 export async function chooseTrialPlan(slug: string, plan: string): Promise<ActionState> {
-  const { studio } = await requireAdmin(slug, "/panel/plan");
+  const { studio } = await requireOwner(slug, "/panel/plan");
   const parsed = planSchema.safeParse(plan);
   if (!parsed.success) return { ok: false, message: "Ese plan no existe." };
 
@@ -32,7 +32,7 @@ export async function chooseTrialPlan(slug: string, plan: string): Promise<Actio
  * El plan se activa recién cuando el webhook confirma la autorización.
  */
 export async function subscribe(slug: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { studio, user } = await requireAdmin(slug, "/panel/plan");
+  const { studio, user } = await requireOwner(slug, "/panel/plan");
   const plan = planSchema.safeParse(formData.get("plan"));
   const cycle = cycleSchema.safeParse(formData.get("cycle"));
   if (!plan.success || !cycle.success) return { ok: false, message: "Elegí un plan." };
@@ -73,7 +73,7 @@ export async function subscribe(slug: string, _prev: ActionState, formData: Form
 
 /** Cancelar la suscripción: sigue activa hasta el fin del período pagado. */
 export async function cancelSubscription(slug: string): Promise<ActionState> {
-  const { studio } = await requireAdmin(slug, "/panel/plan");
+  const { studio } = await requireOwner(slug, "/panel/plan");
   const admin = createAdminClient();
   const { data: sub } = await admin
     .from("studio_subscriptions")

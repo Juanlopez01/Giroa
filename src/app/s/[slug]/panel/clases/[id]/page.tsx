@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { listTeamOptions } from "@/lib/studio.server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -22,7 +23,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
   const { studio, isAdmin } = await requireStaff(slug, `/panel/clases/${id}`);
   const supabase = await createClient();
 
-  const [{ data: offering }, disciplines, allowRoleBalance] = await Promise.all([
+  const [{ data: offering }, disciplines, allowRoleBalance, teachers] = await Promise.all([
     supabase
       .from("offerings")
       .select("*, disciplines(name), class_schedules(id, weekday, start_time, duration_minutes, is_active)")
@@ -31,6 +32,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
       .maybeSingle(),
     listDisciplines(),
     can(studio.id, "role_balance"),
+    listTeamOptions(studio.id),
   ]);
   if (!offering) notFound();
 
@@ -85,11 +87,13 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
               disciplines={disciplines}
               submitLabel="Guardar cambios"
               allowRoleBalance={allowRoleBalance}
+              teachers={teachers.length > 1 || offering.teacher_member_id ? teachers : []}
               initial={{
                 title: offering.title,
                 disciplineKey: offering.discipline_key,
                 level: offering.level ?? "",
                 teacherName: offering.teacher_name ?? "",
+                teacherMemberId: offering.teacher_member_id ?? "",
                 description: offering.description ?? "",
                 capacity: offering.capacity,
                 roleBalanceMaxDiff: offering.role_balance_max_diff,

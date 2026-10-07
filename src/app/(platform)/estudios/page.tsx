@@ -8,7 +8,7 @@ import { signOut } from "../login/actions";
 
 export const metadata: Metadata = { title: "Tus estudios" };
 
-const roleLabels = { owner: "Dueño/a", admin: "Admin", teacher: "Profe" } as const;
+const roleLabels = { owner: "Dueño/a", admin: "Encargado/a", teacher: "Profe" } as const;
 
 type StudioCard = { id: string; name: string; slug: string; brand_color: string; logo_path: string | null };
 

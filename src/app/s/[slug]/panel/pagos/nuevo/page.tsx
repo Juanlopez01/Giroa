@@ -12,7 +12,15 @@ export const metadata: Metadata = { title: "Registrar pago" };
 export default async function NewPaymentPage({ params, searchParams }: PageProps<"/s/[slug]/panel/pagos/nuevo">) {
   const { slug } = await params;
   const alumno = z.uuid().safeParse((await searchParams).alumno);
-  const { studio, isAdmin } = await requireStaff(slug, "/panel/pagos/nuevo");
+  const { studio, isAdmin, canTakePayments } = await requireStaff(slug, "/panel/pagos/nuevo");
+  if (!canTakePayments) {
+    return (
+      <div className="mx-auto max-w-lg space-y-3 py-10 text-center">
+        <h1 className="text-xl font-semibold">No podés registrar pagos</h1>
+        <p className="text-muted">Pedile al dueño del estudio que te habilite &ldquo;Puede cobrar&rdquo; en Equipo.</p>
+      </div>
+    );
+  }
   const supabase = await createClient();
 
   const [{ data: students }, { data: packs }] = await Promise.all([

@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { emailEnv, serverEnv } from "@/lib/env.server";
-import { studioUrl } from "@/lib/urls";
+import { platformUrl, studioUrl } from "@/lib/urls";
 import {
   classReminderEmail,
   eventTicketsEmail,
@@ -10,6 +10,7 @@ import {
   packGrantedEmail,
   sessionCancelledEmail,
   waitlistSpotEmail,
+  staffInviteEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -123,6 +124,11 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
       const startsAt = str("starts_at");
       if (!startsAt || new Date(startsAt).getTime() < Date.now()) return null; // ya empezó
       return classReminderEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt });
+    }
+    case "staff_invite": {
+      const token = str("token");
+      if (!token) return null;
+      return staffInviteEmail(studio, { name: str("name"), role: str("role") ?? "teacher", acceptUrl: platformUrl(`/invitacion/${token}`) });
     }
     case "waitlist_spot": {
       const startsAt = str("starts_at");

@@ -8,6 +8,8 @@ export type AgendaSession = {
   title: string;
   disciplineName: string;
   roleBalance: boolean;
+  /** Profe del equipo asignado a la clase (studio_members.id), si hay. */
+  teacherMemberId: string | null;
   startsAt: string;
   endsAt: string;
   status: "scheduled" | "cancelled";
@@ -31,7 +33,7 @@ export async function listAgenda(studioId: string, from: Date, to: Date): Promis
       .order("starts_at"),
     supabase
       .from("offerings")
-      .select("id, title, disciplines(name, features)")
+      .select("id, title, teacher_member_id, disciplines(name, features)")
       .eq("studio_id", studioId),
   ]);
   if (error) throw error;
@@ -48,6 +50,7 @@ export async function listAgenda(studioId: string, from: Date, to: Date): Promis
         title: offering.title,
         disciplineName: offering.disciplines?.name ?? "",
         roleBalance: parseFeatures(offering.disciplines?.features).role_balance,
+        teacherMemberId: offering.teacher_member_id,
         startsAt: r.starts_at,
         endsAt: r.ends_at,
         status: r.status,

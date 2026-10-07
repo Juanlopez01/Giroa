@@ -7,10 +7,11 @@ import { createClient } from "@/lib/supabase/server";
 import { manualPaymentSchema } from "@/lib/validation/payment";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
 
-// Todo el staff puede registrar cobros (muchas veces cobra el profe en la
-// clase). La lista de pagos e ingresos es solo para owner/admin (RLS).
+// Registran cobros el dueño, los encargados y los profes con "puede cobrar"
+// (lo valida record_manual_payment). La lista de pagos e ingresos es solo para owner/admin.
 export async function registerPayment(slug: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireStaff(slug);
+  const { canTakePayments } = await requireStaff(slug);
+  if (!canTakePayments) return { ok: false, message: "No tenés permiso para registrar pagos. Pedíselo al dueño del estudio." };
   const parsed = manualPaymentSchema.safeParse({
     studentId: formData.get("studentId"),
     packProductId: formData.get("packProductId"),
