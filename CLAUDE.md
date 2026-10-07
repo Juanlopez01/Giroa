@@ -129,4 +129,6 @@ npm run typecheck && npm run lint
 - En producción el magic link necesita SMTP propio en Supabase (ver `docs/deploy.md`).
 - `supabase projects api-keys` devuelve la secret key **enmascarada** salvo con `--reveal`: nunca
   copiar esa salida a Vercel sin revisar.
+- En plpgsql, no uses `if ... case ... end then` en la misma línea: el separador de sentencias de la
+  CLI de Supabase lo corta mal ("syntax error at end of input"). Calculá el `case` en una variable antes.
 - Deploy: `docs/deploy.md`. Estudio demo: `supabase/seed-demo.sql`.
