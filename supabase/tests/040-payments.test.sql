@@ -3,6 +3,8 @@
 begin;
 select plan(27);
 select tests.fixture();
+-- El profe del fixture puede cobrar (ver 150-team: sin el permiso no puede).
+update public.studio_members set can_take_payments = true where id = '20000000-0000-0000-0000-0000000000a2';
 
 -- ---------------------------------------------------------------- pago manual
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a2',

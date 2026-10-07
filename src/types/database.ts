@@ -603,15 +603,34 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"studio_members": {
+                },"studio_invites": {
                   Row: {
-                    "created_at": string,"display_name": string | null,"id": string,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"user_id": string
+                    "accepted_at": string | null,"accepted_by": string | null,"can_take_payments": boolean,"cancelled_at": string | null,"created_at": string,"display_name": string | null,"email": string,"expires_at": string,"id": string,"invited_by": string | null,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"token": string
                   }
                   Insert: {
-                    "created_at"?: string,"display_name"?: string | null,"id"?: string,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"user_id": string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"can_take_payments"?: boolean,"cancelled_at"?: string | null,"created_at"?: string,"display_name"?: string | null,"email": string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"token"?: string
                   }
                   Update: {
-                    "created_at"?: string,"display_name"?: string | null,"id"?: string,"role"?: Database["public"]['Enums']["member_role"],"studio_id"?: string,"user_id"?: string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"can_take_payments"?: boolean,"cancelled_at"?: string | null,"created_at"?: string,"display_name"?: string | null,"email"?: string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"role"?: Database["public"]['Enums']["member_role"],"studio_id"?: string,"token"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "studio_invites_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"studio_members": {
+                  Row: {
+                    "can_take_payments": boolean,"created_at": string,"display_name": string | null,"id": string,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "can_take_payments"?: boolean,"created_at"?: string,"display_name"?: string | null,"id"?: string,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"user_id": string
+                  }
+                  Update: {
+                    "can_take_payments"?: boolean,"created_at"?: string,"display_name"?: string | null,"id"?: string,"role"?: Database["public"]['Enums']["member_role"],"studio_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -710,7 +729,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "active_students_count":
+            "accept_invite":
+{ Args: { "p_token": string }; Returns: Json
+                           },
+"active_students_count":
 { Args: { "p_studio_id": string }; Returns: number
                            },
 "book_session":
@@ -794,6 +816,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"cancel_invite":
+{ Args: { "p_invite_id": string }; Returns: undefined
+                           },
 "cancel_session":
 { Args: { "p_reason"?: string,"p_session_id": string }; Returns: number
                            },
@@ -940,6 +965,9 @@ isOneToOne: false
 "get_event_order":
 { Args: { "p_access_token": string }; Returns: Json
                            },
+"get_invite":
+{ Args: { "p_token": string }; Returns: Json
+                           },
 "giroa_apply_preapproval":
 { Args: { "p_amount_cents": number,"p_coupon": string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_discount_pct": number,"p_next_payment_at"?: string,"p_plan": Database["public"]['Enums']["studio_plan"],"p_preapproval_id": string,"p_status": string,"p_studio_id": string }; Returns: Json
                            },
@@ -976,6 +1004,28 @@ isOneToOne: false
 "import_students":
 { Args: { "p_rows": Json,"p_studio_id": string }; Returns: Json
                            },
+"invite_member":
+{ Args: { "p_can_take_payments"?: boolean,"p_display_name"?: string,"p_email": string,"p_role": Database["public"]['Enums']["member_role"],"p_studio_id": string }; Returns: {
+              "accepted_at": string | null,
+"accepted_by": string | null,
+"can_take_payments": boolean,
+"cancelled_at": string | null,
+"created_at": string,
+"display_name": string | null,
+"email": string,
+"expires_at": string,
+"id": string,
+"invited_by": string | null,
+"role": Database["public"]['Enums']["member_role"],
+"studio_id": string,
+"token": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "studio_invites"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "join_studio":
 { Args: { "p_full_name": string,"p_phone"?: string,"p_role"?: Database["public"]['Enums']["dance_role"],"p_slug": string }; Returns: {
               "created_at": string,
@@ -1044,6 +1094,9 @@ isOneToOne: false
 "record_manual_payment":
 { Args: { "p_amount_cents"?: number,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_pack_product_id": string,"p_partner_student_id"?: string,"p_student_id": string }; Returns: Json
                            },
+"remove_member":
+{ Args: { "p_member_id": string }; Returns: undefined
+                           },
 "remove_schedule":
 { Args: { "p_schedule_id": string }; Returns: number
                            },
@@ -1092,6 +1145,22 @@ isOneToOne: false
 "studio_usage":
 { Args: { "p_studio_id": string }; Returns: Json
                            },
+"update_member":
+{ Args: { "p_can_take_payments": boolean,"p_member_id": string,"p_role": Database["public"]['Enums']["member_role"] }; Returns: {
+              "can_take_payments": boolean,
+"created_at": string,
+"display_name": string | null,
+"id": string,
+"role": Database["public"]['Enums']["member_role"],
+"studio_id": string,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "studio_members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "update_my_student_profile":
 { Args: { "p_default_role"?: Database["public"]['Enums']["dance_role"],"p_full_name": string,"p_phone"?: string,"p_student_id": string }; Returns: {
               "created_at": string,
