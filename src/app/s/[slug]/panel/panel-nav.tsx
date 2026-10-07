@@ -14,6 +14,7 @@ const ITEMS: Item[] = [
   { href: "/panel/clases", label: "Clases", secondary: true, adminOnly: true },
   { href: "/panel/packs", label: "Packs", secondary: true, adminOnly: true },
   { href: "/panel/eventos", label: "Eventos", secondary: true },
+  { href: "/panel/formaciones", label: "Formaciones", secondary: true },
   { href: "/panel/equipo", label: "Equipo", secondary: true, adminOnly: true },
   { href: "/panel/ajustes", label: "Ajustes", secondary: true, adminOnly: true },
   { href: "/panel/plan", label: "Tu plan", secondary: true, ownerOnly: true },

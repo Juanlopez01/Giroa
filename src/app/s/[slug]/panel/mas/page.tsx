@@ -10,6 +10,7 @@ const LINKS: { href: string; label: string; detail: string; access?: "admin" | "
   { href: "/panel/clases", label: "Clases", detail: "Clases regulares y sus horarios", access: "admin" },
   { href: "/panel/packs", label: "Packs", detail: "Lo que compran tus alumnos para reservar", access: "admin" },
   { href: "/panel/eventos", label: "Eventos", detail: "Milongas, seminarios y muestras con entradas" },
+  { href: "/panel/formaciones", label: "Formaciones", detail: "Profesorados y programas: postulaciones, cuotas y asistencia" },
   { href: "/panel/equipo", label: "Equipo", detail: "Profes y encargados, y qué puede hacer cada uno", access: "admin" },
   { href: "/panel/ajustes", label: "Ajustes", detail: "Mercado Pago, reservas y clase de prueba", access: "admin" },
   { href: "/panel/plan", label: "Tu plan", detail: "Suscripción a Giroa", access: "owner" },
