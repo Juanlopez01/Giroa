@@ -76,3 +76,13 @@ describe("formaciones", () => {
     expect(o.text).toContain("venció el 1/11/2026");
   });
 });
+
+describe("audiciones", () => {
+  it("confirmación con el turno y lista de espera", async () => {
+    const { auditionEmail } = await import("@/lib/email/templates");
+    const c = auditionEmail(studio, "Ana", { kind: "submitted", title: "Audición 2027", slotAt: "2026-11-14T13:20:00.000Z", url: "https://x" });
+    expect(c.text).toContain("Tu turno es el sábado 14/11 a las 10:20.");
+    const w = auditionEmail(studio, "Beto", { kind: "waitlisted", title: "Audición 2027", slotAt: null, url: "https://x" });
+    expect(w.subject).toBe("Quedaste en lista de espera");
+  });
+});

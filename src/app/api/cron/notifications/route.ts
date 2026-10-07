@@ -13,6 +13,7 @@ import {
   staffInviteEmail,
   giftCardEmail,
   formationEmail,
+  auditionEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -126,6 +127,29 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
       const startsAt = str("starts_at");
       if (!startsAt || new Date(startsAt).getTime() < Date.now()) return null; // ya empezó
       return classReminderEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt });
+    }
+    case "audition_submitted":
+    case "audition_reminder":
+    case "audition_result": {
+      const { data: ap } = await admin
+        .from("audition_applications")
+        .select("id, status, slot_id, auditions(title)")
+        .eq("id", str("application_id") ?? "")
+        .maybeSingle();
+      if (!ap?.auditions) return null;
+      const { data: slot } = ap.slot_id
+        ? await admin.from("audition_slots").select("starts_at").eq("id", ap.slot_id).maybeSingle()
+        : { data: null };
+      const kind =
+        n.template === "audition_submitted" ? "submitted" : n.template === "audition_reminder" ? "reminder" : ap.status === "waitlisted" ? "waitlisted" : ap.status === "rejected" ? "rejected" : null;
+      if (!kind) return null;
+      if (kind === "reminder" && ap.status !== "submitted") return null;
+      return auditionEmail(studio, n.student_name, {
+        kind,
+        title: ap.auditions.title,
+        slotAt: slot?.starts_at ?? null,
+        url: studio.url(`/app/audiciones/${ap.id}`),
+      });
     }
     case "formation_approved":
     case "formation_rejected":

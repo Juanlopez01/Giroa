@@ -82,6 +82,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Cupones (`coupons`): `create_pack_payment` y `create_event_order` reciben `p_coupon`; los usos van en
   `coupon_redemptions` (triggers los confirman o anulan según el pago). Gift cards (`gift_cards`): un pack
   de regalo; MP con `external_reference = "regalo:<uuid>"`, canje con `redeem_gift_card`.
+- Audiciones (`auditions`): puerta de entrada a una formación. `apply_to_audition` valida el formulario
+  armable, el video y el turno (reserva 20 min si hay arancel; MP `"audicion:<uuid>"`).
+  `set_audition_result(admitted)` crea o aprueba la inscripción a la formación (matrícula).
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

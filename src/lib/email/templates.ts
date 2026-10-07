@@ -215,3 +215,42 @@ export function formationEmail(studio: StudioInfo, studentName: string | null, d
       );
   }
 }
+
+export function auditionEmail(
+  studio: StudioInfo,
+  studentName: string | null,
+  d: { kind: "submitted" | "reminder" | "waitlisted" | "rejected"; title: string; slotAt: string | null; url: string },
+): EmailContent {
+  const turno = d.slotAt ? `Tu turno es el ${esc(when(d.slotAt, studio.timezone))}.` : "";
+  switch (d.kind) {
+    case "submitted":
+      return build(
+        studio,
+        `Estás inscripto/a a ${d.title}`,
+        [hola(studentName), `Recibimos tu inscripción a <strong>${esc(d.title)}</strong>.`, ...(turno ? [turno] : []), "Cuando haya resultados, te avisamos por acá."],
+        { label: "Ver mi audición", href: d.url },
+      );
+    case "reminder":
+      return build(
+        studio,
+        `Mañana es tu audición`,
+        [hola(studentName), `Te esperamos para <strong>${esc(d.title)}</strong>. ${turno}`, "Llegá unos minutos antes. ¡Éxitos!"],
+        { label: "Ver mi audición", href: d.url },
+        `Mañana: ${d.title}`,
+      );
+    case "waitlisted":
+      return build(
+        studio,
+        `Quedaste en lista de espera`,
+        [hola(studentName), `Gracias por audicionar para <strong>${esc(d.title)}</strong>. Quedaste en lista de espera: si se libera un lugar, el estudio te avisa.`],
+        { label: "Ver mi audición", href: d.url },
+      );
+    case "rejected":
+      return build(
+        studio,
+        `Sobre tu audición`,
+        [hola(studentName), `Gracias por audicionar para <strong>${esc(d.title)}</strong>. Esta vez no quedaste.`, "Consultá con el estudio por próximas convocatorias."],
+        { label: "Ver detalle", href: d.url },
+      );
+  }
+}

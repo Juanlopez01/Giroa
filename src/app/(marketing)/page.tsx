@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 
 // Lo que todavía no está construido se muestra como "Próximamente": nadie paga por algo que no existe.
 const SOON = new Set([
-  "Audiciones con turnos y resultados",
   "Referidos",
   "Certificados y jurado en audiciones",
   "Liquidación de profes",
