@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatArs } from "@/lib/money";
 import { platformUrl } from "@/lib/urls";
 import { FounderForm } from "./founder-form";
+import { HeroMockup } from "./hero-mockup";
 
 export const metadata: Metadata = {
   title: { absolute: "Giroa · Reservas, packs y pagos para estudios de danza" },
@@ -70,38 +71,50 @@ export default async function LandingPage() {
   return (
     <main className="flex-1">
       {/* ------------------------------------------------------------ hero */}
-      <section className="mx-auto max-w-6xl px-5 pt-10 pb-16 sm:pt-20">
-        <p className="mb-5 inline-block rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
-          Para estudios de danza, yoga, pilates y profes independientes
-        </p>
-        <h1 className="max-w-4xl font-serif text-4xl leading-tight font-semibold tracking-tight sm:text-6xl">
-          Dejá de perseguir a los alumnos para que paguen y de anotar clases en un cuaderno.
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
-          Giroa ordena tu estudio: tus alumnos compran su pack con Mercado Pago, reservan solos desde el celular y vos
-          sabés en todo momento quién pagó, quién debe y qué clases se llenan.
-        </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a
-            href={platformUrl("/login?next=/onboarding")}
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-brand px-6 font-medium text-brand-foreground"
-          >
-            Probá gratis 14 días
-          </a>
-          <a
-            href="#fundadores"
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-6 font-medium"
-          >
-            Quiero ser estudio fundador
-          </a>
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-10 pb-16 sm:pt-16 lg:grid-cols-[1.15fr_1fr]">
+        <div>
+          <p className="mb-5 inline-block rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
+            Para estudios de danza, yoga, pilates y profes independientes
+          </p>
+          <h1 className="font-serif text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-[3.4rem]">
+            Dejá de perseguir a los alumnos para que paguen y de anotar clases en un cuaderno.
+          </h1>
+          <p className="mt-6 max-w-xl text-lg text-muted">
+            Giroa ordena tu estudio: tus alumnos compran su pack con Mercado Pago, reservan solos desde el celular y vos
+            sabés en todo momento quién pagó, quién debe y qué clases se llenan.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a
+              href={platformUrl("/login?next=/onboarding")}
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-brand px-6 font-medium text-brand-foreground"
+            >
+              Probá gratis 14 días
+            </a>
+            <a
+              href="#fundadores"
+              className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-6 font-medium"
+            >
+              Quiero ser estudio fundador
+            </a>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
+            <MercadoPagoBadge />
+            <span>Sin tarjeta para probar</span>
+            <span>·</span>
+            <span>Te migramos tu Excel</span>
+          </div>
         </div>
+        <HeroMockup />
       </section>
 
       {/* ------------------------------------------------------------ dos mensajes */}
       <section id="como-funciona" className="mx-auto grid max-w-6xl gap-5 px-5 pb-16 md:grid-cols-2">
-        <article className="rounded-3xl bg-brand p-8 text-brand-foreground">
+        <article className="relative rounded-3xl border border-stone-200 bg-surface p-8 pt-10">
+          <span className="absolute -top-3 left-8 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-brand-foreground">
+            Para estudios
+          </span>
           <h2 className="font-serif text-2xl font-semibold">Si tenés un estudio</h2>
-          <p className="mt-2 opacity-80">Orden, sin planillas ni cuadernos.</p>
+          <p className="mt-2 text-muted">Orden, sin planillas ni cuadernos.</p>
           <ul className="mt-6 space-y-3">
             <li>✓ Quién pagó y quién debe, al día.</li>
             <li>✓ Qué clases se llenan y cuáles conviene cerrar.</li>
@@ -110,7 +123,10 @@ export default async function LandingPage() {
             <li>✓ Migración gratis desde tu Excel.</li>
           </ul>
         </article>
-        <article className="rounded-3xl border border-border bg-surface p-8">
+        <article className="relative rounded-3xl border border-stone-200 bg-surface p-8 pt-10">
+          <span className="absolute -top-3 left-8 rounded-full border border-stone-200 bg-[var(--gold)] px-3 py-1 text-xs font-semibold text-foreground">
+            Para profes
+          </span>
           <h2 className="font-serif text-2xl font-semibold">Si sos profe independiente</h2>
           <p className="mt-2 text-muted">Tu propia app, aunque des clases en varios lugares.</p>
           <ul className="mt-6 space-y-3">
@@ -223,5 +239,15 @@ export default async function LandingPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+/** Sello sutil de cobros con Mercado Pago (texto, sin el logo oficial). */
+function MercadoPagoBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#009ee3]/30 bg-[#009ee3]/10 px-3 py-1 font-medium text-[#0b6aa6]">
+      <span aria-hidden className="h-2 w-2 rounded-full bg-[#009ee3]" />
+      Cobros con Mercado Pago
+    </span>
   );
 }
