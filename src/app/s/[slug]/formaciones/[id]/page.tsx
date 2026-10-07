@@ -36,9 +36,10 @@ export default async function PublicFormationPage({ params }: PageProps<"/s/[slu
   const tz = studio.timezone;
   const supabase = await createClient();
 
-  const [{ data: sessions }, user] = await Promise.all([
+  const [{ data: sessions }, user, { data: audition }] = await Promise.all([
     supabase.from("formation_sessions").select("id, title, starts_at, ends_at, teacher_name, online_url").eq("formation_id", f.id).order("starts_at"),
     getCurrentUser(),
+    supabase.from("auditions").select("id, closes_at").eq("formation_id", f.id).eq("status", "open").maybeSingle(),
   ]);
   const [student, staffRole] = user ? await Promise.all([getMyStudent(studio.id, user.id), getMyStaffRole(studio.id, user.id)]) : [null, null];
   const { data: mine } = student
@@ -103,6 +104,14 @@ export default async function PublicFormationPage({ params }: PageProps<"/s/[slu
             <Link href={`/app/formaciones/${mine.id}`} className="flex h-12 items-center justify-center rounded-xl bg-brand font-medium text-brand-foreground">
               {mine.status === "applied" ? "Ya te postulaste · ver estado" : "Ver mi formación"}
             </Link>
+          ) : audition ? (
+            <div className="space-y-3 rounded-2xl border border-border border-l-4 border-l-brand bg-surface p-5">
+              <p className="font-semibold">Para ingresar hay que audicionar</p>
+              <p className="text-sm text-muted">Inscribite a la audición: completás un formulario y elegís tu turno.</p>
+              <Link href={`/audiciones/${audition.id}`} className="flex h-12 items-center justify-center rounded-xl bg-brand font-medium text-brand-foreground">
+                Inscribirme a la audición
+              </Link>
+            </div>
           ) : !f.enrollment_open ? (
             <p className="rounded-xl bg-border/50 px-4 py-3 font-medium">Las postulaciones están cerradas.</p>
           ) : !user ? (
