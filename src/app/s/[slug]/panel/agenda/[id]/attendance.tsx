@@ -20,9 +20,9 @@ export function MarkPresentButton({ mark }: { mark: () => Promise<CheckInResult>
             else setError(r.message);
           })
         }
-        className="h-9 rounded-xl border border-border bg-surface px-3 text-sm font-medium disabled:opacity-50"
+        className="h-9 rounded-full border border-border bg-surface px-4 text-sm font-medium hover:border-success hover:text-success disabled:opacity-50"
       >
-        {pending ? "…" : "Presente"}
+        {pending ? "…" : "✓ Presente"}
       </button>
       {error ? <p className="max-w-48 text-xs text-danger">{error}</p> : null}
     </div>
@@ -58,7 +58,7 @@ export function WalkInPicker({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Llegó sin reserva: buscá por nombre"
-        className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-base outline-none focus:border-brand"
+        className="h-12 w-full rounded-full border border-border bg-surface px-5 text-base outline-none focus:border-brand"
       />
       {matches.length ? (
         <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">

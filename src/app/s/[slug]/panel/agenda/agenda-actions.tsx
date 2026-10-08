@@ -27,7 +27,7 @@ export function CancelSessionButton({
           if (reason === null) return;
           startTransition(async () => setResult(await cancel(reason)));
         }}
-        className="text-sm text-danger hover:underline disabled:opacity-50"
+        className="text-xs text-muted hover:text-danger disabled:opacity-50"
       >
         {pending ? "…" : "Cancelar"}
       </button>
