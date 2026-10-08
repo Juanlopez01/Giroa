@@ -24,7 +24,7 @@ export function BuyButton({
         type="button"
         disabled={pending}
         onClick={() => startTransition(async () => setResult(await buy(coupon?.code ?? null)))}
-        className="h-11 w-full rounded-xl bg-[#009ee3] text-sm font-semibold text-white disabled:opacity-60"
+        className="h-12 w-full rounded-full bg-[#009ee3] text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-60"
       >
         {pending
           ? "Abriendo Mercado Pago…"

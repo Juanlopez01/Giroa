@@ -20,8 +20,8 @@ export default async function StudentQrPage({ params }: PageProps<"/s/[slug]/app
   return (
     <div className="space-y-6 text-center">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Tu QR</h1>
-        <p className="text-muted">Mostralo al llegar a la clase para que te marquen presente.</p>
+        <h1 className="font-serif text-3xl font-semibold">Mi QR</h1>
+        <p className="text-muted">Lo normal es que escanees el QR del estudio. Este es el respaldo: mostralo si el profe te toma el presente con su celu.</p>
       </div>
       <div
         className="mx-auto w-full max-w-72 rounded-3xl border border-border bg-white p-5"

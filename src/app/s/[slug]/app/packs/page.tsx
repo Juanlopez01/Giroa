@@ -32,27 +32,43 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
     can(studio.id, "gift_cards"),
   ]);
 
+  // El que sale más barato por clase (si hay más de uno con clases contadas).
+  const perClass = (p: { credits: number | null; price_cents: number }) => (p.credits ? p.price_cents / p.credits : null);
+  const counted = (packs ?? []).filter((p) => p.credits && p.price_cents > 0);
+  const best = counted.length > 1 ? counted.reduce((a, b) => (perClass(b)! < perClass(a)! ? b : a)).id : null;
+
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Comprá tu pack</h1>
-        <p className="text-sm text-muted">Vale para todas las clases del estudio.</p>
+        <h1 className="font-serif text-3xl font-semibold">Packs</h1>
+        <p className="text-sm text-muted">Valen para todas las clases del estudio.</p>
       </div>
-
-      {giftsOn || giftCode ? <RedeemGiftForm action={redeemGiftCard.bind(null, slug)} initialCode={giftCode} /> : null}
 
       {!packs?.length ? (
         <p className="text-muted">El estudio todavía no publicó packs.</p>
       ) : (
         <ul className="space-y-3">
           {packs.map((p) => (
-            <li key={p.id} className="space-y-3 rounded-2xl border border-border bg-surface p-4">
-              <div className="flex items-baseline justify-between gap-3">
+            <li
+              key={p.id}
+              className={`space-y-3 rounded-3xl border bg-surface p-5 ${p.id === best ? "border-brand/50 ring-2 ring-brand/10" : "border-border"}`}
+            >
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium">{p.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">{p.name}</p>
+                    {p.id === best ? (
+                      <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-medium text-brand-foreground">Conviene</span>
+                    ) : null}
+                  </div>
                   <p className="text-sm text-muted">{packSummary(p.credits, p.validity_days)}</p>
                 </div>
-                <p className="shrink-0 text-lg font-semibold tabular-nums">{formatArs(p.price_cents)}</p>
+                <div className="shrink-0 text-right">
+                  <p className="font-serif text-2xl font-semibold tabular-nums">{formatArs(p.price_cents)}</p>
+                  {p.credits && p.credits > 1 && p.price_cents > 0 ? (
+                    <p className="text-xs text-muted">{formatArs(Math.round(p.price_cents / p.credits))} por clase</p>
+                  ) : null}
+                </div>
               </div>
               {p.description ? <p className="text-sm">{p.description}</p> : null}
               {canPayOnline ? (
@@ -65,6 +81,8 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
           ))}
         </ul>
       )}
+
+      {giftsOn || giftCode ? <RedeemGiftForm action={redeemGiftCard.bind(null, slug)} initialCode={giftCode} /> : null}
 
       {!canPayOnline && packs?.length ? (
         <p className="rounded-xl bg-brand/10 px-4 py-3 text-sm">
