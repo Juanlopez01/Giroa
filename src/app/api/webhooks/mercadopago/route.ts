@@ -20,7 +20,11 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as { type?: string; data?: { id?: string | number } };
 
   const topic = url.searchParams.get("type") ?? url.searchParams.get("topic") ?? body.type ?? "";
-  const dataId = url.searchParams.get("data.id") ?? (body.data?.id !== undefined ? String(body.data.id) : null);
+  // Formato webhook: ?data.id= (o body.data.id). Formato IPN: ?id=&topic= (también viene firmado).
+  const dataId =
+    url.searchParams.get("data.id") ??
+    (body.data?.id !== undefined ? String(body.data.id) : null) ??
+    url.searchParams.get("id");
   const requestId = request.headers.get("x-request-id");
 
   const valid = verifyMpSignature({
