@@ -1,5 +1,7 @@
 "use server";
 
+import { studioNotificationUrl } from "@/lib/mp/apply-payment";
+import { studioUrl } from "@/lib/urls";
 import { redirect } from "next/navigation";
 import { getStudioBySlug } from "@/lib/studio.server";
 import { createClient } from "@/lib/supabase/server";
@@ -9,7 +11,6 @@ import { getStudioAccessToken } from "@/lib/mp/connections";
 import { EVENT_REF_PREFIX } from "@/lib/events";
 import { buyTicketsSchema } from "@/lib/validation/event";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
-import { platformUrl, studioUrl } from "@/lib/urls";
 
 /**
  * Compra de entradas (sin cuenta):
@@ -64,7 +65,7 @@ export async function buyTickets(slug: string, _prev: ActionState, formData: For
       unitPriceCents: order.amount_cents,
       externalReference: `${EVENT_REF_PREFIX}${order.external_reference}`,
       payerEmail: b.email,
-      notificationUrl: platformUrl(`/api/webhooks/mercadopago?studio=${studio.id}`),
+      notificationUrl: studioNotificationUrl(studio.id),
       backUrl: studioUrl(slug, ticketsUrl),
     });
     await admin.from("event_orders").update({ mp_preference_id: preference.id }).eq("id", order.id);

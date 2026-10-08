@@ -1,5 +1,7 @@
 "use server";
 
+import { studioNotificationUrl } from "@/lib/mp/apply-payment";
+import { studioUrl } from "@/lib/urls";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -11,7 +13,6 @@ import { createPreference } from "@/lib/mp/api";
 import { getStudioAccessToken } from "@/lib/mp/connections";
 import { AUDITION_REF_PREFIX } from "@/lib/formations";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
-import { platformUrl, studioUrl } from "@/lib/urls";
 
 const baseSchema = z.object({
   fullName: z.string().trim().min(2, { error: "Poné tu nombre y apellido." }).max(120),
@@ -70,7 +71,7 @@ export async function applyToAudition(slug: string, auditionId: string, _prev: A
       unitPriceCents: app.fee_cents,
       externalReference: `${AUDITION_REF_PREFIX}${app.external_reference}`,
       payerEmail: user.email,
-      notificationUrl: platformUrl(`/api/webhooks/mercadopago?studio=${studio.id}`),
+      notificationUrl: studioNotificationUrl(studio.id),
       backUrl: studioUrl(slug, myPage),
     });
     await createAdminClient().from("audition_applications").update({ mp_preference_id: preference.id }).eq("id", app.id);

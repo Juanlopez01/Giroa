@@ -1,5 +1,7 @@
 "use server";
 
+import { studioNotificationUrl } from "@/lib/mp/apply-payment";
+import { studioUrl } from "@/lib/urls";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getStudioBySlug } from "@/lib/studio.server";
@@ -9,7 +11,6 @@ import { createPreference } from "@/lib/mp/api";
 import { getStudioAccessToken } from "@/lib/mp/connections";
 import { GIFT_REF_PREFIX } from "@/lib/gift-cards";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
-import { platformUrl, studioUrl } from "@/lib/urls";
 
 const giftSchema = z.object({
   packProductId: z.uuid({ error: "Elegí qué pack regalar." }),
@@ -62,7 +63,7 @@ export async function buyGiftCard(slug: string, _prev: ActionState, formData: Fo
       unitPriceCents: card.amount_cents,
       externalReference: `${GIFT_REF_PREFIX}${card.external_reference}`,
       payerEmail: g.buyerEmail,
-      notificationUrl: platformUrl(`/api/webhooks/mercadopago?studio=${studio.id}`),
+      notificationUrl: studioNotificationUrl(studio.id),
       backUrl: studioUrl(slug, `/regalo/${card.access_token}`),
     });
     await admin.from("gift_cards").update({ mp_preference_id: preference.id }).eq("id", card.id);

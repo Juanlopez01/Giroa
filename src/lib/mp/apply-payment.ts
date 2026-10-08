@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { platformUrl } from "@/lib/urls";
 import { getPayment } from "@/lib/mp/api";
 import { getStudioAccessToken } from "@/lib/mp/connections";
 import { EVENT_REF_PREFIX } from "@/lib/events";
@@ -69,4 +70,12 @@ export async function confirmMpReturn(
   } catch (error) {
     console.error("[mp return]", paymentId, error);
   }
+}
+
+/**
+ * URL de aviso de los cobros de un estudio. `source_news=webhooks` hace que MP
+ * mande solo el formato webhook (firmado) y no el IPN viejo, que no trae firma.
+ */
+export function studioNotificationUrl(studioId: string): string {
+  return platformUrl(`/api/webhooks/mercadopago?studio=${studioId}&source_news=webhooks`);
 }

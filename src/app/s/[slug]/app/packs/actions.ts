@@ -1,5 +1,7 @@
 "use server";
 
+import { studioNotificationUrl } from "@/lib/mp/apply-payment";
+import { studioUrl } from "@/lib/urls";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -9,7 +11,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fromSupabaseError, type ActionState } from "@/lib/errors";
 import { createPreference } from "@/lib/mp/api";
 import { getStudioAccessToken } from "@/lib/mp/connections";
-import { platformUrl, studioUrl } from "@/lib/urls";
 
 /**
  * Compra de un pack con Checkout Pro:
@@ -41,7 +42,7 @@ export async function buyPack(slug: string, packProductId: string, coupon: strin
       unitPriceCents: payment.amount_cents,
       externalReference: payment.external_reference,
       payerEmail: user.email,
-      notificationUrl: platformUrl(`/api/webhooks/mercadopago?studio=${studio.id}`),
+      notificationUrl: studioNotificationUrl(studio.id),
       backUrl: studioUrl(slug, "/app/pago"),
     });
     await createAdminClient().from("payments").update({ mp_preference_id: preference.id }).eq("id", payment.id);
