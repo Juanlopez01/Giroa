@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getStudioBySlug } from "@/lib/studio.server";
 import { createClient } from "@/lib/supabase/server";
+import { confirmMpReturn } from "@/lib/mp/apply-payment";
 import { toYmd } from "@/lib/datetime";
 import { studioUrl } from "@/lib/urls";
 import { StudioHeader } from "@/components/studio/studio-header";
@@ -25,11 +26,12 @@ type Gift = {
 };
 
 // La tarjeta de regalo: link privado para quien la compró (y para compartir).
-export default async function GiftCardPage({ params }: PageProps<"/s/[slug]/regalo/[token]">) {
+export default async function GiftCardPage({ params, searchParams }: PageProps<"/s/[slug]/regalo/[token]">) {
   const { slug, token } = await params;
   if (!/^[0-9a-f]{32}$/.test(token)) notFound();
   const studio = await getStudioBySlug(slug);
   if (!studio) notFound();
+  await confirmMpReturn(studio.id, await searchParams);
 
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_gift_card", { p_access_token: token });

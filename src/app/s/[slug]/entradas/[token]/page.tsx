@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getStudioBySlug } from "@/lib/studio.server";
 import { createClient } from "@/lib/supabase/server";
+import { confirmMpReturn } from "@/lib/mp/apply-payment";
 import { formatEventWhen, TICKET_QR_PREFIX } from "@/lib/events";
 import { formatArs } from "@/lib/money";
 import { StudioHeader } from "@/components/studio/studio-header";
@@ -27,10 +28,12 @@ type Order = {
 export default async function TicketsPage({ params, searchParams }: PageProps<"/s/[slug]/entradas/[token]">) {
   const { slug, token } = await params;
   if (!/^[0-9a-f]{32}$/.test(token)) notFound();
-  const estado = (await searchParams).estado;
+  const sp = await searchParams;
+  const estado = sp.estado;
 
   const studio = await getStudioBySlug(slug);
   if (!studio) notFound();
+  await confirmMpReturn(studio.id, sp);
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_event_order", { p_access_token: token });
   const order = data as Order | null;

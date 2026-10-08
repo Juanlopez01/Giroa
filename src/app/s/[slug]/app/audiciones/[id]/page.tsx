@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
+import { confirmMpReturn } from "@/lib/mp/apply-payment";
 import { formatArs } from "@/lib/money";
 import { formatDayLabel, formatTime, toYmd } from "@/lib/datetime";
 import { AutoRefresh } from "../../../entradas/[token]/auto-refresh";
@@ -13,8 +14,10 @@ export const metadata: Metadata = { title: "Mi audición" };
 export default async function MyAuditionPage({ params, searchParams }: PageProps<"/s/[slug]/app/audiciones/[id]">) {
   const { slug, id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  const estado = (await searchParams).estado;
+  const sp = await searchParams;
+  const estado = sp.estado;
   const { studio } = await requireStudent(slug, `/app/audiciones/${id}`);
+  await confirmMpReturn(studio.id, sp);
   const tz = studio.timezone;
   const supabase = await createClient();
 

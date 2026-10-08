@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireStudent } from "@/lib/student-app";
+import { confirmMpReturn } from "@/lib/mp/apply-payment";
 
 export const metadata: Metadata = { title: "Pago" };
 
-// Vuelta de Checkout Pro. El estado que manda MP en la URL es solo para el
-// mensaje: el pack lo acredita el webhook después de consultar el pago.
+// Vuelta de Checkout Pro. Se confirma el pago con MP en el momento (por si el
+// webhook tarda); el estado de la URL es solo para el mensaje.
 const MESSAGES = {
   aprobado: {
     title: "¡Pago aprobado!",
@@ -23,8 +24,10 @@ const MESSAGES = {
 
 export default async function PaymentReturnPage({ params, searchParams }: PageProps<"/s/[slug]/app/pago">) {
   const { slug } = await params;
-  await requireStudent(slug, "/app/pago");
-  const estado = (await searchParams).estado;
+  const { studio } = await requireStudent(slug, "/app/pago");
+  const sp = await searchParams;
+  await confirmMpReturn(studio.id, sp);
+  const estado = sp.estado;
   const msg = MESSAGES[estado === "pendiente" || estado === "rechazado" ? estado : "aprobado"];
 
   return (

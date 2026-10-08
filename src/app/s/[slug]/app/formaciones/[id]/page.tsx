@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
+import { confirmMpReturn } from "@/lib/mp/apply-payment";
 import { formatArs } from "@/lib/money";
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { CHARGE_KIND_LABEL, fmtYmd } from "@/lib/formations";
@@ -14,10 +15,11 @@ export const metadata: Metadata = { title: "Mi formación" };
 
 type Progress = { attended: number; held: number; total: number; min_attendance_pct: number; in_debt: boolean };
 
-export default async function MyFormationPage({ params }: PageProps<"/s/[slug]/app/formaciones/[id]">) {
+export default async function MyFormationPage({ params, searchParams }: PageProps<"/s/[slug]/app/formaciones/[id]">) {
   const { slug, id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   const { studio } = await requireStudent(slug, `/app/formaciones/${id}`);
+  await confirmMpReturn(studio.id, await searchParams);
   const tz = studio.timezone;
   const supabase = await createClient();
 

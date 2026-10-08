@@ -3,12 +3,8 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mercadoPagoEnv } from "@/lib/env.server";
 import { verifyMpSignature } from "@/lib/mp/signature";
-import { getPayment } from "@/lib/mp/api";
-import { getStudioAccessToken } from "@/lib/mp/connections";
+import { applyStudioPayment } from "@/lib/mp/apply-payment";
 import { cancelPreapproval, decodeRef, getAuthorizedPayment, getPreapproval } from "@/lib/mp/subscriptions";
-import { EVENT_REF_PREFIX } from "@/lib/events";
-import { GIFT_REF_PREFIX } from "@/lib/gift-cards";
-import { AUDITION_REF_PREFIX, FORMATION_REF_PREFIX } from "@/lib/formations";
 
 // Webhook de Mercado Pago. Nunca se confía en el body:
 //   1. se valida la firma x-signature,
@@ -33,7 +29,16 @@ export async function POST(request: NextRequest) {
     dataId,
     secret: mercadoPagoEnv().MP_WEBHOOK_SECRET,
   });
-  if (!valid) return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+  if (!valid) {
+    // Diagnóstico: si llegan avisos con firma y no validan, la clave de Vercel no es la de MP.
+    console.warn("[mp webhook] firma inválida", {
+      topic,
+      hasSignature: request.headers.has("x-signature"),
+      hasRequestId: Boolean(requestId),
+      query: [...url.searchParams.keys()].join(","),
+    });
+    return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+  }
 
   const studioId = z.uuid().safeParse(url.searchParams.get("studio"));
   const handled =
@@ -78,7 +83,7 @@ export async function POST(request: NextRequest) {
 
   try {
     if (topic === "payment" && studioId.success) {
-      await handlePackPayment(admin, studioId.data, dataId);
+      await applyStudioPayment(studioId.data, dataId);
     } else if (topic === "subscription_preapproval") {
       await handlePreapproval(admin, dataId);
     } else {
@@ -94,64 +99,6 @@ export async function POST(request: NextRequest) {
 }
 
 type Admin = ReturnType<typeof createAdminClient>;
-
-/** Venta de un pack: se consulta con el token DEL ESTUDIO. */
-async function handlePackPayment(admin: Admin, studioId: string, paymentId: string) {
-  const token = await getStudioAccessToken(studioId);
-  if (!token) throw new Error("El estudio no tiene Mercado Pago vinculado");
-
-  const payment = await getPayment(token, paymentId);
-  if (!payment.external_reference) throw new Error("Pago sin external_reference");
-
-  // Arancel de audición ("audicion:<uuid>").
-  if (payment.external_reference.startsWith(AUDITION_REF_PREFIX)) {
-    const { error } = await admin.rpc("mp_apply_audition_payment", {
-      p_external_reference: payment.external_reference.slice(AUDITION_REF_PREFIX.length),
-      p_mp_payment_id: payment.id,
-      p_mp_status: payment.status,
-      p_amount_cents: Math.round(payment.transaction_amount * 100),
-    });
-    if (error) throw error;
-    return;
-  }
-
-  // Cobro de formación ("formacion:<uuid>"): matrícula, cuota o pago total.
-  if (payment.external_reference.startsWith(FORMATION_REF_PREFIX)) {
-    const { error } = await admin.rpc("mp_apply_formation_payment", {
-      p_external_reference: payment.external_reference.slice(FORMATION_REF_PREFIX.length),
-      p_mp_payment_id: payment.id,
-      p_mp_status: payment.status,
-      p_amount_cents: Math.round(payment.transaction_amount * 100),
-    });
-    if (error) throw error;
-    return;
-  }
-
-  // Gift card ("regalo:<uuid>"): RPC propia.
-  if (payment.external_reference.startsWith(GIFT_REF_PREFIX)) {
-    const { error } = await admin.rpc("mp_apply_gift_payment", {
-      p_external_reference: payment.external_reference.slice(GIFT_REF_PREFIX.length),
-      p_mp_payment_id: payment.id,
-      p_mp_status: payment.status,
-      p_amount_cents: Math.round(payment.transaction_amount * 100),
-    });
-    if (error) throw error;
-    return;
-  }
-
-  // Compra de entradas de un evento ("evento:<uuid>") o pack (uuid solo).
-  const isEvent = payment.external_reference.startsWith(EVENT_REF_PREFIX);
-  const { error } = await admin.rpc(isEvent ? "mp_apply_event_payment" : "mp_apply_payment", {
-    p_external_reference: isEvent
-      ? payment.external_reference.slice(EVENT_REF_PREFIX.length)
-      : payment.external_reference,
-    p_mp_payment_id: payment.id,
-    p_mp_status: payment.status,
-    p_amount_cents: Math.round(payment.transaction_amount * 100),
-    p_paid_at: payment.date_approved ?? undefined,
-  });
-  if (error) throw error;
-}
 
 /** Suscripción a Giroa autorizada, pausada o cancelada (token de Giroa). */
 async function handlePreapproval(admin: Admin, preapprovalId: string) {
