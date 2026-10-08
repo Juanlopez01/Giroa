@@ -100,3 +100,29 @@ export async function myAttendance(studioId: string, studentId: string, timeZone
   }
   return out;
 }
+
+/** Clases pasadas del alumno (últimos `days` días), la más reciente primero. */
+export async function myPastBookings(studioId: string, studentId: string, now: Date, days = 60): Promise<MyBooking[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("bookings")
+    .select("id, status, dance_role, session_id, sessions!inner(starts_at, ends_at, status, offerings(title))")
+    .eq("studio_id", studioId)
+    .eq("student_id", studentId)
+    .in("status", ["attended", "no_show", "booked"])
+    .lt("sessions.ends_at", now.toISOString())
+    .gte("sessions.starts_at", new Date(now.getTime() - days * 86_400_000).toISOString());
+
+  return (data ?? [])
+    .map((b) => ({
+      id: b.id,
+      sessionId: b.session_id,
+      title: b.sessions.offerings?.title ?? "Clase",
+      startsAt: b.sessions.starts_at,
+      endsAt: b.sessions.ends_at,
+      role: b.dance_role,
+      status: b.status,
+      sessionCancelled: b.sessions.status === "cancelled",
+    }))
+    .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+}
