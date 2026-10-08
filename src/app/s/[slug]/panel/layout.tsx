@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { getMyStaffRole, getStudioBySlug } from "@/lib/studio.server";
@@ -7,6 +8,21 @@ import { PanelNav } from "./panel-nav";
 import { AccessGate } from "./access-gate";
 import { daysUntil, getStudioAccess } from "@/lib/subscription.server";
 import { nowMs } from "@/lib/datetime";
+import { InstallPrompt } from "@/components/studio/install-prompt";
+
+// El panel se instala como su propia app ("Panel · Estudio"), separada de la del alumno.
+export async function generateMetadata({ params }: LayoutProps<"/s/[slug]/panel">): Promise<Metadata> {
+  const studio = await getStudioBySlug((await params).slug);
+  if (!studio) return {};
+  return {
+    manifest: "/api/pwa/manifest?app=panel",
+    icons: {
+      icon: [{ url: "/api/pwa/icon?size=192&app=panel", sizes: "192x192", type: "image/png" }],
+      apple: [{ url: "/api/pwa/icon?size=180&app=panel", sizes: "180x180", type: "image/png" }],
+    },
+    appleWebApp: { capable: true, title: `Panel ${studio.name}`, statusBarStyle: "default" },
+  };
+}
 
 export default async function PanelLayout({ children, params }: LayoutProps<"/s/[slug]/panel">) {
   const { slug } = await params;
@@ -76,6 +92,9 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
       ) : null}
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6 print:max-w-none print:p-0">
+        <div className="mb-4 empty:hidden print:hidden">
+          <InstallPrompt studioName={studio.name} app="panel" />
+        </div>
         <AccessGate blocked={access.state === "blocked"} isAdmin={isOwner}>
           {children}
         </AccessGate>

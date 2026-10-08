@@ -5,8 +5,34 @@ import { GIROA_BRAND, studioFromRequest } from "@/lib/pwa.server";
 // estudio" con su nombre, color y logo; en Giroa, la app de Giroa.
 export async function GET(request: NextRequest) {
   const studio = await studioFromRequest(request);
+  const panel = request.nextUrl.searchParams.get("app") === "panel";
 
-  const manifest = studio
+  // El panel del estudio es otra app (otro id y scope): un profe que también
+  // toma clases puede tener las dos instaladas.
+  const manifest = studio && panel
+    ? {
+        id: `/panel?studio=${studio.slug}`,
+        name: `Panel · ${studio.name}`,
+        short_name: "Panel",
+        description: `Agenda, alumnos y cobros de ${studio.name}`,
+        start_url: "/panel",
+        scope: "/panel",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: studio.brand_color,
+        lang: "es-AR",
+        icons: [
+          { src: "/api/pwa/icon?size=192&app=panel", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/api/pwa/icon?size=512&app=panel", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/api/pwa/icon?size=512&maskable=1&app=panel", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+        shortcuts: [
+          { name: "Agenda", url: "/panel/agenda" },
+          { name: "Alumnos", url: "/panel/alumnos" },
+          { name: "Registrar un pago", url: "/panel/pagos" },
+        ],
+      }
+    : studio
     ? {
         id: `/?studio=${studio.slug}`,
         name: studio.name,

@@ -26,7 +26,8 @@ function safeSet(key: string, value: string) {
  * Android/Chrome: botón con el aviso nativo. iPhone: instrucciones (Safari no
  * tiene aviso nativo). No aparece si ya está instalada o si la cerraron.
  */
-export function InstallPrompt({ studioName }: { studioName: string }) {
+export function InstallPrompt({ studioName, app = "student" }: { studioName: string; app?: "student" | "panel" }) {
+  const dismissKey = app === "panel" ? `${DISMISS_KEY}:panel` : DISMISS_KEY;
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [mode, setMode] = useState<"hidden" | "android" | "ios">("hidden");
 
@@ -34,7 +35,7 @@ export function InstallPrompt({ studioName }: { studioName: string }) {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (standalone || safeGet(DISMISS_KEY)) return;
+    if (standalone || safeGet(dismissKey)) return;
 
     const onPrompt = (e: Event) => {
       e.preventDefault();
@@ -51,26 +52,26 @@ export function InstallPrompt({ studioName }: { studioName: string }) {
       window.removeEventListener("beforeinstallprompt", onPrompt);
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [dismissKey]);
 
   if (mode === "hidden") return null;
 
   const dismiss = () => {
-    safeSet(DISMISS_KEY, "1");
+    safeSet(dismissKey, "1");
     setMode("hidden");
   };
 
   return (
     <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4 text-sm">
       <div className="flex-1">
-        <p className="font-medium">Instalá la app de {studioName}</p>
+        <p className="font-medium">{app === "panel" ? `Instalá el panel de ${studioName}` : `Instalá la app de ${studioName}`}</p>
         {mode === "ios" ? (
           <p className="text-muted">
             Tocá <span className="font-medium">Compartir</span> y después{" "}
             <span className="font-medium">“Agregar a inicio”</span>.
           </p>
         ) : (
-          <p className="text-muted">Reservá en un toque, como cualquier app.</p>
+          <p className="text-muted">{app === "panel" ? "Agenda, alumnos y cobros a un toque, como cualquier app." : "Reservá en un toque, como cualquier app."}</p>
         )}
         {mode === "android" && deferred ? (
           <button
