@@ -44,7 +44,7 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
 
   return (
     <div className="flex flex-1 flex-col pb-20 md:pb-0">
-      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b print:hidden border-border bg-surface/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-3">
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -65,7 +65,7 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
       </header>
 
       {notice && isOwner ? (
-        <div className={`px-5 py-2 text-center text-sm ${access.state === "grace" ? "bg-danger/10 text-danger" : "bg-brand/10"}`}>
+        <div className={`px-5 py-2 text-center text-sm print:hidden ${access.state === "grace" ? "bg-danger/10 text-danger" : "bg-brand/10"}`}>
           {notice}{" "}
           {isOwner ? (
             <a href="/panel/plan" className="font-medium underline">
@@ -75,13 +75,13 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
         </div>
       ) : null}
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-6 print:max-w-none print:p-0">
         <AccessGate blocked={access.state === "blocked"} isAdmin={isOwner}>
           {children}
         </AccessGate>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface md:hidden print:hidden">
         <PanelNav variant="bottom" isAdmin={isAdmin} isOwner={isOwner} />
       </div>
     </div>

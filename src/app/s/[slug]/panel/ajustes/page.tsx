@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireAdmin } from "@/lib/panel";
 import { can } from "@/lib/gating";
 import { UpgradeNotice } from "@/components/panel/upgrade-notice";
@@ -87,6 +88,19 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
         <h2 className="text-lg font-semibold">Reservas</h2>
         <SettingsForm action={updateSettings.bind(null, slug)} cancelWindowHours={studio.cancel_window_hours} />
       </section>
+
+      <Link
+        href="/panel/ajustes/qr"
+        className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-5 hover:border-brand"
+      >
+        <span>
+          <span className="block text-lg font-semibold">QR de asistencia</span>
+          <span className="block text-sm text-muted">Un cartel para la entrada: cada alumno lo escanea y se da el presente solo.</span>
+        </span>
+        <span aria-hidden className="text-brand">
+          →
+        </span>
+      </Link>
 
       <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
         <h2 className="text-lg font-semibold">Clase de prueba gratis</h2>

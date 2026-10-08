@@ -14,13 +14,21 @@ type Status = { kind: "idle" | ScanFeedback["kind"]; text: string };
  * jsQR (anda en Android y iPhone) y se lo pasa a `scan` (una server action).
  * Necesita https (o localhost) para acceder a la cámara.
  */
-export function QrScanner({ scan, hint }: { scan: (code: string) => Promise<ScanFeedback>; hint: string }) {
+export function QrScanner({
+  scan,
+  hint,
+  autoOpen = false,
+}: {
+  scan: (code: string) => Promise<ScanFeedback>;
+  hint: string;
+  autoOpen?: boolean;
+}) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const busyRef = useRef(false);
   const lastRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const [status, setStatus] = useState<Status>({ kind: "idle", text: hint });
 
   useEffect(() => {

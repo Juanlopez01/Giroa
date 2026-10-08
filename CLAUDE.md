@@ -85,6 +85,11 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Audiciones (`auditions`): puerta de entrada a una formación. `apply_to_audition` valida el formulario
   armable, el video y el turno (reserva 20 min si hay arancel; MP `"audicion:<uuid>"`).
   `set_audition_result(admitted)` crea o aprueba la inscripción a la formación (matrícula).
+- Presente con el QR del estudio (`qr_checkin`): el estudio imprime un cartel (Panel → Ajustes → QR de
+  asistencia) con un link `…/app/presente?c=<code>` (`studio_checkin_codes`, no legible por alumnos). El
+  alumno lo escanea y `self_check_in` le da el presente desde 30 min antes hasta que termina: clase
+  reservada, reservar en el momento (`walk_in`) o encuentro de su formación (bloquea si debe).
+  `rotate_checkin_code` invalida los carteles viejos. El QR del alumno (`check_in_by_qr`) queda de respaldo.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.
