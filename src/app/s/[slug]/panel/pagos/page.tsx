@@ -49,49 +49,52 @@ export default async function PaymentsPage({ params, searchParams }: PageProps<"
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Pagos</h1>
+        <h1 className="font-serif text-3xl font-semibold">Pagos</h1>
         <Link
           href="/panel/pagos/nuevo"
-          className="inline-flex h-11 items-center rounded-xl bg-brand px-4 font-medium text-brand-foreground"
+          className="inline-flex h-10 items-center rounded-full bg-brand px-4 text-sm font-medium text-brand-foreground"
         >
           + Registrar pago
         </Link>
       </div>
 
-      <div className="flex items-center justify-between rounded-2xl border border-border bg-surface p-2">
-        <Link href={`/panel/pagos?mes=${shiftMonth(month, -1)}`} className="rounded-lg px-3 py-2 text-sm hover:bg-background">
+      <div className="flex items-center justify-between rounded-full border border-border bg-surface p-1">
+        <Link href={`/panel/pagos?mes=${shiftMonth(month, -1)}`} className="flex h-9 w-9 items-center justify-center rounded-full text-sm hover:bg-background">
           ←
         </Link>
         <span className="font-medium capitalize">
           {MONTHS[m - 1]} {y}
         </span>
         {month < currentMonth ? (
-          <Link href={`/panel/pagos?mes=${shiftMonth(month, 1)}`} className="rounded-lg px-3 py-2 text-sm hover:bg-background">
+          <Link href={`/panel/pagos?mes=${shiftMonth(month, 1)}`} className="flex h-9 w-9 items-center justify-center rounded-full text-sm hover:bg-background">
             →
           </Link>
         ) : (
-          <span className="px-3 py-2 text-sm text-border">→</span>
+          <span className="flex h-9 w-9 items-center justify-center text-sm text-border">→</span>
         )}
       </div>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div className="col-span-2 rounded-2xl border border-border border-l-4 border-l-brand bg-surface p-4 md:col-span-1">
-          <p className="text-sm text-muted">Total cobrado</p>
-          <p className="text-2xl font-semibold tabular-nums">{formatArs(total)}</p>
+        <div className="col-span-2 rounded-2xl border border-border bg-surface p-4 md:col-span-1">
+          <p className="text-xs font-medium tracking-widest text-muted uppercase">Total cobrado</p>
+          <p className="mt-1 font-serif text-3xl font-semibold tabular-nums">{formatArs(total)}</p>
           <p className="text-sm text-muted">
             {list.length} {list.length === 1 ? "pago" : "pagos"}
           </p>
         </div>
         {(["cash", "transfer", "mercadopago"] as const).map((method) => (
           <div key={method} className="rounded-2xl border border-border bg-surface p-4">
-            <p className="text-sm text-muted">{METHOD_LABELS[method]}</p>
-            <p className="text-lg font-semibold tabular-nums">{formatArs(byMethod.get(method) ?? 0)}</p>
+            <p className="text-xs font-medium tracking-widest text-muted uppercase">{METHOD_LABELS[method]}</p>
+            <p className="mt-1 font-serif text-xl font-semibold tabular-nums">{formatArs(byMethod.get(method) ?? 0)}</p>
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-border/60" aria-hidden>
+              <div className="h-full rounded-full bg-brand" style={{ width: `${total ? Math.round(((byMethod.get(method) ?? 0) / total) * 100) : 0}%` }} />
+            </div>
           </div>
         ))}
       </section>
 
       {list.length === 0 ? (
-        <p className="text-muted">No hay pagos registrados en este mes.</p>
+        <p className="rounded-2xl border border-dashed border-border p-5 text-center text-muted">No hay pagos registrados en este mes.</p>
       ) : (
         <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
           {list.map((p) => {
