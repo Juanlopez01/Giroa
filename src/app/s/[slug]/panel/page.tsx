@@ -3,9 +3,10 @@ import Link from "next/link";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { listAgenda } from "@/lib/agenda.server";
-import { addDaysYmd, nowMs, startOfDay, todayYmd } from "@/lib/datetime";
+import { addDaysYmd, formatDayLabel, nowMs, startOfDay, todayYmd } from "@/lib/datetime";
 import { formatArs } from "@/lib/money";
 import { studioUrl } from "@/lib/urls";
+import { greeting } from "@/lib/student-home";
 import {
   activeWithoutBalance,
   expiringSoon,
@@ -16,6 +17,7 @@ import {
   type FollowUp,
 } from "@/lib/dashboard.server";
 import { SessionRow } from "@/components/panel/session-row";
+import { LiveClassCard } from "@/components/panel/live-class-card";
 
 export const metadata: Metadata = { title: "Panel" };
 
@@ -58,17 +60,16 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   const slots = owner?.[4] ?? [];
   const trials = owner?.[5] ?? [];
 
-
   if (offeringsCount === 0) {
     return (
-      <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
-        <h1 className="text-xl font-semibold">Empecemos por tus clases</h1>
+      <section className="space-y-3 rounded-3xl border border-border bg-surface p-6">
+        <h1 className="font-serif text-2xl font-semibold">Empecemos por tus clases</h1>
         <p className="text-muted">
           Cargá tus clases con sus horarios y Giroa arma la grilla de las próximas semanas. Tus alumnos la van a ver en{" "}
           {studioUrl(slug).replace(/^https?:\/\//, "")}.
         </p>
         {isAdmin ? (
-          <Link href="/panel/clases/nueva" className="inline-flex h-12 items-center rounded-xl bg-brand px-5 font-medium text-brand-foreground">
+          <Link href="/panel/clases/nueva" className="inline-flex h-12 items-center rounded-full bg-brand px-6 font-medium text-brand-foreground">
             Cargar mi primera clase
           </Link>
         ) : null}
@@ -77,72 +78,104 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   }
 
   const delta = income ? income.thisMonth - income.lastMonthSameDay : 0;
+  // La clase en curso o la próxima de hoy.
+  const live = sessions.find((s) => s.status === "scheduled" && new Date(s.endsAt).getTime() >= now.getTime());
+  const followUps = expiring.length + noBalance.length + trials.length;
 
   return (
     <div className="space-y-8">
+      <div>
+        <p className="text-xs font-medium tracking-widest text-muted uppercase">{greeting(now, tz)}</p>
+        <h1 className="font-serif text-3xl font-semibold">Hoy · {formatDayLabel(today)}</h1>
+      </div>
+
       {usage?.at_limit ? (
-        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
+        <p className="rounded-2xl bg-danger/10 px-4 py-3 text-sm text-danger">
           Llegaste al límite de {usage.max_active_students} alumnos activos de tu plan. No vas a poder sumar alumnos
           nuevos hasta que pases a un plan mayor.
         </p>
       ) : null}
 
-      {/* ---------------------------------------------------------- números */}
-      {income && usage ? (
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Link
-            href="/panel/pagos"
-            className="col-span-2 rounded-2xl border border-border border-l-4 border-l-brand bg-surface p-4 transition hover:border-foreground hover:border-l-brand"
-          >
-            <p className="text-sm text-muted">Cobrado este mes</p>
-            <p className="text-3xl font-semibold tabular-nums">{formatArs(income.thisMonth)}</p>
-            <p className={`text-sm ${income.lastMonthSameDay > 0 ? (delta >= 0 ? "text-success" : "text-danger") : "text-muted"}`}>
-              {income.lastMonthSameDay > 0
-                ? `${delta >= 0 ? "▲" : "▼"} ${formatArs(Math.abs(delta))} vs. el mes pasado a esta altura`
-                : `${income.count} ${income.count === 1 ? "pago" : "pagos"}`}
-            </p>
-          </Link>
-          <Stat label="Alumnos activos" value={`${usage.active_students}${usage.max_active_students ? ` / ${usage.max_active_students}` : ""}`} href="/panel/alumnos" />
-          <Stat label="Packs por vencer" value={String(expiring.length)} hint="en 7 días" />
-        </section>
-      ) : null}
-
-      {/* ---------------------------------------------------------- hoy */}
-      <section className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-semibold">Hoy</h2>
-          <Link href="/panel/agenda" className="text-sm font-medium text-brand">
-            Ver la semana
-          </Link>
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+        {/* ---------------------------------------------------------- ahora */}
+        <div className="space-y-3">
+          {live ? (
+            <LiveClassCard session={live} timeZone={tz} now={now} />
+          ) : (
+            <section className="rounded-3xl border border-dashed border-border p-5">
+              <p className="font-serif text-xl font-semibold">{sessions.length ? "Terminaron las clases de hoy" : "Hoy no hay clases"}</p>
+              <Link href="/panel/agenda" className="text-sm font-medium text-brand">
+                Ver la semana →
+              </Link>
+            </section>
+          )}
+          {sessions.length > (live ? 1 : 0) ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 pt-2">
+                <h2 className="text-xs font-medium tracking-widest text-muted uppercase">Clases de hoy</h2>
+                <span className="h-px flex-1 bg-border" />
+                <Link href="/panel/agenda" className="text-sm font-medium text-brand">
+                  Semana
+                </Link>
+              </div>
+              {sessions
+                .filter((s) => s.id !== live?.id)
+                .map((s) => (
+                  <SessionRow key={s.id} session={s} timeZone={tz} />
+                ))}
+            </div>
+          ) : null}
         </div>
-        {sessions.length === 0 ? (
-          <p className="text-muted">Hoy no hay clases.</p>
-        ) : (
-          sessions.map((s) => <SessionRow key={s.id} session={s} timeZone={tz} />)
-        )}
-      </section>
 
-      {/* ---------------------------------------------------------- a quién escribirle */}
-      {isAdmin && (expiring.length > 0 || noBalance.length > 0 || trials.length > 0) ? (
+        {/* ---------------------------------------------------------- números */}
+        {income && usage ? (
+          <section className="grid content-start grid-cols-2 gap-3">
+            <Link href="/panel/pagos" className="col-span-2 rounded-2xl border border-border bg-surface p-4 transition hover:border-brand/40">
+              <p className="text-xs font-medium tracking-widest text-muted uppercase">Cobrado este mes</p>
+              <p className="mt-1 font-serif text-3xl font-semibold tabular-nums">{formatArs(income.thisMonth)}</p>
+              <p className={`text-sm ${income.lastMonthSameDay > 0 ? (delta >= 0 ? "text-success" : "text-danger") : "text-muted"}`}>
+                {income.lastMonthSameDay > 0
+                  ? `${delta >= 0 ? "▲" : "▼"} ${formatArs(Math.abs(delta))} vs. el mes pasado a esta altura`
+                  : `${income.count} ${income.count === 1 ? "pago" : "pagos"}`}
+              </p>
+            </Link>
+            <Stat
+              label="Alumnos activos"
+              value={String(usage.active_students)}
+              hint={usage.max_active_students ? `de ${usage.max_active_students} de tu plan` : "sin límite"}
+              pct={usage.max_active_students ? usage.active_students / usage.max_active_students : undefined}
+              href="/panel/alumnos"
+            />
+            <Stat label="Packs por vencer" value={String(expiring.length)} hint="en los próximos 7 días" />
+          </section>
+        ) : null}
+      </div>
+
+      {/* ---------------------------------------------------------- para hacer hoy */}
+      {isAdmin && followUps > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Para escribirles</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <FollowUpList
-              title="Su pack vence pronto"
-              empty="Nadie tiene el pack por vencer esta semana."
-              people={expiring}
-              message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: tu pack vence en estos días. ¿Querés renovarlo?`}
-            />
-            <FollowUpList
-              title="Vienen pero no tienen saldo"
-              empty="Todos los que vienen tienen saldo."
-              people={noBalance}
-              message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: se te terminaron las clases del pack. ¿Te cargamos uno nuevo?`}
-            />
-            {trials.length > 0 ? (
+          <div>
+            <h2 className="font-serif text-2xl font-semibold">Para hacer hoy</h2>
+            <p className="text-sm text-muted">Un mensaje a tiempo es un pack renovado.</p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {expiring.length ? (
+              <FollowUpList
+                title="Su pack vence pronto"
+                people={expiring}
+                message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: tu pack vence en estos días. ¿Querés renovarlo?`}
+              />
+            ) : null}
+            {noBalance.length ? (
+              <FollowUpList
+                title="Vienen pero no tienen saldo"
+                people={noBalance}
+                message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: se te terminaron las clases del pack. ¿Te cargamos uno nuevo?`}
+              />
+            ) : null}
+            {trials.length ? (
               <FollowUpList
                 title="Probaron y no compraron"
-                empty=""
                 people={trials}
                 message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: ¿qué te pareció la clase de prueba? Si querés seguir, te paso los packs.`}
               />
@@ -155,7 +188,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
       {isAdmin && slots.length > 0 ? (
         <section className="space-y-3">
           <div>
-            <h2 className="text-xl font-semibold">Ocupación</h2>
+            <h2 className="font-serif text-2xl font-semibold">Ocupación</h2>
             <p className="text-sm text-muted">Promedio de las últimas 4 semanas, por clase y horario.</p>
           </div>
           <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
@@ -167,9 +200,9 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
                   </p>
                   <p className="shrink-0 text-sm font-semibold tabular-nums">{s.pct}%</p>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-border">
+                <div className="h-1.5 overflow-hidden rounded-full bg-border/60">
                   <div
-                    className={`h-full rounded-full ${s.hint === "low" ? "bg-muted" : "bg-brand"}`}
+                    className={`h-full rounded-full ${s.hint === "low" ? "bg-muted" : s.hint === "full" ? "bg-[var(--gold,#c8a46b)]" : "bg-brand"}`}
                     style={{ width: `${Math.min(100, s.pct)}%` }}
                   />
                 </div>
@@ -188,16 +221,21 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   );
 }
 
-function Stat({ label, value, hint, href }: { label: string; value: string; hint?: string; href?: string }) {
+function Stat({ label, value, hint, href, pct }: { label: string; value: string; hint?: string; href?: string; pct?: number }) {
   const body = (
     <>
-      <p className="text-sm text-muted">{label}</p>
-      <p className="text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="text-xs font-medium tracking-widest text-muted uppercase">{label}</p>
+      <p className="mt-1 font-serif text-2xl font-semibold tabular-nums">{value}</p>
+      {pct !== undefined ? (
+        <div className="my-1.5 h-1 overflow-hidden rounded-full bg-border/60" aria-hidden>
+          <div className={`h-full rounded-full ${pct >= 0.9 ? "bg-danger" : "bg-brand"}`} style={{ width: `${Math.min(100, pct * 100)}%` }} />
+        </div>
+      ) : null}
       {hint ? <p className="text-xs text-muted">{hint}</p> : null}
     </>
   );
   return href ? (
-    <Link href={href} className="rounded-2xl border border-border bg-surface p-4 hover:border-foreground">
+    <Link href={href} className="rounded-2xl border border-border bg-surface p-4 transition hover:border-brand/40">
       {body}
     </Link>
   ) : (
@@ -205,49 +243,45 @@ function Stat({ label, value, hint, href }: { label: string; value: string; hint
   );
 }
 
-function FollowUpList({
-  title,
-  empty,
-  people,
-  message,
-}: {
-  title: string;
-  empty: string;
-  people: FollowUp[];
-  message: (p: FollowUp) => string;
-}) {
+function FollowUpList({ title, people, message }: { title: string; people: FollowUp[]; message: (p: FollowUp) => string }) {
   return (
-    <div className="space-y-2 rounded-2xl border border-border bg-surface p-4">
-      <p className="font-medium">
-        {title} <span className="text-muted">({people.length})</span>
+    <div className="space-y-1 rounded-2xl border border-border bg-surface p-4">
+      <p className="font-semibold">
+        {title} <span className="font-normal text-muted">· {people.length}</span>
       </p>
-      {people.length === 0 ? (
-        <p className="text-sm text-muted">{empty}</p>
-      ) : (
-        <ul className="divide-y divide-border">
-          {people.slice(0, 8).map((p) => {
-            const wa = whatsappLink(p.phone, message(p));
-            return (
-              <li key={p.studentId} className="flex items-center justify-between gap-3 py-2">
-                <Link href={`/panel/alumnos/${p.studentId}`} className="min-w-0">
-                  <p className="truncate text-sm font-medium">{p.name}</p>
-                  <p className="truncate text-xs text-muted">{p.detail}</p>
-                </Link>
-                {wa ? (
-                  <a
-                    href={wa}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 rounded-lg bg-[#25d366] px-3 py-1.5 text-xs font-semibold text-white"
-                  >
-                    WhatsApp
-                  </a>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <ul className="divide-y divide-border">
+        {people.slice(0, 6).map((p) => {
+          const wa = whatsappLink(p.phone, message(p));
+          const initials = p.name
+            .split(" ")
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((w) => w[0]!.toUpperCase())
+            .join("");
+          return (
+            <li key={p.studentId} className="flex items-center gap-3 py-2">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand">
+                {initials}
+              </span>
+              <Link href={`/panel/alumnos/${p.studentId}`} className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{p.name}</p>
+                <p className="truncate text-xs text-muted">{p.detail}</p>
+              </Link>
+              {wa ? (
+                <a
+                  href={wa}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 rounded-full bg-[#25d366] px-3 py-1.5 text-xs font-semibold text-white"
+                >
+                  WhatsApp
+                </a>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+      {people.length > 6 ? <p className="pt-1 text-xs text-muted">Y {people.length - 6} más.</p> : null}
     </div>
   );
 }

@@ -15,6 +15,8 @@ export type AgendaSession = {
   status: "scheduled" | "cancelled";
   capacity: number;
   booked: number;
+  /** Ya dieron el presente (con el QR del estudio o el profe). */
+  attended: number;
   leaders: number;
   followers: number;
 };
@@ -40,6 +42,13 @@ export async function listAgenda(studioId: string, from: Date, to: Date): Promis
 
   const byId = new Map((offerings ?? []).map((o) => [o.id, o]));
 
+  const ids = (rows ?? []).flatMap((r) => (r.session_id ? [r.session_id] : []));
+  const { data: present } = ids.length
+    ? await supabase.from("bookings").select("session_id").in("session_id", ids).eq("status", "attended")
+    : { data: [] };
+  const attendedBy = new Map<string, number>();
+  for (const b of present ?? []) attendedBy.set(b.session_id, (attendedBy.get(b.session_id) ?? 0) + 1);
+
   return (rows ?? []).flatMap((r) => {
     const offering = r.offering_id ? byId.get(r.offering_id) : undefined;
     if (!r.session_id || !offering || !r.starts_at || !r.ends_at || !r.status) return [];
@@ -56,6 +65,7 @@ export async function listAgenda(studioId: string, from: Date, to: Date): Promis
         status: r.status,
         capacity: r.capacity ?? 0,
         booked: r.booked_count ?? 0,
+        attended: attendedBy.get(r.session_id) ?? 0,
         leaders: r.leader_count ?? 0,
         followers: r.follower_count ?? 0,
       },
