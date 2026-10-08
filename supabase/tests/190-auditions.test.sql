@@ -28,7 +28,7 @@ insert into public.audition_slots (id, studio_id, audition_id, starts_at, ends_a
   ('e2000000-0000-4000-8000-000000000001', '10000000-0000-0000-0000-00000000000a', 'd0000000-0000-4000-8000-0000000000a1', now() + interval '3 days', now() + interval '3 days 20 minutes', 1),
   ('e2000000-0000-4000-8000-000000000002', '10000000-0000-0000-0000-00000000000a', 'd0000000-0000-4000-8000-0000000000a1', now() + interval '3 days 20 minutes', now() + interval '3 days 40 minutes', 1);
 
-select is(tests.count('anon', null, $$select id from public.audition_fields$$), 2, 'el formulario es público');
+select is(tests.count('anon', null, $$select id from public.audition_fields where audition_id = 'd0000000-0000-4000-8000-0000000000a1'$$), 2, 'el formulario es público');
 
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a3',
   $$select public.apply_to_audition('d0000000-0000-4000-8000-0000000000a1',

@@ -1037,6 +1037,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"studio_checkin_codes": {
+                  Row: {
+                    "code": string,"rotated_at": string,"studio_id": string
+                  }
+                  Insert: {
+                    "code"?: string,"rotated_at"?: string,"studio_id": string
+                  }
+                  Update: {
+                    "code"?: string,"rotated_at"?: string,"studio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "studio_checkin_codes_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: true
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"studio_invites": {
                   Row: {
                     "accepted_at": string | null,"accepted_by": string | null,"can_take_payments": boolean,"cancelled_at": string | null,"created_at": string,"display_name": string | null,"email": string,"expires_at": string,"id": string,"invited_by": string | null,"role": Database["public"]['Enums']["member_role"],"studio_id": string,"token": string
@@ -1748,6 +1767,12 @@ isOneToOne: false
                            },
 "remove_schedule":
 { Args: { "p_schedule_id": string }; Returns: number
+                           },
+"rotate_checkin_code":
+{ Args: { "p_studio_id": string }; Returns: string
+                           },
+"self_check_in":
+{ Args: { "p_code": string,"p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id"?: string }; Returns: Json
                            },
 "sell_event_tickets_manual":
 { Args: { "p_buyer_email"?: string,"p_buyer_name": string,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_quantity": number,"p_ticket_type_id": string }; Returns: {
