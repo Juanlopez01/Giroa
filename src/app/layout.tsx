@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Deja usar env(safe-area-inset-*) para que la barra de la app no quede bajo el borde del iPhone.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
