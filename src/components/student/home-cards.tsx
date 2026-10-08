@@ -51,17 +51,28 @@ export function NextClassCard({ booking, timeZone, now }: { booking: MyBooking; 
 }
 
 /** Anillo de créditos: lo que queda del pack, con el punto dorado del giro. */
-export function CreditsCard({ balances }: { balances: MyBalance[] }) {
+export function CreditsCard({
+  balances,
+  action = { href: "/app/packs", label: "Comprar", empty: "Ver packs", emptyHint: "Comprá un pack para reservar." },
+  emptyTitle = "No tenés clases disponibles",
+}: {
+  balances: MyBalance[];
+  /** Qué ofrecer al lado (en el panel: registrar un pago). null = nada. */
+  action?: { href: string; label: string; empty: string; emptyHint: string } | null;
+  emptyTitle?: string;
+}) {
   if (balances.length === 0) {
     return (
       <section className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4">
         <div>
-          <p className="font-semibold">No tenés clases disponibles</p>
-          <p className="text-sm text-muted">Comprá un pack para reservar.</p>
+          <p className="font-semibold">{emptyTitle}</p>
+          {action ? <p className="text-sm text-muted">{action.emptyHint}</p> : null}
         </div>
-        <Link href="/app/packs" className="inline-flex h-10 shrink-0 items-center rounded-full bg-brand px-4 text-sm font-medium text-brand-foreground">
-          Ver packs
-        </Link>
+        {action ? (
+          <Link href={action.href} className="inline-flex h-10 shrink-0 items-center rounded-full bg-brand px-4 text-sm font-medium text-brand-foreground">
+            {action.empty}
+          </Link>
+        ) : null}
       </section>
     );
   }
@@ -108,9 +119,11 @@ export function CreditsCard({ balances }: { balances: MyBalance[] }) {
           {expiry ? ` · vence el ${shortDate(expiry)}` : ""}
         </p>
       </div>
-      <Link href="/app/packs" className="shrink-0 text-sm font-medium text-brand">
-        Comprar
-      </Link>
+      {action ? (
+        <Link href={action.href} className="shrink-0 text-sm font-medium text-brand">
+          {action.label}
+        </Link>
+      ) : null}
     </section>
   );
 }

@@ -5,11 +5,14 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { studioOffersFeature } from "@/lib/packs.server";
-import { formatDayLabel, formatTime, toYmd } from "@/lib/datetime";
+import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { FormMessage } from "@/components/ui/field";
 import { setStudentActive, updateStudent } from "../actions";
 import { StudentForm } from "../student-form";
+import { CreditsCard } from "@/components/student/home-cards";
+import { myAttendance } from "@/lib/student-data.server";
+import { whatsappLink } from "@/lib/dashboard.server";
 
 export const metadata: Metadata = { title: "Alumno" };
 
@@ -58,38 +61,81 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
 
   const usable = (balances ?? []).filter((b) => b.is_usable);
   const past = (balances ?? []).filter((b) => !b.is_usable);
+  const attendance = await myAttendance(studio.id, student.id, tz, new Date(nowMs()));
+  const initials = student.full_name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w: string) => w[0]!.toUpperCase())
+    .join("");
+  const wa = whatsappLink(student.phone, `¡Hola ${student.full_name.split(" ")[0]}! Te escribimos de ${studio.name}.`);
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
-      <div className="space-y-1">
+      <div className="space-y-3">
         <Link href="/panel/alumnos" className="text-sm text-muted hover:text-foreground">
           ← Alumnos
         </Link>
-        <h1 className="text-2xl font-semibold">{student.full_name}</h1>
-        <p className="text-sm text-muted">
-          {student.user_id ? "Usa la app" : student.email ? "Todavía no entró a la app" : "Sin email: no puede usar la app"}
-          {student.is_active ? "" : " · Inactivo"}
-        </p>
+        <div className="flex items-center gap-4">
+          <span className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand/10 font-serif text-2xl font-semibold text-brand">
+            {initials}
+            {student.user_id ? <span className="absolute right-0 bottom-0 h-4 w-4 rounded-full bg-success ring-2 ring-background" /> : null}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate font-serif text-2xl font-semibold">{student.full_name}</h1>
+            <p className="text-sm text-muted">
+              {student.user_id ? "Usa la app" : student.email ? "Todavía no entró a la app" : "Sin email: no puede usar la app"}
+              {student.is_active ? "" : " · Inactivo"}
+            </p>
+          </div>
+          {wa ? (
+            <a
+              href={wa}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 rounded-full bg-[#25d366] px-4 py-2 text-sm font-semibold text-white"
+            >
+              WhatsApp
+            </a>
+          ) : null}
+        </div>
       </div>
 
       {isNew ? <FormMessage ok message="¡Alumno cargado! Cuando registres un pago, le aparece el saldo." /> : null}
       {paymentDone ? <FormMessage ok message="Pago registrado: el pack ya está acreditado." /> : null}
 
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">Saldo</h2>
-          {student.is_active && canTakePayments ? (
-            <Link
-              href={`/panel/pagos/nuevo?alumno=${student.id}`}
-              className="inline-flex h-10 items-center rounded-xl bg-brand px-4 text-sm font-medium text-brand-foreground"
-            >
-              Registrar pago
-            </Link>
-          ) : null}
+        <CreditsCard
+          balances={usable.flatMap((b) =>
+            b.student_pack_id
+              ? [{ id: b.student_pack_id, name: b.name ?? "Pack", remaining: b.credits_remaining, total: b.credits_total, expiresOn: b.expires_on }]
+              : [],
+          )}
+          emptyTitle="No tiene clases disponibles"
+          action={
+            student.is_active && canTakePayments
+              ? {
+                  href: `/panel/pagos/nuevo?alumno=${student.id}`,
+                  label: "Registrar pago",
+                  empty: "Registrar pago",
+                  emptyHint: "Cuando pague, le cargás el pack acá.",
+                }
+              : null
+          }
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-xs font-medium tracking-widest text-muted uppercase">Este mes</p>
+            <p className="mt-1 font-serif text-2xl font-semibold tabular-nums">{attendance.thisMonth}</p>
+            <p className="text-xs text-muted">{attendance.thisMonth === 1 ? "clase" : "clases"} con presente</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-xs font-medium tracking-widest text-muted uppercase">Mes pasado</p>
+            <p className="mt-1 font-serif text-2xl font-semibold tabular-nums">{attendance.lastMonth}</p>
+            <p className="text-xs text-muted">{attendance.lastMonth === 1 ? "clase" : "clases"} con presente</p>
+          </div>
         </div>
-        {usable.length === 0 ? (
-          <p className="text-muted">No tiene clases disponibles.</p>
-        ) : (
+        {usable.length > 1 ? (
           <ul className="space-y-2">
             {usable.map((b) => (
               <li key={b.student_pack_id} className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
@@ -106,7 +152,7 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
               </li>
             ))}
           </ul>
-        )}
+        ) : null}
         {past.length > 0 ? (
           <details className="text-sm">
             <summary className="cursor-pointer text-muted">Packs anteriores ({past.length})</summary>
