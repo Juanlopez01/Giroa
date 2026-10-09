@@ -90,7 +90,7 @@ export function HeroMockup() {
             </div>
 
             <p className="pt-1 text-[11px] font-semibold transition-colors" style={{ color: demo.color }}>
-              Hoy · Lunes 6/10
+              Hoy
             </p>
             {demo.classes.map((c) => (
               <div key={c.time + c.title} className="flex items-center justify-between gap-2 rounded-2xl bg-white p-3">
