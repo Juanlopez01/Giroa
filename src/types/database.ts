@@ -252,6 +252,49 @@ isOneToOne: false
       referencedColumns: ["studio_id","id"]
     }
                   ]
+                },"class_purchases": {
+                  Row: {
+                    "amount_cents": number,"booking_id": string | null,"created_at": string,"created_by": string | null,"external_reference": string,"hold_expires_at": string | null,"id": string,"method": Database["public"]['Enums']["payment_method"] | null,"mp_payment_id": string | null,"mp_preference_id": string | null,"notes": string | null,"paid_at": string | null,"session_id": string,"status": string,"student_id": string,"studio_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "amount_cents": number,"booking_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"external_reference"?: string,"hold_expires_at"?: string | null,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"] | null,"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"paid_at"?: string | null,"session_id": string,"status"?: string,"student_id": string,"studio_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"booking_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"external_reference"?: string,"hold_expires_at"?: string | null,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"] | null,"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"paid_at"?: string | null,"session_id"?: string,"status"?: string,"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "class_purchases_studio_id_booking_id_fkey"
+      columns: ["studio_id","booking_id"]
+isOneToOne: false
+      referencedRelation: "bookings"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "class_purchases_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "class_purchases_studio_id_session_id_fkey"
+      columns: ["studio_id","session_id"]
+isOneToOne: false
+      referencedRelation: "session_occupancy"
+      referencedColumns: ["studio_id","session_id"]
+    },{
+      foreignKeyName: "class_purchases_studio_id_session_id_fkey"
+      columns: ["studio_id","session_id"]
+isOneToOne: false
+      referencedRelation: "sessions"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "class_purchases_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
                 },"class_schedules": {
                   Row: {
                     "created_at": string,"duration_minutes": number,"id": string,"is_active": boolean,"offering_id": string,"start_time": string,"studio_id": string,"valid_from": string | null,"valid_until": string | null,"weekday": number
@@ -840,13 +883,13 @@ isOneToOne: false
                   ]
                 },"offerings": {
                   Row: {
-                    "capacity": number,"created_at": string,"description": string | null,"discipline_key": string,"id": string,"is_active": boolean,"kind": Database["public"]['Enums']["offering_kind"],"level": string | null,"price_cents": number | null,"role_balance_max_diff": number | null,"studio_id": string,"teacher_member_id": string | null,"teacher_name": string | null,"title": string,"updated_at": string
+                    "capacity": number,"created_at": string,"description": string | null,"discipline_key": string,"id": string,"is_active": boolean,"kind": Database["public"]['Enums']["offering_kind"],"level": string | null,"pack_allowed": boolean,"price_cents": number | null,"role_balance_max_diff": number | null,"studio_id": string,"teacher_member_id": string | null,"teacher_name": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "capacity": number,"created_at"?: string,"description"?: string | null,"discipline_key": string,"id"?: string,"is_active"?: boolean,"kind"?: Database["public"]['Enums']["offering_kind"],"level"?: string | null,"price_cents"?: number | null,"role_balance_max_diff"?: number | null,"studio_id": string,"teacher_member_id"?: string | null,"teacher_name"?: string | null,"title": string,"updated_at"?: string
+                    "capacity": number,"created_at"?: string,"description"?: string | null,"discipline_key": string,"id"?: string,"is_active"?: boolean,"kind"?: Database["public"]['Enums']["offering_kind"],"level"?: string | null,"pack_allowed"?: boolean,"price_cents"?: number | null,"role_balance_max_diff"?: number | null,"studio_id": string,"teacher_member_id"?: string | null,"teacher_name"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "capacity"?: number,"created_at"?: string,"description"?: string | null,"discipline_key"?: string,"id"?: string,"is_active"?: boolean,"kind"?: Database["public"]['Enums']["offering_kind"],"level"?: string | null,"price_cents"?: number | null,"role_balance_max_diff"?: number | null,"studio_id"?: string,"teacher_member_id"?: string | null,"teacher_name"?: string | null,"title"?: string,"updated_at"?: string
+                    "capacity"?: number,"created_at"?: string,"description"?: string | null,"discipline_key"?: string,"id"?: string,"is_active"?: boolean,"kind"?: Database["public"]['Enums']["offering_kind"],"level"?: string | null,"pack_allowed"?: boolean,"price_cents"?: number | null,"role_balance_max_diff"?: number | null,"studio_id"?: string,"teacher_member_id"?: string | null,"teacher_name"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1362,6 +1405,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"book_session_paid":
+{ Args: { "p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id": string }; Returns: Json
+                           },
 "cancel_audition_application":
 { Args: { "p_application_id": string }; Returns: undefined
                            },
@@ -1657,6 +1703,9 @@ isOneToOne: false
               "on_sale": boolean,"remaining": number,"ticket_type_id": string
             }[]
                            },
+"expire_class_purchases":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "expire_event_orders":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -1788,10 +1837,13 @@ isOneToOne: false
                            },
 "list_public_sessions":
 { Args: { "p_from": string,"p_slug": string,"p_to": string }; Returns: {
-              "booked_count": number,"capacity": number,"description": string,"discipline_key": string,"discipline_name": string,"ends_at": string,"follower_count": number,"leader_count": number,"level": string,"offering_id": string,"role_balance": boolean,"role_balance_max_diff": number,"session_id": string,"spots_left": number,"starts_at": string,"status": Database["public"]['Enums']["session_status"],"teacher_name": string,"title": string
+              "booked_count": number,"capacity": number,"description": string,"discipline_key": string,"discipline_name": string,"ends_at": string,"follower_count": number,"kind": Database["public"]['Enums']["offering_kind"],"leader_count": number,"level": string,"offering_id": string,"pack_allowed": boolean,"price_cents": number,"role_balance": boolean,"role_balance_max_diff": number,"session_id": string,"spots_left": number,"starts_at": string,"status": Database["public"]['Enums']["session_status"],"teacher_name": string,"title": string
             }[]
                            },
 "mp_apply_audition_payment":
+{ Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string }; Returns: Json
+                           },
+"mp_apply_class_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string }; Returns: Json
                            },
 "mp_apply_event_payment":
@@ -1827,6 +1879,9 @@ isOneToOne: false
                            },
 "record_audition_payment":
 { Args: { "p_application_id": string,"p_method": Database["public"]['Enums']["payment_method"] }; Returns: undefined
+                           },
+"record_class_payment":
+{ Args: { "p_method": Database["public"]['Enums']["payment_method"],"p_purchase_id": string }; Returns: Json
                            },
 "record_formation_payment":
 { Args: { "p_charge_id": string,"p_method": Database["public"]['Enums']["payment_method"] }; Returns: {
@@ -1872,6 +1927,9 @@ isOneToOne: false
                            },
 "self_check_in":
 { Args: { "p_code": string,"p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id"?: string }; Returns: Json
+                           },
+"sell_class_manual":
+{ Args: { "p_method": Database["public"]['Enums']["payment_method"],"p_role"?: Database["public"]['Enums']["dance_role"],"p_session_id": string,"p_student_id": string }; Returns: Json
                            },
 "sell_event_tickets_manual":
 { Args: { "p_buyer_email"?: string,"p_buyer_name": string,"p_method": Database["public"]['Enums']["payment_method"],"p_notes"?: string,"p_quantity": number,"p_ticket_type_id": string }; Returns: {
