@@ -4,6 +4,7 @@ import { formatArs } from "@/lib/money";
 import { platformUrl } from "@/lib/urls";
 import { FounderForm } from "./founder-form";
 import { HeroMockup } from "./hero-mockup";
+import { PanelMockup } from "./panel-mockup";
 import { isPlanComingSoon } from "@/lib/gating";
 
 export const metadata: Metadata = {
@@ -137,6 +138,22 @@ export default async function LandingPage() {
             <li>✓ Tu marca: tu logo y tu color.</li>
           </ul>
         </article>
+      </section>
+
+      {/* ------------------------------------------------------------ el panel del dueño */}
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 pb-16 lg:grid-cols-[1fr_1.2fr]">
+        <div>
+          <p className="text-sm font-medium tracking-wide text-[var(--gold)] uppercase">Tu panel</p>
+          <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">Abrís el panel y sabés cómo está tu estudio.</h2>
+          <ul className="mt-6 space-y-3 text-muted">
+            <li>✓ Lo cobrado en el mes, por efectivo, transferencia y Mercado Pago.</li>
+            <li>✓ La clase en curso, con los presentes en vivo: los alumnos se lo dan solos con el QR del estudio.</li>
+            <li>✓ A quién escribirle hoy: packs por vencer, quién viene sin saldo y quién probó y no volvió. WhatsApp en un toque.</li>
+            <li>✓ Qué clases se llenan y cuáles conviene mover.</li>
+            <li>✓ Se instala en el celu como una app, para el dueño y los profes.</li>
+          </ul>
+        </div>
+        <PanelMockup />
       </section>
 
       {/* ------------------------------------------------------------ balance de roles */}
