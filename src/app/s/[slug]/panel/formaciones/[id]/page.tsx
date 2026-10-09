@@ -26,11 +26,12 @@ export default async function FormationPage({ params, searchParams }: PageProps<
   const tz = studio.timezone;
   const supabase = await createClient();
 
-  const [{ data: f }, { data: sessions }, { data: assessments }, { data: enrollments }] = await Promise.all([
+  const [{ data: f }, { data: sessions }, { data: assessments }, { data: enrollments }, { count: materialsCount }] = await Promise.all([
     supabase.from("formations").select("*").eq("id", id).eq("studio_id", studio.id).maybeSingle(),
     supabase.from("formation_sessions").select("*").eq("formation_id", id).order("starts_at"),
     supabase.from("formation_assessments").select("*").eq("formation_id", id).order("created_at"),
     supabase.from("formation_enrollments").select("status").eq("formation_id", id),
+    supabase.from("formation_materials").select("id", { count: "exact", head: true }).eq("formation_id", id),
   ]);
   if (!f) notFound();
 
@@ -74,6 +75,21 @@ export default async function FormationPage({ params, searchParams }: PageProps<
           </span>
         </span>
         <span className="shrink-0 font-medium text-brand">Ver →</span>
+      </Link>
+
+      <Link
+        href={`/panel/formaciones/${f.id}/material`}
+        className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-foreground"
+      >
+        <span>
+          <span className="block font-semibold">Material</span>
+          <span className="block text-sm text-muted">
+            {materialsCount
+              ? `${materialsCount} ${materialsCount === 1 ? "archivo o link" : "archivos y links"} para los inscriptos`
+              : "Apuntes, audios y links para los inscriptos."}
+          </span>
+        </span>
+        <span className="shrink-0 font-medium text-brand">{materialsCount ? "Ver →" : "Subir →"}</span>
       </Link>
 
       {isAdmin ? (
