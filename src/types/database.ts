@@ -951,13 +951,13 @@ isOneToOne: false
                   ]
                 },"pack_products": {
                   Row: {
-                    "created_at": string,"credits": number | null,"description": string | null,"id": string,"is_active": boolean,"is_couple": boolean,"name": string,"price_cents": number,"sort": number,"studio_id": string,"updated_at": string,"validity_days": number
+                    "created_at": string,"credits": number | null,"description": string | null,"id": string,"is_active": boolean,"is_couple": boolean,"name": string,"price_cents": number,"rules": NonNullable<Json>,"sort": number,"studio_id": string,"updated_at": string,"validity_days": number
                   }
                   Insert: {
-                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"name": string,"price_cents": number,"sort"?: number,"studio_id": string,"updated_at"?: string,"validity_days": number
+                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"name": string,"price_cents": number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id": string,"updated_at"?: string,"validity_days": number
                   }
                   Update: {
-                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"name"?: string,"price_cents"?: number,"sort"?: number,"studio_id"?: string,"updated_at"?: string,"validity_days"?: number
+                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"name"?: string,"price_cents"?: number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id"?: string,"updated_at"?: string,"validity_days"?: number
                   }
                   Relationships: [
                     {
@@ -1113,13 +1113,13 @@ isOneToOne: false
                   ]
                 },"student_packs": {
                   Row: {
-                    "created_at": string,"credits_total": number | null,"credits_used": number,"expires_at": string,"frozen_at": string | null,"id": string,"name": string,"pack_product_id": string | null,"partner_student_id": string | null,"payment_id": string | null,"starts_at": string,"status": Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at": string
+                    "created_at": string,"credits_total": number | null,"credits_used": number,"expires_at": string,"frozen_at": string | null,"id": string,"name": string,"pack_product_id": string | null,"partner_student_id": string | null,"payment_id": string | null,"rules": NonNullable<Json>,"starts_at": string,"status": Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at": string,"frozen_at"?: string | null,"id"?: string,"name": string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at"?: string
+                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at": string,"frozen_at"?: string | null,"id"?: string,"name": string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"rules"?: NonNullable<Json>,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at"?: string,"frozen_at"?: string | null,"id"?: string,"name"?: string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at"?: string,"frozen_at"?: string | null,"id"?: string,"name"?: string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"rules"?: NonNullable<Json>,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1757,6 +1757,7 @@ isOneToOne: false
 "pack_product_id": string | null,
 "partner_student_id": string | null,
 "payment_id": string | null,
+"rules": NonNullable<Json>,
 "starts_at": string,
 "status": Database["public"]['Enums']["pack_status"],
 "student_id": string,

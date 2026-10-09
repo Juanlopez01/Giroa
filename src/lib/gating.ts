@@ -39,6 +39,7 @@ export const FEATURES = [
   "teacher_permissions",
   "announcements",
   "drop_in",
+  "pack_rules",
   // Pro
   "certificates",
   "audition_jury",
