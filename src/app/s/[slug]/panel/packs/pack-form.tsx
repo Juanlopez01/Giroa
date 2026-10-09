@@ -14,6 +14,7 @@ export type PackFormValues = {
   validityDays: number;
   price: string;
   isCouple: boolean;
+  isMembership?: boolean;
   rules?: PackRules;
 };
 
@@ -22,11 +23,13 @@ type Props = {
   initial?: PackFormValues;
   allowCouple: boolean;
   submitLabel: string;
+  /** El plan incluye abonos mensuales. */
+  allowMembership?: boolean;
   /** Opciones para las restricciones (null si el plan no las incluye). */
   ruleOptions?: { disciplines: { key: string; name: string }[]; offerings: { id: string; title: string }[] } | null;
 };
 
-export function PackForm({ action, initial, allowCouple, submitLabel, ruleOptions = null }: Props) {
+export function PackForm({ action, initial, allowCouple, submitLabel, allowMembership = false, ruleOptions = null }: Props) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [unlimited, setUnlimited] = useState(initial ? initial.credits === null : false);
   const errors = state.fieldErrors ?? {};
@@ -101,6 +104,25 @@ export function PackForm({ action, initial, allowCouple, submitLabel, ruleOption
             <span className="block font-medium">Pack de pareja</span>
             <span className="block text-sm text-muted">
               Dos alumnos comparten el mismo saldo de clases. A la pareja la asignás al registrar el pago.
+            </span>
+          </span>
+        </label>
+      ) : null}
+
+      {allowMembership ? (
+        <label className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4">
+          <input
+            type="checkbox"
+            name="isMembership"
+            defaultChecked={initial?.isMembership}
+            className="mt-1 h-5 w-5 accent-[var(--brand)]"
+          />
+          <span>
+            <span className="block font-medium">Abono mensual</span>
+            <span className="block text-sm text-muted">
+              Tus alumnos se pueden abonar: Mercado Pago les cobra el precio todos los meses y cada cobro les carga
+              las clases del mes. Lo que no usan no se acumula. Si después cambiás el precio, los abonos que ya
+              existen siguen con el precio anterior.
             </span>
           </span>
         </label>

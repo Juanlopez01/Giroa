@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { describePackRules, parsePackRules } from "@/lib/pack-rules";
 import { packRuleNames } from "@/lib/packs.server";
 import type { Metadata } from "next";
@@ -10,6 +11,8 @@ import { RedeemGiftForm } from "./redeem-form";
 import { BuyButton } from "./buy-button";
 import { previewCoupon } from "../../coupon-actions";
 import { can } from "@/lib/gating";
+import { startMembership } from "../perfil/abono/actions";
+import { StartMembershipButton } from "@/components/student/membership-buttons";
 
 export const metadata: Metadata = { title: "Packs" };
 
@@ -18,14 +21,14 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
   const regalo = (await searchParams).regalo;
   const giftCode = typeof regalo === "string" && /^[A-Za-z0-9-]{4,30}$/.test(regalo) ? regalo.toUpperCase() : "";
   // Si viene del QR de una gift card, se conserva el código al pedir login.
-  const { studio } = await requireStudent(slug, giftCode ? `/app/packs?regalo=${giftCode}` : "/app/packs");
+  const { studio, student } = await requireStudent(slug, giftCode ? `/app/packs?regalo=${giftCode}` : "/app/packs");
   const supabase = await createClient();
   const ruleNames = await packRuleNames(studio.id);
 
-  const [{ data: packs }, { data: canPayOnline }, couponsOn, giftsOn] = await Promise.all([
+  const [{ data: packs }, { data: canPayOnline }, couponsOn, giftsOn, membershipsOn] = await Promise.all([
     supabase
       .from("pack_products")
-      .select("id, name, description, credits, validity_days, price_cents, rules")
+      .select("id, name, description, credits, validity_days, price_cents, rules, is_membership")
       .eq("studio_id", studio.id)
       .eq("is_active", true)
       .order("sort")
@@ -33,7 +36,13 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
     supabase.rpc("studio_accepts_online_payments", { p_studio_id: studio.id }),
     can(studio.id, "coupons"),
     can(studio.id, "gift_cards"),
+    can(studio.id, "memberships"),
   ]);
+  // Packs a los que ya está abonado (no se ofrece abonarse de nuevo).
+  const { data: mySubs } = membershipsOn
+    ? await supabase.from("student_subscriptions").select("pack_product_id").eq("student_id", student.id).in("status", ["active", "past_due"])
+    : { data: [] };
+  const subscribed = new Set((mySubs ?? []).map((s) => s.pack_product_id));
 
   // El que sale más barato por clase (si hay más de uno con clases contadas).
   const perClass = (p: { credits: number | null; price_cents: number }) => (p.credits ? p.price_cents / p.credits : null);
@@ -77,8 +86,19 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
                 </div>
               </div>
               {p.description ? <p className="text-sm">{p.description}</p> : null}
+              {membershipsOn && p.is_membership && subscribed.has(p.id) ? (
+                <Link href="/app/perfil/abono" className="block rounded-2xl bg-brand/10 px-4 py-3 text-sm font-medium text-brand">
+                  Ya estás abonado/a: se cobra solo todos los meses. Ver mi abono →
+                </Link>
+              ) : canPayOnline && membershipsOn && p.is_membership && p.price_cents > 0 ? (
+                <StartMembershipButton
+                  start={startMembership.bind(null, slug, p.id)}
+                  label={`Abonarme · ${formatArs(p.price_cents)} por mes`}
+                />
+              ) : null}
               {canPayOnline ? (
                 <BuyButton
+                  label={membershipsOn && p.is_membership ? "Comprar una sola vez" : undefined}
                   buy={buyPack.bind(null, slug, p.id)}
                   preview={couponsOn && p.price_cents > 0 ? previewCoupon.bind(null, slug, "packs", p.price_cents) : undefined}
                 />

@@ -24,7 +24,7 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
   const now = new Date(nowMs());
 
   const supabase = await createClient();
-  const [balances, bookings, attendance, { data: trialAvailable }, { data: announcements }, { data: dismissed }] = await Promise.all([
+  const [balances, bookings, attendance, { data: trialAvailable }, { data: announcements }, { data: dismissed }, { data: failedSubs }] = await Promise.all([
     myBalances(studio.id, student.id),
     myUpcomingBookings(studio.id, student.id, now),
     myAttendance(studio.id, student.id, tz, now),
@@ -38,6 +38,8 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
       .order("created_at", { ascending: false })
       .limit(5),
     supabase.from("announcement_dismissals").select("announcement_id").eq("student_id", student.id),
+    // Abonos con el último cobro rechazado.
+    supabase.from("student_subscriptions").select("id, name").eq("student_id", student.id).eq("status", "past_due"),
   ]);
   const trial = Boolean(trialAvailable) && balances.length === 0;
   const firstName = student.full_name.split(" ")[0];
@@ -51,6 +53,12 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
         items={(announcements ?? []).filter((a) => !(dismissed ?? []).some((d) => d.announcement_id === a.id)).slice(0, 3)}
         dismiss={dismissAnnouncement.bind(null, slug)}
       />
+      {failedSubs?.length ? (
+        <Link href="/app/perfil/abono" className="block rounded-2xl bg-danger/10 p-4 text-danger">
+          <span className="block font-semibold">No pudimos cobrar tu abono {failedSubs[0]!.name}</span>
+          <span className="block text-sm">Revisá tu tarjeta en Mercado Pago. Ver mi abono →</span>
+        </Link>
+      ) : null}
       <InstallPrompt studioName={studio.name} />
 
       <div>

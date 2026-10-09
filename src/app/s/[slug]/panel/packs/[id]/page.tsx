@@ -9,6 +9,7 @@ import { packRuleOptions, studioOffersCouplePacks } from "@/lib/packs.server";
 import { parsePackRules } from "@/lib/pack-rules";
 import { setPackActive, updatePack } from "../actions";
 import { PackForm } from "../pack-form";
+import { can } from "@/lib/gating";
 
 export const metadata: Metadata = { title: "Pack" };
 
@@ -18,10 +19,11 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
   const { studio } = await requireAdmin(slug, `/panel/packs/${id}`);
   const supabase = await createClient();
 
-  const [{ data: pack }, allowCouple, ruleOptions] = await Promise.all([
+  const [{ data: pack }, allowCouple, ruleOptions, allowMembership] = await Promise.all([
     supabase.from("pack_products").select("*").eq("id", id).eq("studio_id", studio.id).maybeSingle(),
     studioOffersCouplePacks(studio.id),
     packRuleOptions(studio.id),
+    can(studio.id, "memberships"),
   ]);
   if (!pack) notFound();
 
@@ -40,6 +42,7 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
         allowCouple={allowCouple || pack.is_couple}
         submitLabel="Guardar cambios"
         ruleOptions={ruleOptions}
+        allowMembership={allowMembership || pack.is_membership}
         initial={{
           name: pack.name,
           description: pack.description ?? "",
@@ -47,6 +50,7 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
           validityDays: pack.validity_days,
           price: centsToInput(pack.price_cents),
           isCouple: pack.is_couple,
+          isMembership: pack.is_membership,
           rules: parsePackRules(pack.rules),
         }}
       />

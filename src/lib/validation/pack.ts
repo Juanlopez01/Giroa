@@ -29,6 +29,7 @@ export const packSchema = z
       return cents;
     }),
     isCouple: z.preprocess((v) => v === "on" || v === true, z.boolean()),
+    isMembership: z.preprocess((v) => v === "on" || v === true, z.boolean()),
   })
   .superRefine((p, ctx) => {
     if (!p.unlimited && (p.credits === undefined || p.credits < 1 || p.credits > 1000)) {

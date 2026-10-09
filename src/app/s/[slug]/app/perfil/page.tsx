@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, History, LogOut, QrCode, Ticket, UserRound, type LucideIcon } from "lucide-react";
+import { ChevronRight, History, LogOut, QrCode, Repeat, Ticket, UserRound, type LucideIcon } from "lucide-react";
 import { requireStudent } from "@/lib/student-app";
 import { myBalances } from "@/lib/student-data.server";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { CreditsCard } from "@/components/student/home-cards";
 import { Avatar } from "@/components/ui/avatar";
 import { signOutFromStudio } from "./actions";
+import { can } from "@/lib/gating";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -20,7 +21,10 @@ const ITEMS: { href: string; label: string; hint: string; icon: LucideIcon }[] =
 export default async function StudentProfilePage({ params }: PageProps<"/s/[slug]/app/perfil">) {
   const { slug } = await params;
   const { studio, student, user } = await requireStudent(slug, "/app/perfil");
-  const balances = await myBalances(studio.id, student.id);
+  const [balances, membershipsOn] = await Promise.all([myBalances(studio.id, student.id), can(studio.id, "memberships")]);
+  const items = membershipsOn
+    ? [ITEMS[0]!, { href: "/app/perfil/abono", label: "Mi abono", hint: "Débito mensual: ver o dar de baja", icon: Repeat }, ...ITEMS.slice(1)]
+    : ITEMS;
 
   return (
     <div className="space-y-6">
@@ -38,7 +42,7 @@ export default async function StudentProfilePage({ params }: PageProps<"/s/[slug
       <CreditsCard balances={balances} />
 
       <nav className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
-        {ITEMS.map(({ href, label, hint, icon: Icon }) => (
+        {items.map(({ href, label, hint, icon: Icon }) => (
           <Link key={href} href={href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-border/30">
             <Icon className="h-5 w-5 shrink-0 text-muted" aria-hidden />
             <span className="min-w-0 flex-1">

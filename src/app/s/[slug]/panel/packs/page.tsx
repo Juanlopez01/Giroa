@@ -19,7 +19,7 @@ export default async function PacksPage({ params, searchParams }: PageProps<"/s/
 
   const { data: packs } = await supabase
     .from("pack_products")
-    .select("id, name, credits, validity_days, price_cents, is_couple, is_active, rules")
+    .select("id, name, credits, validity_days, price_cents, is_couple, is_active, rules, is_membership")
     .eq("studio_id", studio.id)
     .order("is_active", { ascending: false })
     .order("sort")
@@ -68,6 +68,7 @@ export default async function PacksPage({ params, searchParams }: PageProps<"/s/
                   <p className="font-medium">
                     {p.name}
                     {p.is_couple ? <span className="ml-2 text-xs font-normal text-muted">Pareja</span> : null}
+                    {p.is_membership ? <span className="ml-2 text-xs font-normal text-brand">Abono mensual</span> : null}
                     {!p.is_active ? <span className="ml-2 text-xs font-normal text-muted">Pausado</span> : null}
                   </p>
                   <p className="text-sm text-muted">{packSummary(p.credits, p.validity_days)}</p>

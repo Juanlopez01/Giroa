@@ -41,7 +41,7 @@ export async function listIncome(studioId: string, from: Date, to: Date): Promis
   const [packs, events, gifts, charges, auditions, classes] = await Promise.all([
     supabase
       .from("payments")
-      .select("id, amount_cents, method, paid_at, notes, students!payments_studio_id_student_id_fkey(id, full_name), pack_products(name)")
+      .select("id, amount_cents, method, paid_at, notes, subscription_id, students!payments_studio_id_student_id_fkey(id, full_name), pack_products(name)")
       .eq("studio_id", studioId)
       .eq("status", "approved")
       .gte("paid_at", range.from)
@@ -104,7 +104,7 @@ export async function listIncome(studioId: string, from: Date, to: Date): Promis
       paidAt: p.paid_at,
       who: p.students?.full_name ?? "Alumno",
       studentId: p.students?.id ?? null,
-      what: p.pack_products?.name ?? "Pack",
+      what: p.subscription_id ? `Abono · ${p.pack_products?.name ?? "Pack"}` : (p.pack_products?.name ?? "Pack"),
       note: p.notes,
     });
   }

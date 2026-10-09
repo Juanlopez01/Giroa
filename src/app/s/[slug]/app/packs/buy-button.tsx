@@ -9,8 +9,10 @@ import { formatArs } from "@/lib/money";
 export function BuyButton({
   buy,
   preview,
+  label = "Comprar con Mercado Pago",
 }: {
   buy: (coupon: string | null) => Promise<ActionState>;
+  label?: string;
   /** Solo si el estudio tiene cupones. */
   preview?: (code: string) => Promise<CouponPreview>;
 }) {
@@ -30,7 +32,7 @@ export function BuyButton({
           ? "Abriendo Mercado Pago…"
           : coupon
             ? `Pagar ${formatArs(coupon.finalCents)} con Mercado Pago`
-            : "Comprar con Mercado Pago"}
+            : label}
       </button>
       {result && !result.ok ? <p className="text-sm text-danger">{result.message}</p> : null}
     </div>

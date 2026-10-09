@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/panel";
 import { formatArs } from "@/lib/money";
 import { formatTime, startOfDay, todayYmd, toYmd } from "@/lib/datetime";
 import { INCOME_KIND_LABELS, listIncome, type IncomeKind } from "@/lib/income.server";
+import { can } from "@/lib/gating";
 
 export const metadata: Metadata = { title: "Pagos" };
 
@@ -29,7 +30,10 @@ export default async function PaymentsPage({ params, searchParams }: PageProps<"
   const month = typeof sp.mes === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(sp.mes) ? sp.mes : currentMonth;
   const kind = KINDS.find((k) => k === sp.tipo) ?? null;
 
-  const all = await listIncome(studio.id, startOfDay(`${month}-01`, tz), startOfDay(`${shiftMonth(month, 1)}-01`, tz));
+  const [all, membershipsOn] = await Promise.all([
+    listIncome(studio.id, startOfDay(`${month}-01`, tz), startOfDay(`${shiftMonth(month, 1)}-01`, tz)),
+    can(studio.id, "memberships"),
+  ]);
   const list = kind ? all.filter((i) => i.kind === kind) : all;
   const total = list.reduce((sum, p) => sum + p.amountCents, 0);
   const byMethod = new Map<string, number>();
@@ -53,12 +57,22 @@ export default async function PaymentsPage({ params, searchParams }: PageProps<"
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-serif text-3xl font-semibold">Pagos</h1>
-        <Link
+        <div className="flex gap-2">
+          {membershipsOn ? (
+            <Link
+              href="/panel/pagos/abonos"
+              className="inline-flex h-10 items-center rounded-full border border-border bg-surface px-4 text-sm font-medium"
+            >
+              Abonos
+            </Link>
+          ) : null}
+          <Link
           href="/panel/pagos/nuevo"
           className="inline-flex h-10 items-center rounded-full bg-brand px-4 text-sm font-medium text-brand-foreground"
         >
           + Registrar pago
-        </Link>
+          </Link>
+        </div>
       </div>
 
       <div className="flex items-center justify-between rounded-full border border-border bg-surface p-1">

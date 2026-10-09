@@ -106,6 +106,13 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   0=domingo, `from`/`until` HH:MM según la hora de inicio local), copiado a `student_packs.rules` al crearse
   (trigger). El crédito se toma con `private.take_credit_for_session(session, student)` (pack que sirve y vence
   antes; si ninguno sirve: `pack_not_valid`). No uses `private.take_credit` en código nuevo. Texto: `src/lib/pack-rules.ts`.
+- Abonos mensuales (`memberships`): `pack_products.is_membership`; el alumno se abona con `start_membership` y el servidor crea
+  un débito automático de MP (preapproval) **con el token del estudio** (`src/lib/mp/memberships.ts`, `"abono:<uuid>"`) y lo
+  vincula con `mp_link_membership`. `student_subscriptions` (pending → active ↔ past_due → cancelled). Cada cobro aprobado
+  (`mp_apply_membership_charge`, idempotente por pago de MP) crea un `payments` con `subscription_id` y el pack del mes, que
+  vence al próximo cobro + 3 días; el pack del mes anterior vence en ese momento (lo no usado se pierde). El webhook reconoce
+  los abonos por `mp_preapproval_id` o por el `user_id` del aviso (`mp_connections.mp_user_id`); si no, es una suscripción a
+  Giroa. Baja (`cancelMembershipFor`): primero se cancela en MP, después `cancel_membership`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

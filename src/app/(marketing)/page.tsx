@@ -51,6 +51,7 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
       "Lista de espera y clase de prueba",
       "Workshops y clases sueltas",
       "Packs con restricciones (días, horarios, disciplinas)",
+      "Abonos mensuales con débito automático",
       "Cupones y gift cards",
       "Anuncios a tus alumnos",
       "Referidos",
