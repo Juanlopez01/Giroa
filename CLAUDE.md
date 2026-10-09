@@ -90,6 +90,10 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   alumno lo escanea y `self_check_in` le da el presente desde 30 min antes hasta que termina: clase
   reservada, reservar en el momento (`walk_in`) o encuentro de su formación (bloquea si debe).
   `rotate_checkin_code` invalida los carteles viejos. El QR del alumno (`check_in_by_qr`) queda de respaldo.
+- Material de formaciones (`formation_materials`): archivos en el bucket **privado** `formation-materials`
+  (`<studio>/<formación>/<archivo>`, 50 MB, PDF/imagen/audio; videos por link) o links. Lo carga el
+  staff; lo ven el staff y los inscriptos al día (`private.formation_material_access`, con deuda no). El
+  alumno abre los archivos con URLs firmadas de 10 minutos.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.
