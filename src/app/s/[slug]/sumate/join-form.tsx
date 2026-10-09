@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FormMessage, Input } from "@/components/ui/field";
 import { initialActionState, type ActionState } from "@/lib/errors";
 import { ROLE_LABELS } from "@/lib/disciplines";
+import { marketingUrl } from "@/lib/urls";
 
 export function JoinForm({
   action,
@@ -55,6 +56,13 @@ export function JoinForm({
       <Button type="submit" disabled={pending}>
         {pending ? "Sumándote…" : "Sumarme"}
       </Button>
+      <p className="text-center text-xs text-muted">
+        Tus datos los usa el estudio para tus reservas y pagos.{" "}
+        <a href={marketingUrl("/privacidad")} target="_blank" rel="noopener noreferrer" className="underline">
+          Política de privacidad
+        </a>
+        .
+      </p>
     </ActionForm>
   );
 }

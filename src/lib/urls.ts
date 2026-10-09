@@ -14,6 +14,12 @@ export function platformUrl(path = "/"): string {
   return `${protocol(root)}//app.${root}${path}`;
 }
 
+/** URL absoluta en giroa.com.ar (landing, términos, privacidad). */
+export function marketingUrl(path = "/"): string {
+  const root = publicEnv().NEXT_PUBLIC_ROOT_DOMAIN;
+  return `${protocol(root)}//${root}${path}`;
+}
+
 /** URL absoluta en el subdominio del estudio. */
 export function studioUrl(slug: string, path = "/"): string {
   const root = publicEnv().NEXT_PUBLIC_ROOT_DOMAIN;

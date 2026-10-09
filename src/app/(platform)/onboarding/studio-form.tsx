@@ -6,6 +6,7 @@ import { ActionForm } from "@/components/ui/action-form";
 import { Field, FormMessage, Input } from "@/components/ui/field";
 import { initialActionState } from "@/lib/errors";
 import { slugify } from "@/lib/slug";
+import { marketingUrl } from "@/lib/urls";
 import { checkSlug, createStudio, type SlugStatus } from "./actions";
 
 const slugMessages: Record<SlugStatus, string> = {
@@ -92,6 +93,17 @@ export function StudioForm({ rootDomain }: { rootDomain: string }) {
       <Button type="submit" disabled={pending || current === "taken" || current === "reserved"}>
         {pending ? "Creando tu estudio…" : "Crear estudio"}
       </Button>
+      <p className="text-center text-xs text-muted">
+        Al crear tu estudio aceptás los{" "}
+        <a href={marketingUrl("/terminos")} target="_blank" rel="noopener noreferrer" className="underline">
+          Términos de uso
+        </a>{" "}
+        y la{" "}
+        <a href={marketingUrl("/privacidad")} target="_blank" rel="noopener noreferrer" className="underline">
+          Política de privacidad
+        </a>
+        .
+      </p>
     </ActionForm>
   );
 }
