@@ -1,24 +1,26 @@
 import "server-only";
 import { z } from "zod";
 import { giroaMercadoPagoEnv } from "@/lib/env.server";
+import { MpError } from "@/lib/mp/api";
 
-// Suscripciones de los estudios a Giroa (Mercado Pago "preapproval"). Cobran en
-// la cuenta de Giroa, con el access token de Giroa (no el de los estudios).
+// Débitos automáticos de Mercado Pago ("preapproval"). Sin token, son las
+// suscripciones de los estudios a Giroa (cobran en la cuenta de Giroa). Con el
+// token de un estudio, los abonos de sus alumnos (src/lib/mp/memberships.ts).
 
 const API = "https://api.mercadopago.com";
 
-async function giroaFetch(path: string, init: RequestInit): Promise<unknown> {
+export async function preapprovalFetch(path: string, init: RequestInit, token?: string): Promise<unknown> {
   const res = await fetch(`${API}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${giroaMercadoPagoEnv().MP_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${token ?? giroaMercadoPagoEnv().MP_ACCESS_TOKEN}`,
       ...init.headers,
     },
     cache: "no-store",
   });
   const body = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(`Mercado Pago respondió ${res.status} en ${path}: ${JSON.stringify(body)}`);
+  if (!res.ok) throw new MpError(`Mercado Pago respondió ${res.status} en ${path}: ${JSON.stringify(body)}`, res.status, body);
   return body;
 }
 
@@ -43,7 +45,7 @@ export function decodeRef(ref: string | null | undefined): SubscriptionRef | nul
   return parsed.success ? parsed.data : null;
 }
 
-const preapprovalSchema = z.object({
+export const preapprovalSchema = z.object({
   id: z.string(),
   status: z.string(),
   init_point: z.string().nullish(),
@@ -61,7 +63,7 @@ export async function createPreapproval(input: {
   backUrl: string;
   ref: SubscriptionRef;
 }): Promise<Preapproval> {
-  const body = await giroaFetch("/preapproval", {
+  const body = await preapprovalFetch("/preapproval", {
     method: "POST",
     body: JSON.stringify({
       reason: input.reason,
@@ -80,21 +82,36 @@ export async function createPreapproval(input: {
   return preapprovalSchema.parse(body);
 }
 
-export async function getPreapproval(id: string): Promise<Preapproval> {
-  return preapprovalSchema.parse(await giroaFetch(`/preapproval/${encodeURIComponent(id)}`, { method: "GET" }));
+export async function getPreapproval(id: string, token?: string): Promise<Preapproval> {
+  return preapprovalSchema.parse(await preapprovalFetch(`/preapproval/${encodeURIComponent(id)}`, { method: "GET" }, token));
 }
 
-export async function cancelPreapproval(id: string): Promise<void> {
-  await giroaFetch(`/preapproval/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ status: "cancelled" }) });
+export async function cancelPreapproval(id: string, token?: string): Promise<void> {
+  await preapprovalFetch(
+    `/preapproval/${encodeURIComponent(id)}`,
+    { method: "PUT", body: JSON.stringify({ status: "cancelled" }) },
+    token,
+  );
 }
 
 const authorizedPaymentSchema = z.object({
+  id: z.union([z.number(), z.string()]).transform(String),
   preapproval_id: z.string(),
   status: z.string(),
-  payment: z.object({ status: z.string().nullish() }).nullish(),
+  transaction_amount: z.number().nullish(),
+  debit_date: z.string().nullish(),
+  payment: z
+    .object({
+      id: z.union([z.number(), z.string()]).transform(String).nullish(),
+      status: z.string().nullish(),
+      status_detail: z.string().nullish(),
+    })
+    .nullish(),
 });
 
 /** Cobro periódico de una suscripción (topic subscription_authorized_payment). */
-export async function getAuthorizedPayment(id: string) {
-  return authorizedPaymentSchema.parse(await giroaFetch(`/authorized_payments/${encodeURIComponent(id)}`, { method: "GET" }));
+export async function getAuthorizedPayment(id: string, token?: string) {
+  return authorizedPaymentSchema.parse(
+    await preapprovalFetch(`/authorized_payments/${encodeURIComponent(id)}`, { method: "GET" }, token),
+  );
 }

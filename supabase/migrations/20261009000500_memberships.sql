@@ -251,7 +251,7 @@ begin
     studio_id, student_id, purpose, pack_product_id, subscription_id, amount_cents,
     method, status, mp_payment_id, paid_at, created_by
   ) values (
-    v_sub.studio_id, v_sub.student_id, 'pack', v_sub.pack_product_id, v_sub.id, coalesce(p_amount_cents, v_sub.amount_cents),
+    v_sub.studio_id, v_sub.student_id, 'pack', v_sub.pack_product_id, v_sub.id, coalesce(nullif(p_amount_cents, 0), v_sub.amount_cents),
     'mercadopago', 'approved', p_mp_payment_id, v_paid_at, null
   ) returning * into v_payment;
 

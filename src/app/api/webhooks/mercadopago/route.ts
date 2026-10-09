@@ -5,6 +5,7 @@ import { mercadoPagoEnv } from "@/lib/env.server";
 import { verifyMpSignature } from "@/lib/mp/signature";
 import { applyStudioPayment } from "@/lib/mp/apply-payment";
 import { cancelPreapproval, decodeRef, getAuthorizedPayment, getPreapproval } from "@/lib/mp/subscriptions";
+import { applyMembershipCharge, applyMembershipPreapproval, membershipStudioFor } from "@/lib/mp/memberships";
 
 // Webhook de Mercado Pago. Nunca se confía en el body:
 //   1. se valida la firma x-signature,
@@ -12,12 +13,18 @@ import { cancelPreapproval, decodeRef, getAuthorizedPayment, getPreapproval } fr
 //   3. se aplica con una RPC idempotente.
 // Topics:
 //   payment                          → venta de un pack o de entradas de un estudio (?studio=…)
-//   subscription_preapproval         → suscripción de un estudio a Giroa
-//   subscription_authorized_payment  → cobro periódico de esa suscripción
+//   subscription_preapproval         → suscripción de un estudio a Giroa, o abono de un alumno
+//   subscription_authorized_payment  → cobro periódico de cualquiera de las dos
+// Los abonos de alumnos son débitos en la cuenta del estudio: se reconocen por el
+// id guardado en student_subscriptions o por el user_id (cuenta de MP) del aviso.
 // Si algo falla se responde 500 para que MP reintente.
 export async function POST(request: NextRequest) {
   const url = request.nextUrl;
-  const body = (await request.json().catch(() => ({}))) as { type?: string; data?: { id?: string | number } };
+  const body = (await request.json().catch(() => ({}))) as {
+    type?: string;
+    user_id?: string | number;
+    data?: { id?: string | number };
+  };
 
   const topic = url.searchParams.get("type") ?? url.searchParams.get("topic") ?? body.type ?? "";
   // Formato webhook: ?data.id= (o body.data.id). Formato IPN: ?id=&topic= (también viene firmado).
@@ -26,6 +33,7 @@ export async function POST(request: NextRequest) {
     (body.data?.id !== undefined ? String(body.data.id) : null) ??
     url.searchParams.get("id");
   const requestId = request.headers.get("x-request-id");
+  const mpUserId = body.user_id !== undefined ? String(body.user_id) : null;
 
   const valid = verifyMpSignature({
     signatureHeader: request.headers.get("x-signature"),
@@ -89,8 +97,9 @@ export async function POST(request: NextRequest) {
     if (topic === "payment" && studioId.success) {
       await applyStudioPayment(studioId.data, dataId);
     } else if (topic === "subscription_preapproval") {
-      await handlePreapproval(admin, dataId);
-    } else {
+      const studio = await membershipStudioFor(dataId, mpUserId);
+      if (!studio || !(await applyMembershipPreapproval(studio, dataId))) await handlePreapproval(admin, dataId);
+    } else if (!(await applyMembershipChargeAnywhere(admin, dataId, mpUserId))) {
       await handleSubscriptionCharge(admin, dataId);
     }
     await finish(null);
@@ -103,6 +112,22 @@ export async function POST(request: NextRequest) {
 }
 
 type Admin = ReturnType<typeof createAdminClient>;
+
+/**
+ * Cobro de un abono de alumno. Con user_id se sabe el estudio; sin él (formato
+ * IPN) se prueba con los estudios que tienen abonos (un cobro de otra cuenta no
+ * existe para ese token). false si no es de ningún abono → es de Giroa.
+ */
+async function applyMembershipChargeAnywhere(admin: Admin, chargeId: string, mpUserId: string | null): Promise<boolean> {
+  const studio = await membershipStudioFor(null, mpUserId);
+  if (studio) return applyMembershipCharge(studio, chargeId);
+  if (mpUserId) return false;
+  const { data } = await admin.from("student_subscriptions").select("studio_id").neq("status", "cancelled").not("mp_preapproval_id", "is", null);
+  for (const id of new Set((data ?? []).map((s) => s.studio_id))) {
+    if (await applyMembershipCharge(id, chargeId)) return true;
+  }
+  return false;
+}
 
 /** Suscripción a Giroa autorizada, pausada o cancelada (token de Giroa). */
 async function handlePreapproval(admin: Admin, preapprovalId: string) {
