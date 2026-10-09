@@ -1,3 +1,5 @@
+import { describePackRules, parsePackRules } from "@/lib/pack-rules";
+import { packRuleNames } from "@/lib/packs.server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireStaff } from "@/lib/panel";
@@ -13,10 +15,11 @@ export default async function PacksPage({ params, searchParams }: PageProps<"/s/
   const created = (await searchParams).nuevo === "1";
   const { studio, isAdmin } = await requireStaff(slug, "/panel/packs");
   const supabase = await createClient();
+  const ruleNames = await packRuleNames(studio.id);
 
   const { data: packs } = await supabase
     .from("pack_products")
-    .select("id, name, credits, validity_days, price_cents, is_couple, is_active")
+    .select("id, name, credits, validity_days, price_cents, is_couple, is_active, rules")
     .eq("studio_id", studio.id)
     .order("is_active", { ascending: false })
     .order("sort")
@@ -68,6 +71,9 @@ export default async function PacksPage({ params, searchParams }: PageProps<"/s/
                     {!p.is_active ? <span className="ml-2 text-xs font-normal text-muted">Pausado</span> : null}
                   </p>
                   <p className="text-sm text-muted">{packSummary(p.credits, p.validity_days)}</p>
+                  {describePackRules(parsePackRules(p.rules), ruleNames) ? (
+                    <p className="text-sm font-medium text-brand">{describePackRules(parsePackRules(p.rules), ruleNames)}</p>
+                  ) : null}
                 </div>
                 <p className="shrink-0 font-semibold tabular-nums">{formatArs(p.price_cents)}</p>
               </Link>

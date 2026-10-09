@@ -27,3 +27,38 @@ export function packSummary(credits: number | null, validityDays: number): strin
   const clases = credits === null ? "Clases libres" : `${credits} ${credits === 1 ? "clase" : "clases"}`;
   return `${clases} · ${validityDays} ${validityDays === 1 ? "día" : "días"}`;
 }
+
+/**
+ * Opciones para las restricciones de un pack: las disciplinas que da el estudio
+ * y sus clases regulares activas. null si el plan no incluye packs con restricciones.
+ */
+export async function packRuleOptions(studioId: string) {
+  if (!(await can(studioId, "pack_rules"))) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("offerings")
+    .select("id, title, discipline_key, disciplines(name)")
+    .eq("studio_id", studioId)
+    .eq("is_active", true)
+    .eq("kind", "regular")
+    .order("title");
+  const disciplines = new Map<string, string>();
+  for (const o of data ?? []) disciplines.set(o.discipline_key, o.disciplines?.name ?? o.discipline_key);
+  return {
+    disciplines: [...disciplines].map(([key, name]) => ({ key, name })).sort((a, b) => a.name.localeCompare(b.name)),
+    offerings: (data ?? []).map((o) => ({ id: o.id, title: o.title })),
+  };
+}
+
+/** Nombres para describir las restricciones ("Solo Yoga · Lun a Vie"). */
+export async function packRuleNames(studioId: string) {
+  const supabase = await createClient();
+  const [{ data: offerings }, { data: disciplines }] = await Promise.all([
+    supabase.from("offerings").select("id, title").eq("studio_id", studioId),
+    supabase.from("disciplines").select("key, name"),
+  ]);
+  return {
+    offerings: Object.fromEntries((offerings ?? []).map((o) => [o.id, o.title])),
+    disciplines: Object.fromEntries((disciplines ?? []).map((d) => [d.key, d.name])),
+  };
+}

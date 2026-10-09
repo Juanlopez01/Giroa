@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/panel";
-import { studioOffersCouplePacks } from "@/lib/packs.server";
+import { packRuleOptions, studioOffersCouplePacks } from "@/lib/packs.server";
 import { createPack } from "../actions";
 import { PackForm } from "../pack-form";
 
@@ -23,6 +23,7 @@ export default async function NewPackPage({ params }: PageProps<"/s/[slug]/panel
       <PackForm
         action={createPack.bind(null, slug)}
         allowCouple={await studioOffersCouplePacks(studio.id)}
+        ruleOptions={await packRuleOptions(studio.id)}
         submitLabel="Crear pack"
       />
     </div>

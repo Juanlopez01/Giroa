@@ -102,6 +102,10 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   reserva + `class_purchases` pendiente (lugar guardado 20 min; MP `"clase:<uuid>"`, `mp_apply_class_payment`);
   `expire_class_purchases` (cron) libera los vencidos y un pago tardío recupera el lugar si hay cupo. Mostrador:
   `sell_class_manual` / `record_class_payment`. Las validaciones de reserva viven en `private.booking_role`.
+- Packs con restricciones (`pack_rules`): `pack_products.rules` jsonb (`disciplines`, `offerings`, `weekdays`
+  0=domingo, `from`/`until` HH:MM según la hora de inicio local), copiado a `student_packs.rules` al crearse
+  (trigger). El crédito se toma con `private.take_credit_for_session(session, student)` (pack que sirve y vence
+  antes; si ninguno sirve: `pack_not_valid`). No uses `private.take_credit` en código nuevo. Texto: `src/lib/pack-rules.ts`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

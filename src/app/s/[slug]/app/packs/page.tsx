@@ -1,3 +1,5 @@
+import { describePackRules, parsePackRules } from "@/lib/pack-rules";
+import { packRuleNames } from "@/lib/packs.server";
 import type { Metadata } from "next";
 import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
@@ -18,11 +20,12 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
   // Si viene del QR de una gift card, se conserva el código al pedir login.
   const { studio } = await requireStudent(slug, giftCode ? `/app/packs?regalo=${giftCode}` : "/app/packs");
   const supabase = await createClient();
+  const ruleNames = await packRuleNames(studio.id);
 
   const [{ data: packs }, { data: canPayOnline }, couponsOn, giftsOn] = await Promise.all([
     supabase
       .from("pack_products")
-      .select("id, name, description, credits, validity_days, price_cents")
+      .select("id, name, description, credits, validity_days, price_cents, rules")
       .eq("studio_id", studio.id)
       .eq("is_active", true)
       .order("sort")
@@ -41,7 +44,7 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="font-serif text-3xl font-semibold">Packs</h1>
-        <p className="text-sm text-muted">Valen para todas las clases del estudio.</p>
+        <p className="text-sm text-muted">Valen para todas las clases del estudio, salvo que digan lo contrario.</p>
       </div>
 
       {!packs?.length ? (
@@ -62,6 +65,9 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
                     ) : null}
                   </div>
                   <p className="text-sm text-muted">{packSummary(p.credits, p.validity_days)}</p>
+                  {describePackRules(parsePackRules(p.rules), ruleNames) ? (
+                    <p className="text-sm font-medium text-brand">{describePackRules(parsePackRules(p.rules), ruleNames)}</p>
+                  ) : null}
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="font-serif text-2xl font-semibold tabular-nums">{formatArs(p.price_cents)}</p>

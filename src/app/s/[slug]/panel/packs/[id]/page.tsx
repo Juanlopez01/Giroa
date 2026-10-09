@@ -5,7 +5,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { centsToInput } from "@/lib/money";
-import { studioOffersCouplePacks } from "@/lib/packs.server";
+import { packRuleOptions, studioOffersCouplePacks } from "@/lib/packs.server";
+import { parsePackRules } from "@/lib/pack-rules";
 import { setPackActive, updatePack } from "../actions";
 import { PackForm } from "../pack-form";
 
@@ -17,9 +18,10 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
   const { studio } = await requireAdmin(slug, `/panel/packs/${id}`);
   const supabase = await createClient();
 
-  const [{ data: pack }, allowCouple] = await Promise.all([
+  const [{ data: pack }, allowCouple, ruleOptions] = await Promise.all([
     supabase.from("pack_products").select("*").eq("id", id).eq("studio_id", studio.id).maybeSingle(),
     studioOffersCouplePacks(studio.id),
+    packRuleOptions(studio.id),
   ]);
   if (!pack) notFound();
 
@@ -37,6 +39,7 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
         action={updatePack.bind(null, slug, pack.id)}
         allowCouple={allowCouple || pack.is_couple}
         submitLabel="Guardar cambios"
+        ruleOptions={ruleOptions}
         initial={{
           name: pack.name,
           description: pack.description ?? "",
@@ -44,6 +47,7 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
           validityDays: pack.validity_days,
           price: centsToInput(pack.price_cents),
           isCouple: pack.is_couple,
+          rules: parsePackRules(pack.rules),
         }}
       />
 
