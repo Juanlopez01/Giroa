@@ -563,6 +563,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"formation_materials": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"description": string | null,"formation_id": string,"id": string,"kind": string,"mime_type": string | null,"session_id": string | null,"size_bytes": number | null,"storage_path": string | null,"studio_id": string,"title": string,"url": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"formation_id": string,"id"?: string,"kind": string,"mime_type"?: string | null,"session_id"?: string | null,"size_bytes"?: number | null,"storage_path"?: string | null,"studio_id": string,"title": string,"url"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"formation_id"?: string,"id"?: string,"kind"?: string,"mime_type"?: string | null,"session_id"?: string | null,"size_bytes"?: number | null,"storage_path"?: string | null,"studio_id"?: string,"title"?: string,"url"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "formation_materials_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "formation_materials_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "formation_materials_studio_id_session_id_fkey"
+      columns: ["studio_id","session_id"]
+isOneToOne: false
+      referencedRelation: "formation_sessions"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
                 },"formation_sessions": {
                   Row: {
                     "created_at": string,"ends_at": string,"formation_id": string,"id": string,"location": string | null,"notes": string | null,"online_url": string | null,"starts_at": string,"studio_id": string,"teacher_member_id": string | null,"teacher_name": string | null,"title": string
