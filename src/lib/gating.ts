@@ -37,6 +37,7 @@ export const FEATURES = [
   "referrals",
   "embed_widget",
   "teacher_permissions",
+  "announcements",
   // Pro
   "certificates",
   "audition_jury",

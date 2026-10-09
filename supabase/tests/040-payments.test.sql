@@ -103,7 +103,9 @@ update public.student_packs set expires_at = now() - interval '1 minute', starts
 where id = '70000000-0000-0000-0000-0000000000a4';
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1', 'select public.expire_packs()'),
   '42501', 'solo el cron vence packs');
-select is((tests.q('service_role', null, 'select public.expire_packs() as n') -> 0 ->> 'n'), '1',
+-- (expire_packs recorre toda la base: se mira el pack de Dani, no el total.)
+select tests.q('service_role', null, 'select public.expire_packs() as n');
+select is((select status::text from public.student_packs where id = '70000000-0000-0000-0000-0000000000a4'), 'expired',
   'vence el pack de Dani');
 select is((select delta from public.pack_credit_events
   where student_pack_id = '70000000-0000-0000-0000-0000000000a4' and kind = 'expire'), -8,

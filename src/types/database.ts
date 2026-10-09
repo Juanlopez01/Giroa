@@ -23,7 +23,69 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "audition_applications": {
+            "announcement_dismissals": {
+                  Row: {
+                    "announcement_id": string,"dismissed_at": string,"student_id": string,"studio_id": string
+                  }
+                  Insert: {
+                    "announcement_id": string,"dismissed_at"?: string,"student_id": string,"studio_id": string
+                  }
+                  Update: {
+                    "announcement_id"?: string,"dismissed_at"?: string,"student_id"?: string,"studio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "announcement_dismissals_studio_id_announcement_id_fkey"
+      columns: ["studio_id","announcement_id"]
+isOneToOne: false
+      referencedRelation: "announcements"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "announcement_dismissals_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "announcement_dismissals_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"announcements": {
+                  Row: {
+                    "audience": string,"body": string,"created_at": string,"created_by": string | null,"emailed_count": number,"formation_id": string | null,"id": string,"offering_id": string | null,"send_email": boolean,"studio_id": string,"title": string,"visible_until": string | null
+                  }
+                  Insert: {
+                    "audience": string,"body": string,"created_at"?: string,"created_by"?: string | null,"emailed_count"?: number,"formation_id"?: string | null,"id"?: string,"offering_id"?: string | null,"send_email"?: boolean,"studio_id": string,"title": string,"visible_until"?: string | null
+                  }
+                  Update: {
+                    "audience"?: string,"body"?: string,"created_at"?: string,"created_by"?: string | null,"emailed_count"?: number,"formation_id"?: string | null,"id"?: string,"offering_id"?: string | null,"send_email"?: boolean,"studio_id"?: string,"title"?: string,"visible_until"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "announcements_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "announcements_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "announcements_studio_id_offering_id_fkey"
+      columns: ["studio_id","offering_id"]
+isOneToOne: false
+      referencedRelation: "offerings"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"audition_applications": {
                   Row: {
                     "answers": NonNullable<Json>,"audition_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"external_reference": string,"fee_cents": number,"formation_id": string,"hold_expires_at": string | null,"id": string,"method": Database["public"]['Enums']["payment_method"] | null,"mp_payment_id": string | null,"mp_preference_id": string | null,"paid_at": string | null,"slot_id": string | null,"staff_notes": string | null,"status": Database["public"]['Enums']["audition_application_status"],"student_id": string,"studio_id": string,"updated_at": string,"video_url": string | null
                   }
@@ -1584,6 +1646,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"dismiss_announcement":
+{ Args: { "p_announcement_id": string }; Returns: undefined
+                           },
 "enrollment_progress":
 { Args: { "p_enrollment_id": string }; Returns: Json
                            },
@@ -1756,6 +1821,9 @@ isOneToOne: false
                            },
 "preview_coupon":
 { Args: { "p_base_cents": number,"p_code": string,"p_studio_id": string,"p_target": Database["public"]['Enums']["coupon_target"] }; Returns: Json
+                           },
+"publish_announcement":
+{ Args: { "p_audience"?: string,"p_body": string,"p_formation_id"?: string,"p_offering_id"?: string,"p_send_email"?: boolean,"p_studio_id": string,"p_title": string,"p_visible_until"?: string }; Returns: Json
                            },
 "record_audition_payment":
 { Args: { "p_application_id": string,"p_method": Database["public"]['Enums']["payment_method"] }; Returns: undefined
