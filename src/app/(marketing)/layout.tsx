@@ -14,6 +14,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           <a href="#planes" className="hidden text-muted hover:text-foreground sm:inline">
             Planes
           </a>
+          <a href="#preguntas" className="hidden text-muted hover:text-foreground sm:inline">
+            Preguntas
+          </a>
           <a href="#fundadores" className="hidden text-muted hover:text-foreground sm:inline">
             Fundadores
           </a>

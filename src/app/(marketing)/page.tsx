@@ -5,6 +5,7 @@ import { platformUrl } from "@/lib/urls";
 import { FounderForm } from "./founder-form";
 import { HeroMockup } from "./hero-mockup";
 import { PanelMockup } from "./panel-mockup";
+import { Faq } from "./faq";
 import { isPlanComingSoon } from "@/lib/gating";
 
 export const metadata: Metadata = {
@@ -242,6 +243,8 @@ export default async function LandingPage() {
           “Próximamente” se suma a tu plan sin costo extra apenas esté listo.
         </p>
       </section>
+
+      <Faq />
 
       {/* ------------------------------------------------------------ fundadores */}
       <section id="fundadores" className="bg-brand text-brand-foreground">
