@@ -7,7 +7,16 @@ import { FormMessage, Input } from "@/components/ui/field";
 import { initialActionState, type ActionState } from "@/lib/errors";
 import { formatArs } from "@/lib/money";
 
-export type PlanOption = { key: string; name: string; monthlyCents: number; limit: number | null; highlight: boolean; soon: boolean };
+export type PlanOption = {
+  key: string;
+  name: string;
+  monthlyCents: number;
+  limit: number | null;
+  highlight: boolean;
+  soon: boolean;
+  /** Precio fundador (de por vida) si quedan lugares en este plan. */
+  founder: { discountPct: number; spotsLeft: number } | null;
+};
 
 type Props = {
   plans: PlanOption[];
@@ -26,6 +35,8 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
   const [trialPending, startTrial] = useTransition();
 
   const price = (p: PlanOption) => (cycle === "annual" ? p.monthlyCents * 10 : p.monthlyCents);
+  const finalPrice = (p: PlanOption) => Math.round((price(p) * (100 - (p.founder?.discountPct ?? 0))) / 100);
+  const chosen = plans.find((p) => p.key === selected);
 
   return (
     <div className="space-y-5">
@@ -66,12 +77,20 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
               {p.soon ? (
                 <span className="rounded-full bg-[var(--gold,#c8a46b)]/20 px-2 py-0.5 text-xs font-medium">Próximamente</span>
               ) : (
-                <p className="font-semibold tabular-nums">{formatArs(price(p))}</p>
+                <p className="text-right font-semibold tabular-nums">
+                  {p.founder ? <span className="mr-1.5 text-sm font-normal text-muted line-through">{formatArs(price(p))}</span> : null}
+                  {formatArs(finalPrice(p))}
+                </p>
               )}
             </div>
             <p className="text-sm text-muted">
               {p.limit ? `Hasta ${p.limit} alumnos activos` : "Alumnos ilimitados"} · {cycle === "annual" ? "por año" : "por mes"}
             </p>
+            {p.founder && !p.soon ? (
+              <p className="mt-2 inline-flex rounded-full bg-[var(--gold,#c8a46b)]/20 px-2.5 py-0.5 text-xs font-medium">
+                Precio fundador {p.founder.discountPct}% off de por vida · {p.founder.spotsLeft === 1 ? "queda 1 lugar" : `quedan ${p.founder.spotsLeft} lugares`}
+              </p>
+            ) : null}
           </button>
         ))}
       </div>
@@ -102,7 +121,10 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
         <input type="hidden" name="cycle" value={cycle} />
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">¿Tenés un código?</span>
-          <Input name="coupon" placeholder="Ej.: FUNDADOR" autoCapitalize="characters" autoComplete="off" />
+          <Input name="coupon" placeholder="Opcional" autoCapitalize="characters" autoComplete="off" />
+          {chosen?.founder ? (
+            <span className="block text-xs text-muted">No hace falta: el precio fundador se aplica solo.</span>
+          ) : null}
           {state.fieldErrors?.coupon ? <span className="block text-sm text-danger">{state.fieldErrors.coupon}</span> : null}
         </label>
         <FormMessage ok={false} message={state.message} />

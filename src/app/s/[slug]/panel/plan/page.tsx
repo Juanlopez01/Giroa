@@ -9,6 +9,7 @@ import { FormMessage } from "@/components/ui/field";
 import { cancelSubscription, chooseTrialPlan, subscribe } from "./actions";
 import { CancelSubscriptionButton } from "./cancel-button";
 import { PlanPicker } from "./plan-picker";
+import { getFounderSpots } from "@/lib/founder.server";
 
 export const metadata: Metadata = { title: "Tu plan" };
 
@@ -18,10 +19,20 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/s/[
   const mpOk = (await searchParams).mp === "ok";
   const supabase = await createClient();
 
-  const [access, { data: plans }] = await Promise.all([
+  const [access, { data: plans }, founder] = await Promise.all([
     getStudioAccess(studio.id),
     supabase.from("plans").select("key, name, monthly_price_cents, max_active_students").order("sort"),
+    getFounderSpots(),
   ]);
+  const options = (plans ?? []).map((p) => ({
+    key: p.key,
+    name: p.name,
+    monthlyCents: p.monthly_price_cents,
+    limit: p.max_active_students,
+    highlight: p.key === "estudio",
+    soon: isPlanComingSoon(p.key),
+    founder: founder[p.key]?.spotsLeft ? founder[p.key]! : null,
+  }));
   const now = nowMs();
   const days = daysUntil(access.until, now);
 
@@ -74,14 +85,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/s/[
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Elegí tu plan</h2>
           <PlanPicker
-            plans={(plans ?? []).map((p) => ({
-              key: p.key,
-              name: p.name,
-              monthlyCents: p.monthly_price_cents,
-              limit: p.max_active_students,
-              highlight: p.key === "estudio",
-              soon: isPlanComingSoon(p.key),
-            }))}
+            plans={options}
             currentPlan={access.plan}
             inTrial={access.state === "trial"}
             subscribe={subscribe.bind(null, slug)}
@@ -92,14 +96,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/s/[
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Cambiar de plan</h2>
           <PlanPicker
-            plans={(plans ?? []).map((p) => ({
-              key: p.key,
-              name: p.name,
-              monthlyCents: p.monthly_price_cents,
-              limit: p.max_active_students,
-              highlight: p.key === "estudio",
-              soon: isPlanComingSoon(p.key),
-            }))}
+            plans={options}
             currentPlan={access.subscribed_plan ?? access.plan}
             inTrial={false}
             subscribe={subscribe.bind(null, slug)}

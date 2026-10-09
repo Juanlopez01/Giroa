@@ -807,13 +807,13 @@ isOneToOne: false
                   ]
                 },"giroa_coupons": {
                   Row: {
-                    "code": string,"created_at": string,"discount_pct": number,"is_active": boolean,"max_uses": number | null,"used_count": number
+                    "auto": boolean,"code": string,"created_at": string,"discount_pct": number,"is_active": boolean,"max_uses": number | null,"plan": Database["public"]['Enums']["studio_plan"] | null,"used_count": number
                   }
                   Insert: {
-                    "code": string,"created_at"?: string,"discount_pct": number,"is_active"?: boolean,"max_uses"?: number | null,"used_count"?: number
+                    "auto"?: boolean,"code": string,"created_at"?: string,"discount_pct": number,"is_active"?: boolean,"max_uses"?: number | null,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"used_count"?: number
                   }
                   Update: {
-                    "code"?: string,"created_at"?: string,"discount_pct"?: number,"is_active"?: boolean,"max_uses"?: number | null,"used_count"?: number
+                    "auto"?: boolean,"code"?: string,"created_at"?: string,"discount_pct"?: number,"is_active"?: boolean,"max_uses"?: number | null,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"used_count"?: number
                   }
                   Relationships: [
                     
@@ -1804,6 +1804,11 @@ isOneToOne: false
                            },
 "giroa_apply_subscription_charge":
 { Args: { "p_approved": boolean,"p_next_payment_at"?: string,"p_preapproval_id": string }; Returns: undefined
+                           },
+"giroa_founder_spots":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "discount_pct": number,"plan": Database["public"]['Enums']["studio_plan"],"spots_left": number
+            }[]
                            },
 "giroa_quote":
 { Args: { "p_coupon"?: string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_plan": Database["public"]['Enums']["studio_plan"] }; Returns: Json

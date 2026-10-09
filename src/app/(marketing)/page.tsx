@@ -7,6 +7,7 @@ import { HeroMockup } from "./hero-mockup";
 import { PanelMockup } from "./panel-mockup";
 import { Faq } from "./faq";
 import { isPlanComingSoon } from "@/lib/gating";
+import { getFounderSpots } from "@/lib/founder.server";
 
 export const metadata: Metadata = {
   title: { absolute: "Giroa · Reservas, packs y pagos para estudios de danza" },
@@ -73,7 +74,11 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
 
 export default async function LandingPage() {
   const supabase = await createClient();
-  const { data: plans } = await supabase.from("plans").select("key, name, monthly_price_cents").order("sort");
+  const [{ data: plans }, founder] = await Promise.all([
+    supabase.from("plans").select("key, name, monthly_price_cents").order("sort"),
+    getFounderSpots(),
+  ]);
+  const spotsLabel = (n: number) => (n === 1 ? "Queda 1 lugar" : `Quedan ${n} lugares`);
 
   return (
     <main className="flex-1">
@@ -220,6 +225,17 @@ export default async function LandingPage() {
                   <p className="mt-4">
                     <span className="inline-block rounded-full bg-[var(--gold)]/25 px-3 py-1 text-sm font-semibold text-foreground">Próximamente</span>
                   </p>
+                ) : founder[p.key]?.spotsLeft ? (
+                  <div className="mt-4 space-y-1">
+                    <p className="text-sm text-muted tabular-nums line-through">{formatArs(p.monthly_price_cents)}/mes</p>
+                    <p className="text-3xl font-semibold tabular-nums">
+                      {formatArs(Math.round((p.monthly_price_cents * (100 - founder[p.key]!.discountPct)) / 100))}
+                      <span className="text-base font-normal text-muted">/mes</span>
+                    </p>
+                    <p className="inline-block rounded-full bg-[var(--gold)]/25 px-2.5 py-0.5 text-xs font-semibold">
+                      Precio fundador de por vida · {spotsLabel(founder[p.key]!.spotsLeft).toLowerCase()}
+                    </p>
+                  </div>
                 ) : (
                   <p className="mt-4 text-3xl font-semibold tabular-nums">
                     {formatArs(p.monthly_price_cents)}
@@ -256,10 +272,20 @@ export default async function LandingPage() {
           <div>
             <p className="text-sm font-medium tracking-wide text-[var(--gold)] uppercase">Plan fundadores</p>
             <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">
-              Los primeros 10 estudios pagan la mitad. De por vida.
+              Los primeros 10 de cada plan pagan la mitad. De por vida.
             </h2>
             <ul className="mt-6 space-y-3 opacity-90">
-              <li>✓ 50% de descuento para siempre en cualquier plan.</li>
+              <li>
+                ✓ 50% de descuento para siempre: 10 lugares en Profe, 10 en Inicial y 10 en Estudio. Se aplica solo al
+                suscribirte.
+              </li>
+              {(plans ?? [])
+                .filter((p) => founder[p.key])
+                .map((p) => (
+                  <li key={p.key} className="pl-5 text-sm">
+                    {p.name}: {founder[p.key]!.spotsLeft ? spotsLabel(founder[p.key]!.spotsLeft).toLowerCase() : "sin lugares"}
+                  </li>
+                ))}
               <li>✓ Migramos tus alumnos y saldos desde Excel, gratis.</li>
               <li>✓ Te ayudamos a configurar todo en una videollamada.</li>
               <li>✓ Tu opinión define lo que construimos después.</li>

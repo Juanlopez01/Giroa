@@ -68,7 +68,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   prueba elige qué plan probar (`choose_trial_plan`). Después se suscribe solo con MP
   Suscripciones (cobra en la cuenta de Giroa); el plan lo activa el webhook vía
   `giroa_apply_preapproval` (service role). Sin pago: 7 días de gracia y después el panel queda
-  pausado (`studio_access`), pero los alumnos siguen reservando. Códigos en `giroa_coupons`.
+  pausado (`studio_access`), pero los alumnos siguen reservando. Códigos en `giroa_coupons` (`plan` = solo para ese
+  plan; `auto` = se aplica solo sin escribirlo). Fundadores: `FUNDADOR-PROFE/INICIAL/ESTUDIO`, 50% de por vida, 10 usos cada
+  uno; lugares que quedan con `giroa_founder_spots()` (público, lo muestran la landing y Tu plan).
 - Eventos con entradas (`event_tickets`, planes Estudio y Pro): cualquiera compra sin cuenta con
   `create_event_order` (reserva el cupo 20 min, bloquea el tipo de entrada para no sobrevender). Las
   pagas van por MP con `external_reference = "evento:<uuid>"` y las confirma `mp_apply_event_payment`.

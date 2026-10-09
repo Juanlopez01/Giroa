@@ -136,11 +136,11 @@ async function handlePreapproval(admin: Admin, preapprovalId: string) {
   if (!ref) return; // no es una suscripción de Giroa
 
   const amount = Math.round((pre.auto_recurring?.transaction_amount ?? 0) * 100);
-  const { data: quote } = await admin.rpc("giroa_quote", {
-    p_plan: ref.plan,
-    p_cycle: ref.cycle,
-    p_coupon: ref.coupon ?? undefined,
-  });
+  // El descuento sale del código, no de giroa_quote: si justo se ocupó el último
+  // lugar de fundador, el que ya autorizó igual conserva su precio.
+  const { data: coupon } = ref.coupon
+    ? await admin.from("giroa_coupons").select("discount_pct").eq("code", ref.coupon).maybeSingle()
+    : { data: null };
 
   const { data, error } = await admin.rpc("giroa_apply_preapproval", {
     p_studio_id: ref.studioId,
@@ -149,7 +149,7 @@ async function handlePreapproval(admin: Admin, preapprovalId: string) {
     p_plan: ref.plan,
     p_cycle: ref.cycle,
     p_amount_cents: amount,
-    p_discount_pct: ((quote as { discount_pct?: number } | null)?.discount_pct ?? 0) as number,
+    p_discount_pct: coupon?.discount_pct ?? 0,
     // Sin código va null (el tipo generado no lo refleja, la función lo acepta).
     p_coupon: ref.coupon as string,
     p_next_payment_at: pre.next_payment_date ?? undefined,
