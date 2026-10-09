@@ -1,6 +1,7 @@
 import type { PublicSession } from "@/lib/public-schedule.server";
 import { formatTime } from "@/lib/datetime";
 import { balanceHint } from "@/lib/role-balance";
+import { formatArs } from "@/lib/money";
 
 /** Lugares: "Quedan 3" en ámbar cuando queda poco, "Completa" en gris. */
 function SpotsChip({ session }: { session: PublicSession }) {
@@ -76,6 +77,15 @@ export function SessionCard({
             )}
           </div>
           <p className="text-sm text-muted">{meta || session.disciplineName}</p>
+          {session.kind === "special" ? (
+            <p className="flex flex-wrap items-center gap-1.5 pt-1 text-sm">
+              <span className="rounded-full bg-[var(--gold,#c8a46b)]/20 px-2 py-0.5 text-xs font-semibold tracking-wide uppercase">Workshop</span>
+              {session.priceCents ? <span className="font-semibold tabular-nums">{formatArs(session.priceCents)}</span> : null}
+              {session.packAllowed ? <span className="text-muted">· o con tu pack</span> : null}
+            </p>
+          ) : session.priceCents ? (
+            <p className="pt-0.5 text-xs text-muted">Clase suelta {formatArs(session.priceCents)}</p>
+          ) : null}
         </div>
         {session.roleBalance && !session.cancelled ? <RoleBar session={session} /> : null}
         {action ? <div>{action}</div> : null}

@@ -7,7 +7,8 @@ import { addDaysYmd, formatDayLabel, isYmd, nowMs, startOfDay, todayYmd, toYmd, 
 import { SessionCard } from "@/components/studio/session-card";
 import { createClient } from "@/lib/supabase/server";
 import { can } from "@/lib/gating";
-import { bookSession, bookTrialClass, joinWaitlist, leaveWaitlist } from "../actions";
+import { bookSession, bookTrialClass, joinWaitlist, leaveWaitlist, payForClass } from "../actions";
+import { formatArs } from "@/lib/money";
 import { BookButton } from "../booking-buttons";
 
 export const metadata: Metadata = { title: "Clases" };
@@ -45,6 +46,11 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
   const trial = Boolean(trialAvailable) && balances.length === 0;
   const waitingAt = new Map((myWaitlist ?? []).map((w) => [w.session_id, w.position]));
   const booked = new Set(bookings.map((b) => b.sessionId));
+  // Se paga aparte: el workshop que no vale con pack, o la clase con precio
+  // suelto cuando no tenés saldo (y no te toca la clase de prueba).
+  const payWith = (s: PublicSession) =>
+    Boolean(s.priceCents) &&
+    ((s.kind === "special" && !s.packAllowed) || (balances.length === 0 && !(trial && s.kind === "regular")));
 
   const byDay = new Map<string, PublicSession[]>();
   for (const s of sessions) {
@@ -143,8 +149,16 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
                   action={
                     s.cancelled || booked.has(s.id) ? undefined : (
                       <BookButton
-                        book={(trial ? bookTrialClass : bookSession).bind(null, slug, s.id)}
-                        label={trial ? "Probar gratis" : undefined}
+                        book={(payWith(s) ? payForClass : trial && s.kind === "regular" ? bookTrialClass : bookSession).bind(null, slug, s.id)}
+                        label={
+                          payWith(s)
+                            ? s.kind === "special"
+                              ? `Reservar y pagar ${formatArs(s.priceCents!)}`
+                              : `Reservar suelta ${formatArs(s.priceCents!)}`
+                            : trial && s.kind === "regular"
+                              ? "Probar gratis"
+                              : undefined
+                        }
                         roleBalance={s.roleBalance}
                         leaders={s.leaders}
                         followers={s.followers}

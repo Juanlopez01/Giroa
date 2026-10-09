@@ -63,3 +63,33 @@ export async function checkInStudent(slug: string, sessionId: string, studentId:
   revalidatePath(`/s/${slug}/panel/agenda/${sessionId}`);
   return { ok: true, studentName: "", walkIn: false, creditsRemaining: null, expiresOn: null };
 }
+
+/** Clase suelta o workshop cobrado en el mostrador: lo anota y queda pago. */
+export async function sellClassAtDesk(slug: string, sessionId: string, studentId: string): Promise<CheckInResult> {
+  await requireStaff(slug);
+  if (!z.uuid().safeParse(sessionId).success || !z.uuid().safeParse(studentId).success) {
+    return { ok: false, message: "No encontramos al alumno." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("sell_class_manual", { p_session_id: sessionId, p_student_id: studentId, p_method: "cash" });
+  if (error) return { ok: false, message: fromSupabaseError(error, "sellClassAtDesk").message ?? "No pudimos anotarlo." };
+  const { data: s } = await supabase.from("students").select("full_name").eq("id", studentId).maybeSingle();
+  revalidatePath(`/s/${slug}/panel/agenda/${sessionId}`);
+  return { ok: true, studentName: s?.full_name ?? "Alumno", walkIn: true, creditsRemaining: null, expiresOn: null };
+}
+
+/** Una reserva paga que estaba pendiente: el alumno pagó en efectivo o transferencia. */
+export async function recordClassPayment(
+  slug: string,
+  sessionId: string,
+  purchaseId: string,
+  method: "cash" | "transfer",
+): Promise<{ ok: boolean; message?: string }> {
+  await requireStaff(slug);
+  if (!z.uuid().safeParse(purchaseId).success) return { ok: false, message: "No encontramos esa compra." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("record_class_payment", { p_purchase_id: purchaseId, p_method: method });
+  if (error) return fromSupabaseError(error, "recordClassPayment");
+  revalidatePath(`/s/${slug}/panel/agenda/${sessionId}`);
+  return { ok: true, message: "Pago registrado." };
+}

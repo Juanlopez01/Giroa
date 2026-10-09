@@ -97,6 +97,11 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Anuncios (`announcements`, Estudio y Pro): `publish_announcement` (dueño/encargado) a todos, a los de una
   clase (reserva en los últimos 30 días o futura) o a los de una formación; mail opcional (template
   `announcement`). El alumno los ve arriba del Inicio y los cierra con `dismiss_announcement`.
+- Clases sueltas (`drop_in`) y workshops (`specials`, offerings kind `special`): `offerings.price_cents` es el
+  precio suelto o del workshop; `pack_allowed` dice si el workshop vale con pack. `book_session_paid` crea la
+  reserva + `class_purchases` pendiente (lugar guardado 20 min; MP `"clase:<uuid>"`, `mp_apply_class_payment`);
+  `expire_class_purchases` (cron) libera los vencidos y un pago tardío recupera el lugar si hay cupo. Mostrador:
+  `sell_class_manual` / `record_class_payment`. Las validaciones de reserva viven en `private.booking_role`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

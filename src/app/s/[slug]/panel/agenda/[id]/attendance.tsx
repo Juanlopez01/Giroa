@@ -33,9 +33,14 @@ export function MarkPresentButton({ mark }: { mark: () => Promise<CheckInResult>
 export function WalkInPicker({
   students,
   mark,
+  placeholder = "Llegó sin reserva: buscá por nombre",
+  doneLabel = "presente",
 }: {
   students: { id: string; name: string }[];
   mark: (studentId: string) => Promise<CheckInResult>;
+  placeholder?: string;
+  /** Lo que se muestra al terminar: "✓ Ana presente". */
+  doneLabel?: string;
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -57,7 +62,7 @@ export function WalkInPicker({
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Llegó sin reserva: buscá por nombre"
+        placeholder={placeholder}
         className="h-12 w-full rounded-full border border-border bg-surface px-5 text-base outline-none focus:border-brand"
       />
       {matches.length ? (
@@ -70,7 +75,7 @@ export function WalkInPicker({
                 onClick={() =>
                   startTransition(async () => {
                     const r = await mark(s.id);
-                    setMsg(r.ok ? { ok: true, text: `✓ ${s.name} presente` } : { ok: false, text: r.message });
+                    setMsg(r.ok ? { ok: true, text: `✓ ${s.name} ${doneLabel}` } : { ok: false, text: r.message });
                     if (r.ok) {
                       setQ("");
                       router.refresh();

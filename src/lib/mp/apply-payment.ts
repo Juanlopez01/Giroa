@@ -7,6 +7,9 @@ import { EVENT_REF_PREFIX } from "@/lib/events";
 import { GIFT_REF_PREFIX } from "@/lib/gift-cards";
 import { AUDITION_REF_PREFIX, FORMATION_REF_PREFIX } from "@/lib/formations";
 
+/** Clase suelta o workshop pago: external_reference = "clase:<uuid>". */
+export const CLASS_REF_PREFIX = "clase:";
+
 /**
  * Aplica un pago de Checkout Pro de un estudio. Nunca se confía en quien avisa:
  * el pago se consulta a la API de MP con el token DEL ESTUDIO (un id de otra
@@ -34,6 +37,7 @@ export async function applyStudioPayment(studioId: string, paymentId: string): P
     [AUDITION_REF_PREFIX, "mp_apply_audition_payment"],
     [FORMATION_REF_PREFIX, "mp_apply_formation_payment"],
     [GIFT_REF_PREFIX, "mp_apply_gift_payment"],
+    [CLASS_REF_PREFIX, "mp_apply_class_payment"],
   ] as const;
   for (const [prefix, rpc] of prefixed) {
     if (ref.startsWith(prefix)) {

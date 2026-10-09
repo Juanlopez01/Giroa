@@ -49,6 +49,7 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
       "Formaciones con cuotas y asistencia",
       "Audiciones con turnos y resultados",
       "Lista de espera y clase de prueba",
+      "Workshops y clases sueltas",
       "Cupones y gift cards",
       "Anuncios a tus alumnos",
       "Referidos",

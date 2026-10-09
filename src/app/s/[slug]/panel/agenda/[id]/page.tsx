@@ -9,8 +9,10 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { can } from "@/lib/gating";
-import { checkInStudent, scanStudentQr } from "./actions";
+import { checkInStudent, recordClassPayment, scanStudentQr, sellClassAtDesk } from "./actions";
 import { MarkPresentButton, WalkInPicker } from "./attendance";
+import { ActionButtons } from "../../formaciones/[id]/inscriptos/enrollment-controls";
+import { formatArs } from "@/lib/money";
 import { QrScanner } from "@/components/panel/qr-scanner";
 import { LiveRefresh } from "@/components/ui/live-refresh";
 
@@ -21,7 +23,7 @@ export const metadata: Metadata = { title: "Asistencia" };
 export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel/agenda/[id]">) {
   const { slug, id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  const { studio } = await requireStaff(slug, `/panel/agenda/${id}`);
+  const { studio, canTakePayments } = await requireStaff(slug, `/panel/agenda/${id}`);
   const tz = studio.timezone;
   const supabase = await createClient();
 
@@ -45,7 +47,13 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
   ]);
   if (!occ?.session_id || !occ.starts_at || !occ.ends_at) notFound();
 
-  const { data: offering } = await supabase.from("offerings").select("title").eq("id", occ.offering_id ?? "").maybeSingle();
+  const [{ data: offering }, { data: purchases }] = await Promise.all([
+    supabase.from("offerings").select("title, kind, price_cents").eq("id", occ.offering_id ?? "").maybeSingle(),
+    supabase.from("class_purchases").select("id, booking_id, status, amount_cents, method").eq("session_id", id).in("status", ["pending", "paid"]),
+  ]);
+  // Reservas pagas aparte (clase suelta o workshop): por reserva, su compra.
+  const purchaseBy = new Map((purchases ?? []).flatMap((p) => (p.booking_id ? [[p.booking_id, p] as const] : [])));
+  const sellsAtDesk = canTakePayments && Boolean(offering?.price_cents);
 
   const now = nowMs();
   const startsMs = new Date(occ.starts_at).getTime();
@@ -132,14 +140,28 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
               </span>
             </Link>
           ) : null}
-          <WalkInPicker
-            students={(students ?? []).filter((s) => !bookedIds.has(s.id)).map((s) => ({ id: s.id, name: s.full_name }))}
-            mark={checkInStudent.bind(null, slug, id)}
-          />
+          {offering?.kind !== "special" ? (
+            <WalkInPicker
+              students={(students ?? []).filter((s) => !bookedIds.has(s.id)).map((s) => ({ id: s.id, name: s.full_name }))}
+              mark={checkInStudent.bind(null, slug, id)}
+            />
+          ) : null}
         </section>
       ) : (
         <p className="rounded-2xl bg-surface px-4 py-3 text-sm text-muted">La asistencia se toma desde 2 horas antes de la clase.</p>
       )}
+
+      {sellsAtDesk && occ.status === "scheduled" && now < endsMs ? (
+        <section className="space-y-2">
+          <h2 className="text-xs font-medium tracking-widest text-muted uppercase">Vender en el mostrador</h2>
+          <WalkInPicker
+            students={(students ?? []).filter((s) => !bookedIds.has(s.id)).map((s) => ({ id: s.id, name: s.full_name }))}
+            mark={sellClassAtDesk.bind(null, slug, id)}
+            placeholder={`Cobrar ${formatArs(offering!.price_cents!)} en efectivo: buscá por nombre`}
+            doneLabel="anotado/a y pago"
+          />
+        </section>
+      ) : null}
 
       {list.length === 0 ? (
         <p className="text-muted">Todavía no hay nadie anotado.</p>
@@ -163,9 +185,25 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
                             Prueba
                           </span>
                         ) : null}
+                        {purchaseBy.get(b.id)?.status === "paid" ? (
+                          <span className="ml-2 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">Pagó</span>
+                        ) : purchaseBy.get(b.id)?.status === "pending" ? (
+                          <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+                            Falta pagar {formatArs(purchaseBy.get(b.id)!.amount_cents)}
+                          </span>
+                        ) : null}
                       </p>
                     </div>
-                    {canCheckIn && b.students ? <MarkPresentButton mark={checkInStudent.bind(null, slug, id, b.students.id)} /> : null}
+                    {purchaseBy.get(b.id)?.status === "pending" && canTakePayments ? (
+                      <ActionButtons
+                        buttons={[
+                          { label: "Efectivo", run: recordClassPayment.bind(null, slug, id, purchaseBy.get(b.id)!.id, "cash") },
+                          { label: "Transferencia", run: recordClassPayment.bind(null, slug, id, purchaseBy.get(b.id)!.id, "transfer") },
+                        ]}
+                      />
+                    ) : canCheckIn && b.students ? (
+                      <MarkPresentButton mark={checkInStudent.bind(null, slug, id, b.students.id)} />
+                    ) : null}
                   </li>
                 ))}
               </ul>

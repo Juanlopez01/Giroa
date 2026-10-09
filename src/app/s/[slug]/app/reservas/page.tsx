@@ -6,7 +6,11 @@ import { myPastBookings, myUpcomingBookings, type MyBooking } from "@/lib/studen
 import { formatTime, nowMs, toYmd, weekdayOf } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { untilLabel } from "@/lib/student-home";
-import { cancelBooking } from "../actions";
+import { cancelBooking, payForClass } from "../actions";
+import { createClient } from "@/lib/supabase/server";
+import { confirmMpReturn } from "@/lib/mp/apply-payment";
+import { formatArs } from "@/lib/money";
+import { SmallAction } from "../../panel/equipo/team-controls";
 import { CancelBookingButton } from "../booking-buttons";
 
 export const metadata: Metadata = { title: "Mis reservas" };
@@ -38,8 +42,16 @@ export default async function MyBookingsPage({ params, searchParams }: PageProps
   const { studio, student } = await requireStudent(slug, "/app/reservas");
   const tz = studio.timezone;
   const now = new Date(nowMs());
-  const past = (await searchParams).ver === "pasadas";
+  const sp = await searchParams;
+  await confirmMpReturn(studio.id, sp);
+  const past = sp.ver === "pasadas";
   const bookings = past ? await myPastBookings(studio.id, student.id, now) : await myUpcomingBookings(studio.id, student.id, now);
+  // Clases sueltas o workshops con el pago pendiente (lugar guardado 20 minutos).
+  const supabase = await createClient();
+  const { data: pendingRows } = past
+    ? { data: [] }
+    : await supabase.from("class_purchases").select("booking_id, hold_expires_at, amount_cents").eq("student_id", student.id).eq("status", "pending");
+  const pendingBy = new Map((pendingRows ?? []).flatMap((p) => (p.booking_id ? [[p.booking_id, p] as const] : [])));
 
   const tab = (href: string, label: string, active: boolean) => (
     <Link
@@ -81,7 +93,13 @@ export default async function MyBookingsPage({ params, searchParams }: PageProps
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-semibold">{b.title}</p>
-                      {past ? <PastStatus b={b} /> : b.status === "attended" ? <PastStatus b={b} /> : null}
+                      {past ? (
+                        <PastStatus b={b} />
+                      ) : b.status === "attended" ? (
+                        <PastStatus b={b} />
+                      ) : pendingBy.has(b.id) ? (
+                        <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-amber-900">Falta pagar</span>
+                      ) : null}
                     </div>
                     <p className="text-sm text-muted">
                       {formatTime(b.startsAt, tz)}
@@ -89,6 +107,17 @@ export default async function MyBookingsPage({ params, searchParams }: PageProps
                       {!past && !b.sessionCancelled && !started && untilLabel(b.startsAt, now, tz).startsWith("en ") ? ` · ${untilLabel(b.startsAt, now, tz)}` : ""}
                     </p>
                     {!past && b.sessionCancelled ? <p className="text-sm text-danger">El estudio canceló esta clase</p> : null}
+                    {!past && pendingBy.has(b.id) ? (
+                      <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-sm">
+                        <span className="text-amber-900">
+                          Te guardamos el lugar hasta las {formatTime(pendingBy.get(b.id)!.hold_expires_at ?? b.startsAt, tz)}.
+                        </span>
+                        <SmallAction
+                          run={payForClass.bind(null, slug, b.sessionId, b.role)}
+                          label={`Pagar ${formatArs(pendingBy.get(b.id)!.amount_cents)}`}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                   {!past && !b.sessionCancelled && b.status === "booked" ? (
                     <div className="flex items-center justify-between gap-2">

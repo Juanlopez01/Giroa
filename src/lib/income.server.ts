@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 // de formaciones y aranceles de audición. Lo usan el Inicio del panel y Pagos,
 // así los dos números siempre coinciden.
 
-export type IncomeKind = "pack" | "event" | "gift" | "formation" | "audition";
+export type IncomeKind = "pack" | "class" | "event" | "gift" | "formation" | "audition";
 export type IncomeMethod = "cash" | "transfer" | "mercadopago";
 
 export type IncomeItem = {
@@ -25,6 +25,7 @@ export type IncomeItem = {
 
 export const INCOME_KIND_LABELS: Record<IncomeKind, string> = {
   pack: "Packs",
+  class: "Clases sueltas y workshops",
   event: "Entradas",
   gift: "Gift cards",
   formation: "Formaciones",
@@ -37,7 +38,7 @@ export async function listIncome(studioId: string, from: Date, to: Date): Promis
   const supabase = await createClient();
   const range = { from: from.toISOString(), to: to.toISOString() };
 
-  const [packs, events, gifts, charges, auditions] = await Promise.all([
+  const [packs, events, gifts, charges, auditions, classes] = await Promise.all([
     supabase
       .from("payments")
       .select("id, amount_cents, method, paid_at, notes, students!payments_studio_id_student_id_fkey(id, full_name), pack_products(name)")
@@ -80,8 +81,17 @@ export async function listIncome(studioId: string, from: Date, to: Date): Promis
       .neq("status", "cancelled")
       .gte("paid_at", range.from)
       .lt("paid_at", range.to),
+    supabase
+      .from("class_purchases")
+      .select(
+        "id, amount_cents, method, paid_at, notes, students!class_purchases_studio_id_student_id_fkey(id, full_name), sessions!class_purchases_studio_id_session_id_fkey(starts_at, offerings(title, kind))",
+      )
+      .eq("studio_id", studioId)
+      .eq("status", "paid")
+      .gte("paid_at", range.from)
+      .lt("paid_at", range.to),
   ]);
-  for (const r of [packs, events, gifts, charges, auditions]) if (r.error) throw r.error;
+  for (const r of [packs, events, gifts, charges, auditions, classes]) if (r.error) throw r.error;
 
   const items: IncomeItem[] = [];
   for (const p of packs.data ?? []) {
@@ -153,6 +163,21 @@ export async function listIncome(studioId: string, from: Date, to: Date): Promis
       studentId: a.students?.id ?? null,
       what: `Arancel · ${a.auditions?.title ?? "Audición"}`,
       note: null,
+    });
+  }
+  for (const c of classes.data ?? []) {
+    if (!c.paid_at || !c.method) continue;
+    const o = c.sessions?.offerings;
+    items.push({
+      id: c.id,
+      kind: "class",
+      amountCents: c.amount_cents,
+      method: c.method,
+      paidAt: c.paid_at,
+      who: c.students?.full_name ?? "Alumno",
+      studentId: c.students?.id ?? null,
+      what: `${o?.kind === "special" ? "Workshop" : "Clase suelta"} · ${o?.title ?? "Clase"}`,
+      note: c.notes,
     });
   }
   return items.sort((x, y) => y.paidAt.localeCompare(x.paidAt));
