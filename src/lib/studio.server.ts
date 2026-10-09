@@ -30,7 +30,7 @@ export const getMyStudent = cache(async (studioId: string, userId: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("students")
-    .select("id, full_name, email, phone, default_role, is_active, qr_token")
+    .select("id, full_name, email, phone, default_role, is_active, qr_token, referral_code")
     .eq("studio_id", studioId)
     .eq("user_id", userId)
     .maybeSingle();

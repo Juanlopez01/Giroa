@@ -88,7 +88,7 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
             </p>
             {p.founder && !p.soon ? (
               <p className="mt-2 inline-flex rounded-full bg-[var(--gold,#c8a46b)]/20 px-2.5 py-0.5 text-xs font-medium">
-                Precio fundador {p.founder.discountPct}% off de por vida · {p.founder.spotsLeft === 1 ? "queda 1 lugar" : `quedan ${p.founder.spotsLeft} lugares`}
+                Fundador: {p.founder.discountPct}% de por vida · {p.founder.spotsLeft === 1 ? "queda 1" : `quedan ${p.founder.spotsLeft}`}
               </p>
             ) : null}
           </button>
@@ -98,7 +98,7 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
       {selected === "estudio" ? (
         <p className="text-sm text-muted">
           Estudio te suma más alumnos, eventos con entradas, formaciones con cuotas y audiciones, lista de espera, clase de
-          prueba, cupones, gift cards y varios profes con permisos. Los referidos se suman sin costo extra apenas estén.
+          prueba, cupones, gift cards, abonos mensuales, referidos y varios profes con permisos.
         </p>
       ) : null}
 

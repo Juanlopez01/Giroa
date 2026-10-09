@@ -115,6 +115,10 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   vence al próximo cobro + 3 días; el pack del mes anterior vence en ese momento (lo no usado se pierde). El webhook reconoce
   los abonos por `mp_preapproval_id` o por el `user_id` del aviso (`mp_connections.mp_user_id`); si no, es una suscripción a
   Giroa. Baja (`cancelMembershipFor`): primero se cancela en MP, después `cancel_membership`.
+- Referidos (`referrals`, Estudio y Pro): cada alumno tiene `students.referral_code` (lo pone un trigger; el panel inserta
+  alumnos directo). Link `…/sumate?ref=<código>`; al sumarse, `claim_referral` (solo alumnos nuevos: 7 días y sin pagos).
+  El primer pago de pack aprobado del invitado (trigger en `payments`) les da a los dos un pack de regalo de
+  `studios.referral_credits` clases (0 = apagado), 60 días (`private.grant_gift_credits`).
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

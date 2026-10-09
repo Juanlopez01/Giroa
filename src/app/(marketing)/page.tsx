@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 
 // Lo que todavía no está construido se muestra como "Próximamente": nadie paga por algo que no existe.
 const SOON = new Set([
-  "Referidos",
   "Certificados y jurado en audiciones",
   "Liquidación de profes",
   "Multi-sede y dominio propio",
@@ -227,13 +226,15 @@ export default async function LandingPage() {
                   </p>
                 ) : founder[p.key]?.spotsLeft ? (
                   <div className="mt-4 space-y-1">
-                    <p className="text-sm text-muted tabular-nums line-through">{formatArs(p.monthly_price_cents)}/mes</p>
+                    <p className="text-sm text-muted tabular-nums">
+                      <span className="line-through">{formatArs(p.monthly_price_cents)}/mes</span> · {founder[p.key]!.discountPct}% de por vida
+                    </p>
                     <p className="text-3xl font-semibold tabular-nums">
                       {formatArs(Math.round((p.monthly_price_cents * (100 - founder[p.key]!.discountPct)) / 100))}
                       <span className="text-base font-normal text-muted">/mes</span>
                     </p>
                     <p className="inline-block rounded-full bg-[var(--gold)]/25 px-2.5 py-0.5 text-xs font-semibold">
-                      Precio fundador de por vida · {spotsLabel(founder[p.key]!.spotsLeft).toLowerCase()}
+                      Fundador · {spotsLabel(founder[p.key]!.spotsLeft).toLowerCase()}
                     </p>
                   </div>
                 ) : (
