@@ -24,6 +24,7 @@ function readOffering(formData: FormData) {
     capacity: formData.get("capacity"),
     roleBalance: formData.get("roleBalance"),
     roleBalanceMaxDiff: formData.get("roleBalanceMaxDiff") || undefined,
+    dropInPrice: formData.get("dropInPrice") ?? undefined,
   });
 }
 
@@ -61,6 +62,7 @@ async function toRow(studioId: string, input: OfferingInput) {
     description: input.description ?? null,
     capacity: input.capacity,
     role_balance_max_diff: roleBalance && input.roleBalance ? (input.roleBalanceMaxDiff ?? null) : null,
+    price_cents: (await can(studioId, "drop_in")) ? input.dropInPrice : null,
   };
 }
 

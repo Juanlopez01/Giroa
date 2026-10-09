@@ -23,7 +23,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
   const { studio, isAdmin } = await requireStaff(slug, `/panel/clases/${id}`);
   const supabase = await createClient();
 
-  const [{ data: offering }, disciplines, allowRoleBalance, teachers] = await Promise.all([
+  const [{ data: offering }, disciplines, allowRoleBalance, teachers, allowDropIn] = await Promise.all([
     supabase
       .from("offerings")
       .select("*, disciplines(name), class_schedules(id, weekday, start_time, duration_minutes, is_active)")
@@ -33,6 +33,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
     listDisciplines(),
     can(studio.id, "role_balance"),
     listTeamOptions(studio.id),
+    can(studio.id, "drop_in"),
   ]);
   if (!offering) notFound();
 
@@ -87,6 +88,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
               disciplines={disciplines}
               submitLabel="Guardar cambios"
               allowRoleBalance={allowRoleBalance}
+              allowDropIn={allowDropIn}
               teachers={teachers.length > 1 || offering.teacher_member_id ? teachers : []}
               initial={{
                 title: offering.title,
@@ -97,6 +99,7 @@ export default async function OfferingPage({ params, searchParams }: PageProps<"
                 description: offering.description ?? "",
                 capacity: offering.capacity,
                 roleBalanceMaxDiff: offering.role_balance_max_diff,
+                dropInPriceCents: offering.price_cents,
               }}
             />
           </section>

@@ -12,10 +12,11 @@ export const metadata: Metadata = { title: "Nueva clase" };
 export default async function NewOfferingPage({ params }: PageProps<"/s/[slug]/panel/clases/nueva">) {
   const { slug } = await params;
   const { studio } = await requireAdmin(slug, "/panel/clases/nueva");
-  const [disciplines, allowRoleBalance, teachers] = await Promise.all([
+  const [disciplines, allowRoleBalance, teachers, allowDropIn] = await Promise.all([
     listDisciplines(),
     can(studio.id, "role_balance"),
     listTeamOptions(studio.id),
+    can(studio.id, "drop_in"),
   ]);
 
   return (
@@ -27,7 +28,7 @@ export default async function NewOfferingPage({ params }: PageProps<"/s/[slug]/p
         <h1 className="text-2xl font-semibold">Nueva clase</h1>
         <p className="text-muted">Después le cargás los horarios de la semana.</p>
       </div>
-      <OfferingForm action={createOffering.bind(null, slug)} disciplines={disciplines} submitLabel="Crear clase" allowRoleBalance={allowRoleBalance} teachers={teachers.length > 1 ? teachers : []} />
+      <OfferingForm action={createOffering.bind(null, slug)} disciplines={disciplines} submitLabel="Crear clase" allowRoleBalance={allowRoleBalance} allowDropIn={allowDropIn} teachers={teachers.length > 1 ? teachers : []} />
     </div>
   );
 }

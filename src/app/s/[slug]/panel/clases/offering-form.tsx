@@ -16,6 +16,8 @@ export type OfferingFormValues = {
   description: string;
   capacity: number;
   roleBalanceMaxDiff: number | null;
+  /** Precio de la clase suelta en centavos (null = no se vende suelta). */
+  dropInPriceCents?: number | null;
 };
 
 type Props = {
@@ -27,9 +29,11 @@ type Props = {
   allowRoleBalance: boolean;
   /** Equipo del estudio, para asignar el profe de la clase. */
   teachers?: { id: string; name: string }[];
+  /** El plan incluye clases sueltas. */
+  allowDropIn?: boolean;
 };
 
-export function OfferingForm({ action, disciplines, initial, submitLabel, allowRoleBalance, teachers = [] }: Props) {
+export function OfferingForm({ action, disciplines, initial, submitLabel, allowRoleBalance, teachers = [], allowDropIn = false }: Props) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [disciplineKey, setDisciplineKey] = useState(initial?.disciplineKey ?? "");
   const [roleBalance, setRoleBalance] = useState(initial ? initial.roleBalanceMaxDiff !== null : true);
@@ -151,6 +155,21 @@ export function OfferingForm({ action, disciplines, initial, submitLabel, allowR
       >
         <Input name="teacherName" defaultValue={initial?.teacherName} placeholder="Ej.: Lucía Pérez" />
       </Field>
+
+      {allowDropIn ? (
+        <Field
+          label="Precio de la clase suelta"
+          hint="Opcional. Si lo ponés, quien no tiene pack puede reservar y pagar solo esta clase."
+          error={errors.dropInPrice}
+        >
+          <Input
+            name="dropInPrice"
+            inputMode="decimal"
+            placeholder="Ej.: 9.000"
+            defaultValue={initial?.dropInPriceCents ? String(initial.dropInPriceCents / 100) : ""}
+          />
+        </Field>
+      ) : null}
 
       <Field label="Descripción" hint="Opcional. Qué se trabaja, qué traer, etc." error={errors.description}>
         <Textarea name="description" defaultValue={initial?.description} rows={3} />

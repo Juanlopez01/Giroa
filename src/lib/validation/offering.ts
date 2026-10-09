@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseArsToCents } from "@/lib/money";
 
 const optionalText = (max: number, message: string) =>
   z
@@ -31,6 +32,19 @@ export const offeringSchema = z
       .max(1000, { error: "El cupo puede ser hasta 1000." }),
     roleBalance: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
     roleBalanceMaxDiff: z.coerce.number().int().min(1).max(50).optional(),
+    // Precio de la clase suelta (vacío = no se vende suelta).
+    dropInPrice: z
+      .string()
+      .optional()
+      .transform((v, ctx) => {
+        if (!v || !v.trim()) return null;
+        const cents = parseArsToCents(v);
+        if (cents === null || cents <= 0) {
+          ctx.addIssue({ code: "custom", message: "Poné el precio en pesos (por ejemplo 9.000) o dejalo vacío." });
+          return z.NEVER;
+        }
+        return cents;
+      }),
   })
   .refine((o) => !o.roleBalance || o.roleBalanceMaxDiff !== undefined, {
     path: ["roleBalanceMaxDiff"],
