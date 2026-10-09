@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { listIncome } from "@/lib/income.server";
 import { addDaysYmd, startOfDay, todayYmd, toYmd, weekdayOf, formatTime } from "@/lib/datetime";
 
 // Números del panel del dueño. Todo pasa por RLS (owner/admin ven su estudio).
@@ -22,7 +23,6 @@ export type IncomeSummary = {
 
 /** Cobrado en el mes, y lo cobrado el mes pasado hasta el mismo día (comparación justa). */
 export async function incomeSummary(studioId: string, tz: string, now: Date): Promise<IncomeSummary> {
-  const supabase = await createClient();
   const today = todayYmd(tz, now);
   const ym = today.slice(0, 7);
   const prev = shiftMonth(ym, -1);
@@ -33,45 +33,11 @@ export async function incomeSummary(studioId: string, tz: string, now: Date): Pr
 
   const from = monthStart(prev, tz).toISOString();
   const to = monthStart(shiftMonth(ym, 1), tz).toISOString();
-  // Packs + entradas de eventos (las gratis no suman) + gift cards.
-  const [{ data: packs }, { data: tickets }, { data: gifts }, { data: formation }] = await Promise.all([
-    supabase
-      .from("payments")
-      .select("amount_cents, method, paid_at")
-      .eq("studio_id", studioId)
-      .eq("status", "approved")
-      .gte("paid_at", from)
-      .lt("paid_at", to),
-    supabase
-      .from("event_orders")
-      .select("amount_cents, method, paid_at")
-      .eq("studio_id", studioId)
-      .eq("status", "paid")
-      .gt("amount_cents", 0)
-      .gte("paid_at", from)
-      .lt("paid_at", to),
-    // Gift cards: el ingreso es el día de la venta (aunque se canjee después).
-    supabase
-      .from("gift_cards")
-      .select("amount_cents, method, paid_at")
-      .eq("studio_id", studioId)
-      .in("status", ["active", "redeemed", "expired"])
-      .gte("paid_at", from)
-      .lt("paid_at", to),
-    // Matrículas y cuotas de formaciones.
-    supabase
-      .from("formation_charges")
-      .select("amount_cents, method, paid_at")
-      .eq("studio_id", studioId)
-      .eq("status", "paid")
-      .gte("paid_at", from)
-      .lt("paid_at", to),
-  ]);
-  const data = [...(packs ?? []), ...[...(tickets ?? []), ...(gifts ?? []), ...(formation ?? [])].filter((t) => t.method !== null)] as {
-    amount_cents: number;
-    method: "cash" | "transfer" | "mercadopago";
-    paid_at: string | null;
-  }[];
+  const data = (await listIncome(studioId, new Date(from), new Date(to))).map((i) => ({
+    amount_cents: i.amountCents,
+    method: i.method,
+    paid_at: i.paidAt,
+  }));
 
   const thisStart = monthStart(ym, tz).getTime();
   const summary: IncomeSummary = { thisMonth: 0, lastMonthSameDay: 0, count: 0, byMethod: { cash: 0, transfer: 0, mercadopago: 0 } };
