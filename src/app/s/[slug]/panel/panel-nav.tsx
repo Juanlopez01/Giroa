@@ -11,6 +11,7 @@ import {
   House,
   Layers,
   LayoutGrid,
+  Megaphone,
   Plus,
   QrCode,
   Settings,
@@ -37,6 +38,7 @@ const ITEMS: Item[] = [
   { href: "/panel/packs", label: "Packs", icon: Ticket, adminOnly: true },
   { href: "/panel/eventos", label: "Eventos", icon: Sparkles },
   { href: "/panel/formaciones", label: "Formaciones", icon: GraduationCap },
+  { href: "/panel/anuncios", label: "Anuncios", icon: Megaphone, adminOnly: true },
   { href: "/panel/equipo", label: "Equipo", icon: UsersRound, adminOnly: true },
   { href: "/panel/ajustes", label: "Ajustes", icon: Settings, adminOnly: true },
   { href: "/panel/plan", label: "Tu plan", icon: CreditCard, ownerOnly: true },
@@ -119,6 +121,7 @@ export function PanelTabBar(access: Access) {
     { href: "/panel/alumnos/nuevo", label: "Nuevo alumno", icon: UserPlus },
     access.isAdmin && { href: "/panel/clases/nueva", label: "Nueva clase", icon: Layers },
     access.isAdmin && { href: "/panel/eventos/nuevo", label: "Nuevo evento", icon: Sparkles },
+    access.isAdmin && { href: "/panel/anuncios", label: "Anuncio", icon: Megaphone },
     { href: "/panel/ajustes/qr", label: "Cartel QR", icon: QrCode },
     access.isAdmin && { href: "/panel/alumnos/importar", label: "Importar Excel", icon: FileSpreadsheet },
   ].filter(Boolean) as { href: string; label: string; icon: LucideIcon }[];

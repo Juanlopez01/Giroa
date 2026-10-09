@@ -11,6 +11,8 @@ import { MyFormations } from "@/components/studio/my-formations";
 import { UpcomingEvents } from "@/components/studio/upcoming-events";
 import { AttendanceCard, CreditsCard, NextClassCard } from "@/components/student/home-cards";
 import { createClient } from "@/lib/supabase/server";
+import { Announcements } from "@/components/student/announcements";
+import { dismissAnnouncement } from "./actions";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -22,11 +24,20 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
   const now = new Date(nowMs());
 
   const supabase = await createClient();
-  const [balances, bookings, attendance, { data: trialAvailable }] = await Promise.all([
+  const [balances, bookings, attendance, { data: trialAvailable }, { data: announcements }, { data: dismissed }] = await Promise.all([
     myBalances(studio.id, student.id),
     myUpcomingBookings(studio.id, student.id, now),
     myAttendance(studio.id, student.id, tz, now),
     supabase.rpc("my_trial_available", { p_studio_id: studio.id }),
+    // RLS devuelve solo los anuncios para este alumno.
+    supabase
+      .from("announcements")
+      .select("id, title, body, visible_until")
+      .eq("studio_id", studio.id)
+      .or(`visible_until.is.null,visible_until.gt.${now.toISOString()}`)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase.from("announcement_dismissals").select("announcement_id").eq("student_id", student.id),
   ]);
   const trial = Boolean(trialAvailable) && balances.length === 0;
   const firstName = student.full_name.split(" ")[0];
@@ -36,6 +47,10 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
   return (
     <div className="space-y-6">
       {welcome ? <FormMessage ok message={`¡Listo, ${firstName}! Ya sos parte de ${studio.name}.`} /> : null}
+      <Announcements
+        items={(announcements ?? []).filter((a) => !(dismissed ?? []).some((d) => d.announcement_id === a.id)).slice(0, 3)}
+        dismiss={dismissAnnouncement.bind(null, slug)}
+      />
       <InstallPrompt studioName={studio.name} />
 
       <div>

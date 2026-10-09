@@ -50,6 +50,7 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
       "Audiciones con turnos y resultados",
       "Lista de espera y clase de prueba",
       "Cupones y gift cards",
+      "Anuncios a tus alumnos",
       "Referidos",
       "Varios profes con permisos",
     ],

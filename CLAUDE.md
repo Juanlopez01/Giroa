@@ -94,6 +94,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   (`<studio>/<formación>/<archivo>`, 50 MB, PDF/imagen/audio; videos por link) o links. Lo carga el
   staff; lo ven el staff y los inscriptos al día (`private.formation_material_access`, con deuda no). El
   alumno abre los archivos con URLs firmadas de 10 minutos.
+- Anuncios (`announcements`, Estudio y Pro): `publish_announcement` (dueño/encargado) a todos, a los de una
+  clase (reserva en los últimos 30 días o futura) o a los de una formación; mail opcional (template
+  `announcement`). El alumno los ve arriba del Inicio y los cierra con `dismiss_announcement`.
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

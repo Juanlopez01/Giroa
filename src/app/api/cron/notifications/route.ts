@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { emailEnv, serverEnv } from "@/lib/env.server";
 import { platformUrl, studioUrl } from "@/lib/urls";
 import {
+  announcementEmail,
   classReminderEmail,
   eventTicketsEmail,
   packExpiringEmail,
@@ -219,6 +220,12 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
       const startsAt = str("starts_at");
       if (!startsAt) return null;
       return sessionCancelledEmail(studio, n.student_name, { title: str("title") ?? "tu clase", startsAt, reason: str("reason") });
+    }
+    case "announcement": {
+      // Si el estudio lo borró antes de que saliera, no se manda.
+      const { data: a } = await admin.from("announcements").select("title, body").eq("id", str("announcement_id") ?? "").maybeSingle();
+      if (!a) return null;
+      return announcementEmail(studio, n.student_name, { title: a.title, body: a.body });
     }
     default:
       return null;

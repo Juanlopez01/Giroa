@@ -254,3 +254,12 @@ export function auditionEmail(
       );
   }
 }
+
+/** Anuncio del estudio ("Mañana no hay clase por el feriado"). El texto respeta los saltos de línea. */
+export function announcementEmail(studio: StudioInfo, studentName: string | null, d: { title: string; body: string }): EmailContent {
+  const paragraphs = d.body
+    .split(/\n{2,}/)
+    .map((p) => esc(p.trim()).replace(/\n/g, "<br>"))
+    .filter(Boolean);
+  return build(studio, d.title, [hola(studentName), ...paragraphs], { label: "Abrir la app", href: studio.url("/app") }, `${studio.name}: ${d.title}`);
+}

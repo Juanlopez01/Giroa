@@ -86,3 +86,18 @@ describe("audiciones", () => {
     expect(w.subject).toBe("Quedaste en lista de espera");
   });
 });
+
+describe("anuncio", () => {
+  it("respeta párrafos, escapa el HTML y lleva a la app", async () => {
+    const { announcementEmail } = await import("@/lib/email/templates");
+    const mail = announcementEmail(
+      { name: "Tango del Sur", timezone: "America/Argentina/Buenos_Aires", url: (p) => `https://tango.giroa.com.ar${p}` },
+      "Ana Pérez",
+      { title: "Feriado", body: "Mañana no hay clase.\n\nNos vemos el <martes>." },
+    );
+    expect(mail.subject).toBe("Tango del Sur: Feriado");
+    expect(mail.html).toContain("Nos vemos el &lt;martes&gt;.");
+    expect(mail.html).toContain("https://tango.giroa.com.ar/app");
+    expect(mail.text).toContain("Hola, Ana.");
+  });
+});

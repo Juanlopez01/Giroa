@@ -109,3 +109,14 @@ export async function bookTrialClass(slug: string, sessionId: string, role: "lea
   revalidatePath(`/s/${slug}`);
   return { ok: true, message: "¡Listo! Te esperamos en tu clase de prueba." };
 }
+
+/** El alumno cierra un anuncio del Inicio (no vuelve a aparecer). */
+export async function dismissAnnouncement(slug: string, announcementId: string): Promise<ActionState> {
+  await requireStudent(slug, "/app");
+  if (!z.uuid().safeParse(announcementId).success) return { ok: false, message: "No encontramos ese anuncio." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("dismiss_announcement", { p_announcement_id: announcementId });
+  if (error) return fromSupabaseError(error, "dismissAnnouncement");
+  revalidatePath(`/s/${slug}/app`);
+  return { ok: true };
+}
