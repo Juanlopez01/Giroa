@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Avatar } from "@/components/ui/avatar";
 import { Search } from "lucide-react";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
@@ -18,15 +19,6 @@ const FILTERS = [
   { key: "inactivos", label: "Inactivos" },
 ] as const;
 type FilterKey = (typeof FILTERS)[number]["key"];
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
-}
 
 function BalanceChip({ balance, soonYmd }: { balance: BalanceSummary | undefined; soonYmd: string }) {
   if (!balance) return <span className="rounded-full bg-danger/10 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-danger">Sin saldo</span>;
@@ -157,12 +149,7 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
           {students.map((s) => (
             <li key={s.id}>
               <Link href={`/panel/alumnos/${s.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-background">
-                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
-                  {initials(s.full_name)}
-                  {s.user_id ? (
-                    <span className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full bg-success ring-2 ring-surface" title="Usa la app" />
-                  ) : null}
-                </span>
+                <Avatar name={s.full_name} online={Boolean(s.user_id)} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{s.full_name}</span>
                   <span className="block truncate text-sm text-muted">{s.email ?? s.phone ?? "Sin contacto"}</span>

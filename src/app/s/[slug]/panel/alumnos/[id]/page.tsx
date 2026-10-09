@@ -11,6 +11,7 @@ import { FormMessage } from "@/components/ui/field";
 import { setStudentActive, updateStudent } from "../actions";
 import { StudentForm } from "../student-form";
 import { CreditsCard } from "@/components/student/home-cards";
+import { Avatar } from "@/components/ui/avatar";
 import { myAttendance } from "@/lib/student-data.server";
 import { whatsappLink } from "@/lib/dashboard.server";
 
@@ -62,12 +63,6 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
   const usable = (balances ?? []).filter((b) => b.is_usable);
   const past = (balances ?? []).filter((b) => !b.is_usable);
   const attendance = await myAttendance(studio.id, student.id, tz, new Date(nowMs()));
-  const initials = student.full_name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w: string) => w[0]!.toUpperCase())
-    .join("");
   const wa = whatsappLink(student.phone, `¡Hola ${student.full_name.split(" ")[0]}! Te escribimos de ${studio.name}.`);
 
   return (
@@ -77,10 +72,7 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
           ← Alumnos
         </Link>
         <div className="flex items-center gap-4">
-          <span className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand/10 font-serif text-2xl font-semibold text-brand">
-            {initials}
-            {student.user_id ? <span className="absolute right-0 bottom-0 h-4 w-4 rounded-full bg-success ring-2 ring-background" /> : null}
-          </span>
+          <Avatar name={student.full_name} size="lg" online={Boolean(student.user_id)} />
           <div className="min-w-0 flex-1">
             <h1 className="truncate font-serif text-2xl font-semibold">{student.full_name}</h1>
             <p className="text-sm text-muted">

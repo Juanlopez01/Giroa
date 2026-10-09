@@ -5,6 +5,7 @@ import { requireStudent } from "@/lib/student-app";
 import { myBalances } from "@/lib/student-data.server";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { CreditsCard } from "@/components/student/home-cards";
+import { Avatar } from "@/components/ui/avatar";
 import { signOutFromStudio } from "./actions";
 
 export const metadata: Metadata = { title: "Perfil" };
@@ -20,19 +21,11 @@ export default async function StudentProfilePage({ params }: PageProps<"/s/[slug
   const { slug } = await params;
   const { studio, student, user } = await requireStudent(slug, "/app/perfil");
   const balances = await myBalances(studio.id, student.id);
-  const initials = student.full_name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand/10 font-serif text-2xl font-semibold text-brand">
-          {initials}
-        </span>
+        <Avatar name={student.full_name} size="lg" />
         <div className="min-w-0">
           <h1 className="truncate font-serif text-2xl font-semibold">{student.full_name}</h1>
           <p className="truncate text-sm text-muted">

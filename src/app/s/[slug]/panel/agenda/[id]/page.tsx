@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Avatar } from "@/components/ui/avatar";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { QrCode } from "lucide-react";
@@ -14,15 +15,6 @@ import { QrScanner } from "@/components/panel/qr-scanner";
 import { LiveRefresh } from "@/components/ui/live-refresh";
 
 export const metadata: Metadata = { title: "Asistencia" };
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
-}
 
 // La clase en vivo: los alumnos se dan el presente con el cartel QR y la lista
 // se actualiza sola. El profe puede marcar a mano o sumar a quien llegó sin reserva.
@@ -161,9 +153,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
               <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
                 {pending.map((b) => (
                   <li key={b.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-border/60 text-xs font-semibold text-muted">
-                      {initials(b.students?.full_name ?? "A")}
-                    </span>
+                    <Avatar name={b.students?.full_name ?? "Alumno"} size="sm" tone="muted" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{b.students?.full_name ?? "Alumno"}</p>
                       <p className="text-sm text-muted">
@@ -188,9 +178,7 @@ export default async function SessionPage({ params }: PageProps<"/s/[slug]/panel
               <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
                 {arrived.map((b) => (
                   <li key={b.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-xs font-semibold text-success">
-                      {initials(b.students?.full_name ?? "A")}
-                    </span>
+                    <Avatar name={b.students?.full_name ?? "Alumno"} size="sm" tone="success" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{b.students?.full_name ?? "Alumno"}</p>
                       <p className="text-sm text-muted">{b.dance_role ? ROLE_LABELS[b.dance_role] : "Sin rol"}</p>
