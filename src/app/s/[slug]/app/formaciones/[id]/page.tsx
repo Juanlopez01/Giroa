@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
+import { MATERIALS_BUCKET } from "@/lib/materials";
+import { MaterialList, type MaterialRow } from "@/components/formations/material-list";
 import { confirmMpReturn } from "@/lib/mp/apply-payment";
 import { formatArs } from "@/lib/money";
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
@@ -42,6 +44,24 @@ export default async function MyFormationPage({ params, searchParams }: PageProp
       supabase.from("formation_attendance").select("formation_session_id").eq("enrollment_id", e.id),
     ]);
   const p = progressData as Progress | null;
+
+  // Material: RLS lo devuelve solo si está inscripto y al día. Los archivos se
+  // abren con URLs firmadas que vencen en 10 minutos.
+  const { data: materialRows } =
+    e.status === "enrolled" && !p?.in_debt
+      ? await supabase
+          .from("formation_materials")
+          .select("id, title, description, kind, url, storage_path, mime_type, size_bytes, session_id")
+          .eq("formation_id", f.id)
+          .order("created_at")
+      : { data: [] };
+  const paths = (materialRows ?? []).flatMap((m) => (m.storage_path ? [m.storage_path] : []));
+  const { data: signed } = paths.length ? await supabase.storage.from(MATERIALS_BUCKET).createSignedUrls(paths, 600) : { data: [] };
+  const urlByPath = new Map((signed ?? []).flatMap((s) => (s.path && s.signedUrl ? [[s.path, s.signedUrl] as const] : [])));
+  const materials: MaterialRow[] = (materialRows ?? []).map((m) => ({
+    ...m,
+    href: m.kind === "link" ? m.url : m.storage_path ? (urlByPath.get(m.storage_path) ?? null) : null,
+  }));
   const pending = (charges ?? []).filter((c) => c.status === "pending");
   const enrollmentFee = pending.find((c) => c.kind === "enrollment");
   const installmentsPaid = (charges ?? []).some((c) => c.kind === "installment" && c.status === "paid");
@@ -91,7 +111,7 @@ export default async function MyFormationPage({ params, searchParams }: PageProp
           {p?.in_debt ? (
             <div className="space-y-1 rounded-2xl bg-danger/10 p-5 text-danger">
               <p className="font-semibold">Tenés una cuota vencida</p>
-              <p className="text-sm">Hasta que la pagues, el acceso a la formación queda en pausa. Tus clases regulares las seguís reservando.</p>
+              <p className="text-sm">Hasta que la pagues, el acceso a la formación (asistencia y material) queda en pausa. Tus clases regulares las seguís reservando.</p>
             </div>
           ) : null}
 
@@ -144,6 +164,17 @@ export default async function MyFormationPage({ params, searchParams }: PageProp
                   {pct !== null ? (pct >= (p?.min_attendance_pct ?? 0) ? " ¡Vas bien!" : " Ojo, estás por debajo.") : ""}
                 </p>
               </section>
+
+              {materials.length ? (
+                <section className="space-y-3">
+                  <h2 className="text-lg font-semibold">Material</h2>
+                  <MaterialList
+                    materials={materials}
+                    sessions={(sessions ?? []).map((s) => ({ id: s.id, label: `${s.title} · ${formatDayLabel(toYmd(new Date(s.starts_at), tz))}` }))}
+                    empty=""
+                  />
+                </section>
+              ) : null}
 
               {sessions?.length ? (
                 <section className="space-y-3">
