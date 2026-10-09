@@ -1,3 +1,4 @@
+import { isPlanComingSoon } from "@/lib/gating";
 import type { Metadata } from "next";
 import { requireOwner } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
@@ -79,6 +80,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/s/[
               monthlyCents: p.monthly_price_cents,
               limit: p.max_active_students,
               highlight: p.key === "estudio",
+              soon: isPlanComingSoon(p.key),
             }))}
             currentPlan={access.plan}
             inTrial={access.state === "trial"}
@@ -96,6 +98,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/s/[
               monthlyCents: p.monthly_price_cents,
               limit: p.max_active_students,
               highlight: p.key === "estudio",
+              soon: isPlanComingSoon(p.key),
             }))}
             currentPlan={access.subscribed_plan ?? access.plan}
             inTrial={false}

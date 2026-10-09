@@ -4,6 +4,7 @@ import { formatArs } from "@/lib/money";
 import { platformUrl } from "@/lib/urls";
 import { FounderForm } from "./founder-form";
 import { HeroMockup } from "./hero-mockup";
+import { isPlanComingSoon } from "@/lib/gating";
 
 export const metadata: Metadata = {
   title: { absolute: "Giroa · Reservas, packs y pagos para estudios de danza" },
@@ -184,23 +185,30 @@ export default async function LandingPage() {
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {(plans ?? []).map((p) => {
             const copy = PLAN_COPY[p.key];
+            const soonPlan = isPlanComingSoon(p.key);
             return (
               <article
                 key={p.key}
-                className={`flex flex-col rounded-3xl border p-6 ${copy?.highlight ? "border-brand bg-surface ring-2 ring-brand/20" : "border-border bg-surface"}`}
+                className={`flex flex-col rounded-3xl border p-6 ${copy?.highlight ? "border-brand bg-surface ring-2 ring-brand/20" : soonPlan ? "border-dashed border-border bg-surface/60" : "border-border bg-surface"}`}
               >
                 {copy?.highlight ? <p className="mb-2 text-xs font-semibold tracking-wide text-brand uppercase">El más elegido</p> : null}
                 <h3 className="font-serif text-2xl font-semibold">{p.name}</h3>
                 <p className="text-sm text-muted">{copy?.tagline}</p>
-                <p className="mt-4 text-3xl font-semibold tabular-nums">
-                  {formatArs(p.monthly_price_cents)}
-                  <span className="text-base font-normal text-muted">/mes</span>
-                </p>
+                {soonPlan ? (
+                  <p className="mt-4">
+                    <span className="inline-block rounded-full bg-[var(--gold)]/25 px-3 py-1 text-sm font-semibold text-foreground">Próximamente</span>
+                  </p>
+                ) : (
+                  <p className="mt-4 text-3xl font-semibold tabular-nums">
+                    {formatArs(p.monthly_price_cents)}
+                    <span className="text-base font-normal text-muted">/mes</span>
+                  </p>
+                )}
                 <ul className="mt-5 flex-1 space-y-2 text-sm">
                   {copy?.features.map((f) => (
-                    <li key={f} className={SOON.has(f) ? "text-muted" : undefined}>
-                      {SOON.has(f) ? "○" : "✓"} {f}
-                      {SOON.has(f) ? (
+                    <li key={f} className={SOON.has(f) || soonPlan ? "text-muted" : undefined}>
+                      {SOON.has(f) || soonPlan ? "○" : "✓"} {f}
+                      {SOON.has(f) && !soonPlan ? (
                         <span className="ml-1.5 rounded-full bg-[var(--gold)]/20 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-foreground">
                           Próximamente
                         </span>

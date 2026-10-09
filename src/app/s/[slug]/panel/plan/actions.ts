@@ -1,5 +1,6 @@
 "use server";
 
+import { isPlanComingSoon } from "@/lib/gating";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -18,6 +19,7 @@ export async function chooseTrialPlan(slug: string, plan: string): Promise<Actio
   const { studio } = await requireOwner(slug, "/panel/plan");
   const parsed = planSchema.safeParse(plan);
   if (!parsed.success) return { ok: false, message: "Ese plan no existe." };
+  if (isPlanComingSoon(parsed.data)) return { ok: false, message: "Ese plan llega pronto: por ahora elegí otro." };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("choose_trial_plan", { p_studio_id: studio.id, p_plan: parsed.data });
@@ -36,6 +38,7 @@ export async function subscribe(slug: string, _prev: ActionState, formData: Form
   const plan = planSchema.safeParse(formData.get("plan"));
   const cycle = cycleSchema.safeParse(formData.get("cycle"));
   if (!plan.success || !cycle.success) return { ok: false, message: "Elegí un plan." };
+  if (isPlanComingSoon(plan.data)) return { ok: false, message: "Ese plan llega pronto: por ahora elegí otro." };
   const coupon = String(formData.get("coupon") ?? "").trim().toUpperCase() || null;
   if (!user.email) return { ok: false, message: "Tu cuenta no tiene email. Escribinos para suscribirte." };
 

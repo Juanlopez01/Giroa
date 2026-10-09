@@ -91,3 +91,12 @@ export async function cheapestPlanWith(feature: Feature): Promise<string | null>
   const plans = (data ?? []).flatMap((r) => (r.plans ? [r.plans] : [])).sort((a, b) => a.sort - b.sort);
   return plans[0]?.name ?? null;
 }
+
+/**
+ * Planes que se muestran como "Próximamente": no se pueden contratar ni elegir
+ * para la prueba hasta que tengan sus funciones propias.
+ */
+export const COMING_SOON_PLANS: readonly string[] = ["pro"];
+export function isPlanComingSoon(plan: string): boolean {
+  return COMING_SOON_PLANS.includes(plan);
+}

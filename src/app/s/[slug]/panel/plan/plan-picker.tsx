@@ -7,7 +7,7 @@ import { FormMessage, Input } from "@/components/ui/field";
 import { initialActionState, type ActionState } from "@/lib/errors";
 import { formatArs } from "@/lib/money";
 
-export type PlanOption = { key: string; name: string; monthlyCents: number; limit: number | null; highlight: boolean };
+export type PlanOption = { key: string; name: string; monthlyCents: number; limit: number | null; highlight: boolean; soon: boolean };
 
 type Props = {
   plans: PlanOption[];
@@ -20,7 +20,8 @@ type Props = {
 export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrialPlan }: Props) {
   const [state, formAction, pending] = useActionState(subscribe, initialActionState);
   const [cycle, setCycle] = useState<"monthly" | "annual">("monthly");
-  const [selected, setSelected] = useState(currentPlan ?? "inicial");
+  // Un plan "Próximamente" no se puede elegir: si es el que está probando, arranca en Estudio.
+  const [selected, setSelected] = useState(plans.find((p) => p.key === currentPlan && !p.soon)?.key ?? "estudio");
   const [trialMsg, setTrialMsg] = useState<ActionState | null>(null);
   const [trialPending, startTrial] = useTransition();
 
@@ -52,16 +53,21 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
           <button
             key={p.key}
             type="button"
-            onClick={() => setSelected(p.key)}
+            onClick={() => !p.soon && setSelected(p.key)}
+            disabled={p.soon}
             aria-pressed={selected === p.key}
-            className="rounded-2xl border border-border bg-surface p-4 text-left aria-pressed:border-brand aria-pressed:ring-2 aria-pressed:ring-brand/20"
+            className="rounded-2xl border border-border bg-surface p-4 text-left disabled:cursor-not-allowed disabled:opacity-60 aria-pressed:border-brand aria-pressed:ring-2 aria-pressed:ring-brand/20"
           >
             <div className="flex items-baseline justify-between gap-2">
               <p className="font-semibold">
                 {p.name}
                 {p.key === currentPlan ? <span className="ml-2 text-xs font-normal text-muted">{inTrial ? "probando" : "actual"}</span> : null}
               </p>
-              <p className="font-semibold tabular-nums">{formatArs(price(p))}</p>
+              {p.soon ? (
+                <span className="rounded-full bg-[var(--gold,#c8a46b)]/20 px-2 py-0.5 text-xs font-medium">Próximamente</span>
+              ) : (
+                <p className="font-semibold tabular-nums">{formatArs(price(p))}</p>
+              )}
             </div>
             <p className="text-sm text-muted">
               {p.limit ? `Hasta ${p.limit} alumnos activos` : "Alumnos ilimitados"} · {cycle === "annual" ? "por año" : "por mes"}
@@ -70,10 +76,10 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
         ))}
       </div>
 
-      {selected === "estudio" || selected === "pro" ? (
+      {selected === "estudio" ? (
         <p className="text-sm text-muted">
-          Hoy {selected === "pro" ? "Pro" : "Estudio"} te suma más alumnos, eventos con entradas, lista de espera y clase de
-          prueba gratis. El resto (formaciones, cupones y más) se va activando sin costo extra a medida que sale.
+          Estudio te suma más alumnos, eventos con entradas, formaciones con cuotas y audiciones, lista de espera, clase de
+          prueba, cupones, gift cards y varios profes con permisos. Los referidos se suman sin costo extra apenas estén.
         </p>
       ) : null}
 
