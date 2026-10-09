@@ -68,3 +68,28 @@ export function parseCsv(input: string): string[][] {
   // Saca filas totalmente vacías (típico al final de un Excel).
   return rows.filter((r) => r.some((c) => c.trim() !== ""));
 }
+
+// ---------------------------------------------------------------------------
+// Exportar para Excel en español: separador ";" (el Excel de Argentina usa la
+// coma para los decimales), BOM para que abra bien los acentos, y CRLF.
+
+export type CsvValue = string | number | boolean | null | undefined;
+
+const BOM = String.fromCharCode(0xfeff);
+
+function csvCell(v: CsvValue): string {
+  if (v === null || v === undefined) return "";
+  const s = typeof v === "boolean" ? (v ? "Sí" : "No") : String(v);
+  // Evita que Excel interprete el texto como fórmula (inyección de CSV).
+  const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+  return /[";\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+}
+
+export function toCsv(headers: string[], rows: CsvValue[][]): string {
+  return BOM + [headers, ...rows].map((r) => r.map(csvCell).join(";")).join("\r\n") + "\r\n";
+}
+
+/** Plata en pesos con coma decimal: 1234550 → "12345,50". */
+export function csvMoney(cents: number): string {
+  return (cents / 100).toFixed(2).replace(".", ",");
+}

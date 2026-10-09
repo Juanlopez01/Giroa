@@ -123,6 +123,15 @@ export default async function PaymentsPage({ params, searchParams }: PageProps<"
         </nav>
       ) : null}
 
+      <div className="flex flex-wrap gap-2 text-sm">
+        <a href={`/panel/exportar/pagos?mes=${month}`} download className="inline-flex h-9 items-center rounded-full border border-border bg-surface px-4 font-medium">
+          Exportar el mes (Excel)
+        </a>
+        <a href="/panel/exportar/pagos?mes=todo" download className="inline-flex h-9 items-center rounded-full border border-border bg-surface px-4 font-medium">
+          Exportar todo
+        </a>
+      </div>
+
       {list.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border p-5 text-center text-muted">No hay cobros en este mes.</p>
       ) : (

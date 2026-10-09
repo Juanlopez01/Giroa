@@ -87,9 +87,18 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
         <h1 className="font-serif text-3xl font-semibold">Alumnos</h1>
         <div className="flex gap-2">
           {isAdmin ? (
-            <Link href="/panel/alumnos/importar" className="inline-flex h-10 items-center rounded-full border border-border bg-surface px-4 text-sm font-medium">
-              Importar
-            </Link>
+            <>
+              <a
+                href="/panel/exportar/alumnos"
+                download
+                className="inline-flex h-10 items-center rounded-full border border-border bg-surface px-4 text-sm font-medium"
+              >
+                Exportar
+              </a>
+              <Link href="/panel/alumnos/importar" className="inline-flex h-10 items-center rounded-full border border-border bg-surface px-4 text-sm font-medium">
+                Importar
+              </Link>
+            </>
           ) : null}
           {atLimit ? null : (
             <Link href="/panel/alumnos/nuevo" className="inline-flex h-10 items-center rounded-full bg-brand px-4 text-sm font-medium text-brand-foreground">
