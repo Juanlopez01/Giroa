@@ -29,7 +29,7 @@ export function PanelMockup() {
 
         <div className="grid gap-3 p-4 sm:grid-cols-[1.15fr_1fr]">
           {/* Clase en vivo */}
-          <div className="relative overflow-hidden rounded-2xl bg-brand p-4 text-brand-foreground">
+          <div className="relative overflow-hidden rounded-2xl bg-brand p-4 pr-24 text-brand-foreground">
             <p className="text-[10px] font-medium tracking-widest uppercase opacity-80">En curso</p>
             <p className="font-serif text-lg font-semibold">Tango intermedio</p>
             <p className="text-[11px] opacity-85">20:30 a 22:00 · 6 líd. · 6 seg.</p>
