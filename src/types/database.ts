@@ -951,13 +951,13 @@ isOneToOne: false
                   ]
                 },"pack_products": {
                   Row: {
-                    "created_at": string,"credits": number | null,"description": string | null,"id": string,"is_active": boolean,"is_couple": boolean,"name": string,"price_cents": number,"rules": NonNullable<Json>,"sort": number,"studio_id": string,"updated_at": string,"validity_days": number
+                    "created_at": string,"credits": number | null,"description": string | null,"id": string,"is_active": boolean,"is_couple": boolean,"is_membership": boolean,"name": string,"price_cents": number,"rules": NonNullable<Json>,"sort": number,"studio_id": string,"updated_at": string,"validity_days": number
                   }
                   Insert: {
-                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"name": string,"price_cents": number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id": string,"updated_at"?: string,"validity_days": number
+                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"is_membership"?: boolean,"name": string,"price_cents": number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id": string,"updated_at"?: string,"validity_days": number
                   }
                   Update: {
-                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"name"?: string,"price_cents"?: number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id"?: string,"updated_at"?: string,"validity_days"?: number
+                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"is_membership"?: boolean,"name"?: string,"price_cents"?: number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id"?: string,"updated_at"?: string,"validity_days"?: number
                   }
                   Relationships: [
                     {
@@ -970,13 +970,13 @@ isOneToOne: false
                   ]
                 },"payments": {
                   Row: {
-                    "amount_cents": number,"coupon_id": string | null,"created_at": string,"created_by": string | null,"currency": string,"discount_cents": number,"external_reference": string,"id": string,"marketplace_fee_cents": number,"method": Database["public"]['Enums']["payment_method"],"mp_payment_id": string | null,"mp_preference_id": string | null,"notes": string | null,"pack_product_id": string | null,"paid_at": string | null,"partner_student_id": string | null,"purpose": Database["public"]['Enums']["payment_purpose"],"status": Database["public"]['Enums']["payment_status"],"student_id": string,"studio_id": string,"updated_at": string
+                    "amount_cents": number,"coupon_id": string | null,"created_at": string,"created_by": string | null,"currency": string,"discount_cents": number,"external_reference": string,"id": string,"marketplace_fee_cents": number,"method": Database["public"]['Enums']["payment_method"],"mp_payment_id": string | null,"mp_preference_id": string | null,"notes": string | null,"pack_product_id": string | null,"paid_at": string | null,"partner_student_id": string | null,"purpose": Database["public"]['Enums']["payment_purpose"],"status": Database["public"]['Enums']["payment_status"],"student_id": string,"studio_id": string,"subscription_id": string | null,"updated_at": string
                   }
                   Insert: {
-                    "amount_cents": number,"coupon_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"discount_cents"?: number,"external_reference"?: string,"id"?: string,"marketplace_fee_cents"?: number,"method": Database["public"]['Enums']["payment_method"],"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"pack_product_id"?: string | null,"paid_at"?: string | null,"partner_student_id"?: string | null,"purpose"?: Database["public"]['Enums']["payment_purpose"],"status"?: Database["public"]['Enums']["payment_status"],"student_id": string,"studio_id": string,"updated_at"?: string
+                    "amount_cents": number,"coupon_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"discount_cents"?: number,"external_reference"?: string,"id"?: string,"marketplace_fee_cents"?: number,"method": Database["public"]['Enums']["payment_method"],"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"pack_product_id"?: string | null,"paid_at"?: string | null,"partner_student_id"?: string | null,"purpose"?: Database["public"]['Enums']["payment_purpose"],"status"?: Database["public"]['Enums']["payment_status"],"student_id": string,"studio_id": string,"subscription_id"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "amount_cents"?: number,"coupon_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"discount_cents"?: number,"external_reference"?: string,"id"?: string,"marketplace_fee_cents"?: number,"method"?: Database["public"]['Enums']["payment_method"],"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"pack_product_id"?: string | null,"paid_at"?: string | null,"partner_student_id"?: string | null,"purpose"?: Database["public"]['Enums']["payment_purpose"],"status"?: Database["public"]['Enums']["payment_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                    "amount_cents"?: number,"coupon_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"discount_cents"?: number,"external_reference"?: string,"id"?: string,"marketplace_fee_cents"?: number,"method"?: Database["public"]['Enums']["payment_method"],"mp_payment_id"?: string | null,"mp_preference_id"?: string | null,"notes"?: string | null,"pack_product_id"?: string | null,"paid_at"?: string | null,"partner_student_id"?: string | null,"purpose"?: Database["public"]['Enums']["payment_purpose"],"status"?: Database["public"]['Enums']["payment_status"],"student_id"?: string,"studio_id"?: string,"subscription_id"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1008,6 +1008,12 @@ isOneToOne: false
       columns: ["studio_id","student_id"]
 isOneToOne: false
       referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "payments_studio_id_subscription_id_fkey"
+      columns: ["studio_id","subscription_id"]
+isOneToOne: false
+      referencedRelation: "student_subscriptions"
       referencedColumns: ["studio_id","id"]
     }
                   ]
@@ -1148,6 +1154,37 @@ isOneToOne: false
       referencedColumns: ["studio_id","id"]
     },{
       foreignKeyName: "student_packs_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
+                },"student_subscriptions": {
+                  Row: {
+                    "amount_cents": number,"cancelled_at": string | null,"cancelled_by": string | null,"created_at": string,"failed_at": string | null,"id": string,"last_charge_at": string | null,"last_error": string | null,"mp_preapproval_id": string | null,"name": string,"next_charge_at": string | null,"pack_product_id": string,"status": Database["public"]['Enums']["membership_status"],"student_id": string,"studio_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "amount_cents": number,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"failed_at"?: string | null,"id"?: string,"last_charge_at"?: string | null,"last_error"?: string | null,"mp_preapproval_id"?: string | null,"name": string,"next_charge_at"?: string | null,"pack_product_id": string,"status"?: Database["public"]['Enums']["membership_status"],"student_id": string,"studio_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"created_at"?: string,"failed_at"?: string | null,"id"?: string,"last_charge_at"?: string | null,"last_error"?: string | null,"mp_preapproval_id"?: string | null,"name"?: string,"next_charge_at"?: string | null,"pack_product_id"?: string,"status"?: Database["public"]['Enums']["membership_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "student_subscriptions_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "student_subscriptions_studio_id_pack_product_id_fkey"
+      columns: ["studio_id","pack_product_id"]
+isOneToOne: false
+      referencedRelation: "pack_products"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "student_subscriptions_studio_id_student_id_fkey"
       columns: ["studio_id","student_id"]
 isOneToOne: false
       referencedRelation: "students"
@@ -1476,6 +1513,31 @@ isOneToOne: false
 "cancel_invite":
 { Args: { "p_invite_id": string }; Returns: undefined
                            },
+"cancel_membership":
+{ Args: { "p_subscription_id": string }; Returns: {
+              "amount_cents": number,
+"cancelled_at": string | null,
+"cancelled_by": string | null,
+"created_at": string,
+"failed_at": string | null,
+"id": string,
+"last_charge_at": string | null,
+"last_error": string | null,
+"mp_preapproval_id": string | null,
+"name": string,
+"next_charge_at": string | null,
+"pack_product_id": string,
+"status": Database["public"]['Enums']["membership_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "student_subscriptions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "cancel_session":
 { Args: { "p_reason"?: string,"p_session_id": string }; Returns: number
                            },
@@ -1640,6 +1702,7 @@ isOneToOne: false
 "status": Database["public"]['Enums']["payment_status"],
 "student_id": string,
 "studio_id": string,
+"subscription_id": string | null,
 "updated_at": string
             }
                           SetofOptions: {
@@ -1856,6 +1919,12 @@ isOneToOne: false
 "mp_apply_gift_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string }; Returns: Json
                            },
+"mp_apply_membership":
+{ Args: { "p_next_charge_at"?: string,"p_preapproval_id": string,"p_status": string,"p_subscription_id": string }; Returns: Json
+                           },
+"mp_apply_membership_charge":
+{ Args: { "p_amount_cents": number,"p_approved": boolean,"p_error"?: string,"p_mp_payment_id": string,"p_next_charge_at"?: string,"p_paid_at"?: string,"p_preapproval_id": string }; Returns: Json
+                           },
 "mp_apply_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string,"p_paid_at"?: string }; Returns: Json
                            },
@@ -1863,6 +1932,9 @@ isOneToOne: false
 { Args: { "p_studio_id": string }; Returns: {
               "connected": boolean,"expires_at": string,"live_mode": boolean,"mp_user_id": string
             }[]
+                           },
+"mp_link_membership":
+{ Args: { "p_preapproval_id": string,"p_subscription_id": string }; Returns: undefined
                            },
 "my_trial_available":
 { Args: { "p_studio_id": string }; Returns: boolean
@@ -2033,6 +2105,31 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"start_membership":
+{ Args: { "p_pack_product_id": string }; Returns: {
+              "amount_cents": number,
+"cancelled_at": string | null,
+"cancelled_by": string | null,
+"created_at": string,
+"failed_at": string | null,
+"id": string,
+"last_charge_at": string | null,
+"last_error": string | null,
+"mp_preapproval_id": string | null,
+"name": string,
+"next_charge_at": string | null,
+"pack_product_id": string,
+"status": Database["public"]['Enums']["membership_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "student_subscriptions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "studio_accepts_online_payments":
 { Args: { "p_studio_id": string }; Returns: boolean
                            },
@@ -2086,7 +2183,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "assessment_kind": "grade"|"pass_fail","audition_application_status": "pending_payment"|"submitted"|"admitted"|"waitlisted"|"rejected"|"cancelled","audition_field_kind": "short_text"|"long_text"|"choice"|"yes_no","audition_status": "draft"|"open"|"closed","billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","coupon_kind": "percent"|"amount","coupon_redemption_status": "pending"|"confirmed"|"void","coupon_target": "all"|"packs"|"events","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","enrollment_status": "applied"|"approved"|"enrolled"|"rejected"|"withdrawn","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","formation_charge_kind": "enrollment"|"installment"|"full","formation_charge_status": "pending"|"paid"|"cancelled","formation_status": "draft"|"published"|"archived","gift_card_status": "pending"|"active"|"redeemed"|"cancelled"|"expired","member_role": "owner"|"admin"|"teacher","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
+            "assessment_kind": "grade"|"pass_fail","audition_application_status": "pending_payment"|"submitted"|"admitted"|"waitlisted"|"rejected"|"cancelled","audition_field_kind": "short_text"|"long_text"|"choice"|"yes_no","audition_status": "draft"|"open"|"closed","billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","coupon_kind": "percent"|"amount","coupon_redemption_status": "pending"|"confirmed"|"void","coupon_target": "all"|"packs"|"events","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","enrollment_status": "applied"|"approved"|"enrolled"|"rejected"|"withdrawn","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","formation_charge_kind": "enrollment"|"installment"|"full","formation_charge_status": "pending"|"paid"|"cancelled","formation_status": "draft"|"published"|"archived","gift_card_status": "pending"|"active"|"redeemed"|"cancelled"|"expired","member_role": "owner"|"admin"|"teacher","membership_status": "pending"|"active"|"past_due"|"cancelled","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2206,7 +2303,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "assessment_kind": ["grade", "pass_fail"],"audition_application_status": ["pending_payment", "submitted", "admitted", "waitlisted", "rejected", "cancelled"],"audition_field_kind": ["short_text", "long_text", "choice", "yes_no"],"audition_status": ["draft", "open", "closed"],"billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"coupon_kind": ["percent", "amount"],"coupon_redemption_status": ["pending", "confirmed", "void"],"coupon_target": ["all", "packs", "events"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"enrollment_status": ["applied", "approved", "enrolled", "rejected", "withdrawn"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"formation_charge_kind": ["enrollment", "installment", "full"],"formation_charge_status": ["pending", "paid", "cancelled"],"formation_status": ["draft", "published", "archived"],"gift_card_status": ["pending", "active", "redeemed", "cancelled", "expired"],"member_role": ["owner", "admin", "teacher"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
+            "assessment_kind": ["grade", "pass_fail"],"audition_application_status": ["pending_payment", "submitted", "admitted", "waitlisted", "rejected", "cancelled"],"audition_field_kind": ["short_text", "long_text", "choice", "yes_no"],"audition_status": ["draft", "open", "closed"],"billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"coupon_kind": ["percent", "amount"],"coupon_redemption_status": ["pending", "confirmed", "void"],"coupon_target": ["all", "packs", "events"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"enrollment_status": ["applied", "approved", "enrolled", "rejected", "withdrawn"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"formation_charge_kind": ["enrollment", "installment", "full"],"formation_charge_status": ["pending", "paid", "cancelled"],"formation_status": ["draft", "published", "archived"],"gift_card_status": ["pending", "active", "redeemed", "cancelled", "expired"],"member_role": ["owner", "admin", "teacher"],"membership_status": ["pending", "active", "past_due", "cancelled"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
           }
         }
 } as const

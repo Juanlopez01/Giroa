@@ -40,6 +40,7 @@ export const FEATURES = [
   "announcements",
   "drop_in",
   "pack_rules",
+  "memberships",
   // Pro
   "certificates",
   "audition_jury",
