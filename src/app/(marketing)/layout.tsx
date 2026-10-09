@@ -39,8 +39,14 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           <Link href="/terminos" className="hover:text-foreground">
             Términos de uso
           </Link>
+          <Link href="/condiciones" className="hover:text-foreground">
+            Condiciones de contratación
+          </Link>
           <Link href="/privacidad" className="hover:text-foreground">
             Política de privacidad
+          </Link>
+          <Link href="/condiciones#arrepentimiento" className="font-medium hover:text-foreground">
+            Botón de arrepentimiento
           </Link>
           <a href={whatsappHref()} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
             WhatsApp

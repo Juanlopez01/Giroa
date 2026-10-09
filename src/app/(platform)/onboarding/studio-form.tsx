@@ -97,6 +97,10 @@ export function StudioForm({ rootDomain }: { rootDomain: string }) {
         Al crear tu estudio aceptás los{" "}
         <a href={marketingUrl("/terminos")} target="_blank" rel="noopener noreferrer" className="underline">
           Términos de uso
+        </a>
+        , las{" "}
+        <a href={marketingUrl("/condiciones")} target="_blank" rel="noopener noreferrer" className="underline">
+          Condiciones de contratación
         </a>{" "}
         y la{" "}
         <a href={marketingUrl("/privacidad")} target="_blank" rel="noopener noreferrer" className="underline">
