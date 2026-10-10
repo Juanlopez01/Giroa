@@ -26,7 +26,7 @@ const SOON = new Set([
 const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight?: boolean }> = {
   profe: {
     tagline: "Para profes independientes",
-    features: ["Hasta 20 alumnos activos", "Packs por link con Mercado Pago", "Tus alumnos reservan solos", "Balance de roles"],
+    features: ["Hasta 20 alumnos activos", "Packs por link con Mercado Pago", "Tus alumnos reservan solos", "Balance de roles y packs de pareja"],
   },
   inicial: {
     tagline: "Para arrancar ordenado",
@@ -35,7 +35,8 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
       "Clases, packs y saldo de cada alumno",
       "Compra desde el celular con Mercado Pago",
       "Check-in con QR",
-      "Balance de roles y cupo por equipo",
+      "Balance de roles y packs de pareja",
+      "Cupo por equipo (camas, máquinas)",
       "Panel de ingresos",
     ],
   },
@@ -171,11 +172,15 @@ export default async function LandingPage() {
           <div>
             <p className="text-sm font-medium tracking-wide text-[var(--gold)] uppercase">Para danzas en pareja</p>
             <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">
-              Balance de roles automático
+              Balance de roles y packs de pareja
             </h2>
             <p className="mt-4 text-muted">
               En tango, salsa, bachata o swing, cada alumno elige si va como líder o seguidor/a al reservar. Vos
               definís la diferencia máxima y Giroa no deja que la clase se desbalancee: nadie se queda sin pareja.
+            </p>
+            <p className="mt-3 text-muted">
+              Y si vienen en pareja, les vendés un <span className="font-medium text-foreground">pack de pareja</span>: los dos
+              comparten el mismo saldo de clases y cada uno reserva desde su celular.
             </p>
           </div>
           <div className="space-y-3 rounded-3xl border border-border bg-background p-6">
@@ -196,6 +201,12 @@ export default async function LandingPage() {
               </span>
             </div>
             <p className="text-sm text-muted">“Por ahora no hay lugar como líder: faltan seguidores/as.”</p>
+            <div className="flex items-center justify-between rounded-2xl bg-[var(--gold)]/15 px-4 py-3 text-sm">
+              <span>
+                <span className="font-medium">Pack de pareja</span> · Ana y Leo
+              </span>
+              <span className="tabular-nums text-muted">6 clases compartidas</span>
+            </div>
           </div>
         </div>
       </section>
