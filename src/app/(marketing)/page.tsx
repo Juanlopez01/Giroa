@@ -26,12 +26,11 @@ const SOON = new Set([
 const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight?: boolean }> = {
   profe: {
     tagline: "Para profes independientes",
-    features: ["Hasta 20 alumnos activos", "Packs por link con Mercado Pago", "Tus alumnos reservan solos", "Balance de roles y packs de pareja"],
+    features: ["Packs por link con Mercado Pago", "Tus alumnos reservan solos", "Balance de roles y packs de pareja"],
   },
   inicial: {
     tagline: "Para arrancar ordenado",
     features: [
-      "Hasta 50 alumnos activos",
       "Clases, packs y saldo de cada alumno",
       "Compra desde el celular con Mercado Pago",
       "Check-in con QR",
@@ -44,7 +43,6 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
     tagline: "El estudio completo",
     highlight: true,
     features: [
-      "Hasta 150 alumnos activos",
       "Todo lo de Inicial",
       "Eventos con entradas y control por QR",
       "Formaciones con cuotas y asistencia",
@@ -62,7 +60,6 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
   pro: {
     tagline: "Para crecer sin límites",
     features: [
-      "Alumnos ilimitados",
       "Todo lo de Estudio",
       "Certificados y jurado en audiciones",
       "Liquidación de profes",
@@ -75,7 +72,7 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
 export default async function LandingPage() {
   const supabase = await createClient();
   const [{ data: plans }, founder] = await Promise.all([
-    supabase.from("plans").select("key, name, monthly_price_cents").order("sort"),
+    supabase.from("plans").select("key, name, monthly_price_cents, max_active_students").order("sort"),
     getFounderSpots(),
   ]);
   const spotsLabel = (n: number) => (n === 1 ? "Queda 1 lugar" : `Quedan ${n} lugares`);
@@ -255,7 +252,8 @@ export default async function LandingPage() {
                   </p>
                 )}
                 <ul className="mt-5 flex-1 space-y-2 text-sm">
-                  {copy?.features.map((f) => (
+                  {/* El límite sale de la base, así la landing nunca queda desactualizada. */}
+                  {[p.max_active_students ? `Hasta ${p.max_active_students} alumnos activos` : "Alumnos ilimitados", ...(copy?.features ?? [])].map((f) => (
                     <li key={f} className={SOON.has(f) || soonPlan ? "text-muted" : undefined}>
                       {SOON.has(f) || soonPlan ? "○" : "✓"} {f}
                       {SOON.has(f) && !soonPlan ? (
