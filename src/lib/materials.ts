@@ -1,7 +1,8 @@
-// Material de formaciones: reglas compartidas entre el navegador (subida) y el
-// servidor (validación). Lo mismo que permite el bucket formation-materials.
+// Material de formaciones y biblioteca: reglas compartidas entre el navegador
+// (subida) y el servidor (validación). Lo mismo que permiten los buckets.
 
 export const MATERIALS_BUCKET = "formation-materials";
+export const LIBRARY_BUCKET = "library";
 export const MATERIAL_MAX_BYTES = 50 * 1024 * 1024;
 export const MATERIAL_MIME_TYPES = [
   "application/pdf",
@@ -30,14 +31,19 @@ export function safeFileName(name: string): string {
   return (clean || "archivo").slice(-80);
 }
 
-/** Ruta en el bucket: <studio>/<formación>/<timestamp>-<nombre>. */
-export function materialPath(studioId: string, formationId: string, fileName: string, now = Date.now()): string {
-  return `${studioId}/${formationId}/${now}-${safeFileName(fileName)}`;
+/** Ruta en el bucket: <carpeta>/<timestamp>-<nombre>. Carpeta: "<studio>/<formación>" o "<studio>". */
+export function filePath(folder: string, fileName: string, now = Date.now()): string {
+  return `${folder}/${now}-${safeFileName(fileName)}`;
 }
 
-export function isMaterialPath(studioId: string, formationId: string, path: unknown): path is string {
-  return typeof path === "string" && new RegExp(`^${studioId}/${formationId}/\\d{10,16}-[a-z0-9._-]{1,80}$`).test(path);
+export function isFilePath(folder: string, path: unknown): path is string {
+  return typeof path === "string" && new RegExp(`^${folder}/\\d{10,16}-[a-z0-9._-]{1,80}$`).test(path);
 }
+
+export const materialPath = (studioId: string, formationId: string, fileName: string, now = Date.now()) =>
+  filePath(`${studioId}/${formationId}`, fileName, now);
+export const isMaterialPath = (studioId: string, formationId: string, path: unknown): path is string =>
+  isFilePath(`${studioId}/${formationId}`, path);
 
 export type MaterialKind = "pdf" | "image" | "audio" | "link";
 

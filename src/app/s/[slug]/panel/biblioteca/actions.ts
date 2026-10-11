@@ -1,0 +1,68 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { requireStaff } from "@/lib/panel";
+import { createClient } from "@/lib/supabase/server";
+import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
+import { isFilePath, LIBRARY_BUCKET, MATERIAL_MAX_BYTES, MATERIAL_MIME_TYPES } from "@/lib/materials";
+
+const base = z.object({
+  title: z.string().trim().min(2, "Poné un título (por ejemplo, “Rutina para casa”).").max(120, "Usá un título más corto."),
+  description: z.string().trim().max(1000, "Usá una descripción más corta.").optional(),
+  audience: z.enum(["all", "pack"]).default("all"),
+});
+const linkSchema = base.extend({
+  kind: z.literal("link"),
+  url: z.url("Pegá un link completo (que empiece con https://).").refine((u) => u.startsWith("https://"), "El link tiene que empezar con https://"),
+});
+const fileSchema = base.extend({
+  kind: z.literal("file"),
+  storagePath: z.string().min(1, "Elegí un archivo."),
+  mimeType: z.enum(MATERIAL_MIME_TYPES, "Ese tipo de archivo no se puede subir: usá PDF, imagen o audio."),
+  sizeBytes: z.coerce.number().int().min(1).max(MATERIAL_MAX_BYTES, "El archivo pesa más de 50 MB."),
+});
+
+/** El archivo ya lo subió el navegador a Storage; acá se valida la ruta y se guarda. */
+export async function addLibraryItem(slug: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { studio, user } = await requireStaff(slug, "/panel/biblioteca");
+  const raw = Object.fromEntries(formData);
+  const parsed = raw.kind === "link" ? linkSchema.safeParse(raw) : fileSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsFromZod(parsed.error.issues) };
+  const d = parsed.data;
+
+  const supabase = await createClient();
+  if (d.kind === "file" && !isFilePath(studio.id, d.storagePath)) {
+    return { ok: false, fieldErrors: { file: "No pudimos usar ese archivo. Subilo de nuevo." } };
+  }
+  const { error } = await supabase.from("library_items").insert({
+    studio_id: studio.id,
+    title: d.title,
+    description: d.description || null,
+    audience: d.audience,
+    kind: d.kind,
+    url: d.kind === "link" ? d.url : null,
+    storage_path: d.kind === "file" ? d.storagePath : null,
+    mime_type: d.kind === "file" ? d.mimeType : null,
+    size_bytes: d.kind === "file" ? d.sizeBytes : null,
+    created_by: user.id,
+  });
+  if (error) {
+    // No queda un archivo huérfano en el bucket.
+    if (d.kind === "file") await supabase.storage.from(LIBRARY_BUCKET).remove([d.storagePath]);
+    return fromSupabaseError(error, "addLibraryItem");
+  }
+  revalidatePath(`/s/${slug}`, "layout");
+  return { ok: true, message: d.kind === "file" ? "¡Listo! Subiste el archivo." : "¡Listo! Agregaste el link." };
+}
+
+export async function deleteLibraryItem(slug: string, itemId: string): Promise<ActionState> {
+  await requireStaff(slug, "/panel/biblioteca");
+  if (!z.uuid().safeParse(itemId).success) return { ok: false, message: "No encontramos ese material." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("library_items").delete().eq("id", itemId).select("storage_path").maybeSingle();
+  if (error) return fromSupabaseError(error, "deleteLibraryItem");
+  if (data?.storage_path) await supabase.storage.from(LIBRARY_BUCKET).remove([data.storage_path]);
+  revalidatePath(`/s/${slug}`, "layout");
+  return { ok: true, message: "Material borrado." };
+}

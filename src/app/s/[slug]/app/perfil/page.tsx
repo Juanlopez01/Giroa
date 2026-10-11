@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, Gift, History, LogOut, QrCode, Repeat, Ticket, UserRound, type LucideIcon } from "lucide-react";
+import { ChevronRight, Gift, History, LibraryBig, LogOut, QrCode, Repeat, Ticket, UserRound, type LucideIcon } from "lucide-react";
 import { requireStudent } from "@/lib/student-app";
 import { myBalances } from "@/lib/student-data.server";
 import { ROLE_LABELS } from "@/lib/disciplines";
@@ -21,15 +21,17 @@ const ITEMS: { href: string; label: string; hint: string; icon: LucideIcon }[] =
 export default async function StudentProfilePage({ params }: PageProps<"/s/[slug]/app/perfil">) {
   const { slug } = await params;
   const { studio, student, user } = await requireStudent(slug, "/app/perfil");
-  const [balances, membershipsOn, referralsOn] = await Promise.all([
+  const [balances, membershipsOn, referralsOn, libraryOn] = await Promise.all([
     myBalances(studio.id, student.id),
     can(studio.id, "memberships"),
     can(studio.id, "referrals"),
+    can(studio.id, "library"),
   ]);
   const items = [
     ...(referralsOn ? [{ href: "/app/invitar", label: "Invitá amigos", hint: "Clases de regalo para los dos", icon: Gift }] : []),
     ITEMS[0]!,
     ...(membershipsOn ? [{ href: "/app/perfil/abono", label: "Mi abono", hint: "Débito mensual: ver o dar de baja", icon: Repeat }] : []),
+    ...(libraryOn ? [{ href: "/app/biblioteca", label: "Biblioteca", hint: "Material que comparte el estudio", icon: LibraryBig }] : []),
     ...ITEMS.slice(1),
   ];
 

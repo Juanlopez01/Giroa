@@ -818,6 +818,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"library_items": {
+                  Row: {
+                    "audience": string,"created_at": string,"created_by": string | null,"description": string | null,"id": string,"kind": string,"mime_type": string | null,"size_bytes": number | null,"storage_path": string | null,"studio_id": string,"title": string,"url": string | null
+                  }
+                  Insert: {
+                    "audience"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"kind": string,"mime_type"?: string | null,"size_bytes"?: number | null,"storage_path"?: string | null,"studio_id": string,"title": string,"url"?: string | null
+                  }
+                  Update: {
+                    "audience"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"kind"?: string,"mime_type"?: string | null,"size_bytes"?: number | null,"storage_path"?: string | null,"studio_id"?: string,"title"?: string,"url"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "library_items_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"mp_connections": {
                   Row: {
                     "access_token_enc": string,"connected_by": string | null,"created_at": string,"expires_at": string,"live_mode": boolean,"mp_user_id": string,"public_key": string | null,"refresh_token_enc": string,"scope": string | null,"studio_id": string,"updated_at": string

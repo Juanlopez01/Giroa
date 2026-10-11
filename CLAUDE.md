@@ -119,6 +119,16 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   alumnos directo). Link `…/sumate?ref=<código>`; al sumarse, `claim_referral` (solo alumnos nuevos: 7 días y sin pagos).
   El primer pago de pack aprobado del invitado (trigger en `payments`) les da a los dos un pack de regalo de
   `studios.referral_credits` clases (0 = apagado), 60 días (`private.grant_gift_credits`).
+- Congelar packs (`pack_freeze`): `freeze_pack(pack, hasta?)` / `unfreeze_pack` (permiso de cobro). Status 'frozen': no se usa
+  ni vence; al descongelar, `expires_at` se corre por los días congelados (`private.unfreeze_pack_core`); `frozen_until` lo
+  descongela el cron `unfreeze_due_packs` (03:00). Los packs de un abono no se congelan.
+- Alerta de abandono (`churn_alert`): sin tabla; `src/lib/churn.ts` (≥ 3 clases en los 60 días previos, `studios.churn_days` sin
+  venir, sin reservas futuras) y `stoppedComing` en `src/lib/dashboard.server.ts` (Inicio y filtro de Alumnos).
+- Widget (`embed_widget`): `/embed` (`s/[slug]/embed`) es la ÚNICA ruta que se puede mostrar en un iframe ajeno
+  (`next.config.ts`: `frame-ancestors 'self'` para todo lo demás). El código para pegar está en Ajustes.
+- Biblioteca (`library`): `library_items` (audiencia 'all' o 'pack' = con pack vigente, `private.library_access`), bucket privado
+  `library` (`<studio>/<archivo>`), URLs firmadas de 10 min (`src/lib/library.server.ts`). Formulario compartido con el material
+  de formaciones (`MaterialForm` con `folder` y `bucket`).
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

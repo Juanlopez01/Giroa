@@ -13,7 +13,7 @@ import {
   MATERIAL_MAX_BYTES,
   MATERIAL_MIME_TYPES,
   MATERIALS_BUCKET,
-  materialPath,
+  filePath,
 } from "@/lib/materials";
 
 type Uploaded = { path: string; mime: string; size: number; name: string };
@@ -24,14 +24,18 @@ type Uploaded = { path: string; mime: string; size: number; name: string };
  */
 export function MaterialForm({
   action,
-  studioId,
-  formationId,
-  sessions,
+  folder,
+  bucket = MATERIALS_BUCKET,
+  sessions = [],
+  children,
 }: {
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
-  studioId: string;
-  formationId: string;
-  sessions: { id: string; label: string }[];
+  /** Carpeta en el bucket: "<studio>/<formación>" (formaciones) o "<studio>" (biblioteca). */
+  folder: string;
+  bucket?: string;
+  sessions?: { id: string; label: string }[];
+  /** Campos extra (p. ej. quién lo ve, en la biblioteca). */
+  children?: React.ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [kind, setKind] = useState<"file" | "link">("file");
@@ -66,8 +70,8 @@ export function MaterialForm({
       return;
     }
     setUploading(true);
-    const path = materialPath(studioId, formationId, file.name);
-    const { error } = await createClient().storage.from(MATERIALS_BUCKET).upload(path, file, { contentType: file.type, upsert: false });
+    const path = filePath(folder, file.name);
+    const { error } = await createClient().storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
     setUploading(false);
     if (error) {
       setUploadError("No pudimos subir el archivo. Probá de nuevo.");
@@ -133,6 +137,7 @@ export function MaterialForm({
           </Select>
         </Field>
       ) : null}
+      {children}
 
       <FormMessage ok={state.ok} message={state.message} />
       <Button type="submit" disabled={pending || uploading || (kind === "file" && !uploaded)}>

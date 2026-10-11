@@ -58,8 +58,7 @@ export default async function FormationMaterialPage({ params }: PageProps<"/s/[s
 
       <MaterialForm
         action={addMaterial.bind(null, slug, id)}
-        studioId={studio.id}
-        formationId={id}
+        folder={`${studio.id}/${id}`}
         sessions={(sessions ?? []).map((s) => ({ id: s.id, label: sessionLabel(s) }))}
       />
 
