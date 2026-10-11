@@ -1319,13 +1319,13 @@ isOneToOne: true
                   ]
                 },"studios": {
                   Row: {
-                    "brand_color": string,"cancel_window_hours": number,"cover_path": string | null,"created_at": string,"id": string,"is_active": boolean,"logo_path": string | null,"name": string,"plan": Database["public"]['Enums']["studio_plan"],"referral_credits": number,"slug": string,"timezone": string,"trial_class_enabled": boolean,"updated_at": string
+                    "brand_color": string,"cancel_window_hours": number,"churn_days": number,"cover_path": string | null,"created_at": string,"id": string,"is_active": boolean,"logo_path": string | null,"name": string,"plan": Database["public"]['Enums']["studio_plan"],"referral_credits": number,"slug": string,"timezone": string,"trial_class_enabled": boolean,"updated_at": string
                   }
                   Insert: {
-                    "brand_color"?: string,"cancel_window_hours"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name": string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug": string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
+                    "brand_color"?: string,"cancel_window_hours"?: number,"churn_days"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name": string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug": string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
                   }
                   Update: {
-                    "brand_color"?: string,"cancel_window_hours"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name"?: string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug"?: string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
+                    "brand_color"?: string,"cancel_window_hours"?: number,"churn_days"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name"?: string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug"?: string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1749,6 +1749,7 @@ isOneToOne: false
 { Args: { "p_name": string,"p_slug": string }; Returns: {
               "brand_color": string,
 "cancel_window_hours": number,
+"churn_days": number,
 "cover_path": string | null,
 "created_at": string,
 "id": string,

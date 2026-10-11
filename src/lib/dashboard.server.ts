@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { listIncome } from "@/lib/income.server";
 import { addDaysYmd, startOfDay, todayYmd, toYmd, weekdayOf, formatTime } from "@/lib/datetime";
+import { CHURN_HISTORY_DAYS, detectChurn, usedToComeLabel } from "@/lib/churn";
 
 // Números del panel del dueño. Todo pasa por RLS (owner/admin ven su estudio).
 
@@ -164,6 +165,43 @@ export async function trialNotConverted(studioId: string, now: Date): Promise<Fo
         detail: `Probó una clase ${days === 0 ? "hoy" : days === 1 ? "ayer" : `hace ${days} días`} y no compró`,
       };
     });
+}
+
+/** Alumnos que venían seguido y dejaron de venir (alerta de abandono, ver src/lib/churn.ts). */
+export async function stoppedComing(studioId: string, now: Date, days: number): Promise<FollowUp[]> {
+  const supabase = await createClient();
+  const since = new Date(now.getTime() - (days + CHURN_HISTORY_DAYS) * 86_400_000).toISOString();
+  const [{ data: attended }, { data: upcoming }] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("student_id, checked_in_at")
+      .eq("studio_id", studioId)
+      .eq("status", "attended")
+      .gte("checked_in_at", since),
+    supabase
+      .from("bookings")
+      .select("student_id, sessions!inner(starts_at)")
+      .eq("studio_id", studioId)
+      .eq("status", "booked")
+      .gte("sessions.starts_at", now.toISOString()),
+  ]);
+  const candidates = detectChurn(
+    (attended ?? []).flatMap((b) => (b.checked_in_at ? [{ studentId: b.student_id, at: new Date(b.checked_in_at) }] : [])),
+    new Set((upcoming ?? []).map((b) => b.student_id)),
+    now,
+    days,
+  );
+  if (!candidates.length) return [];
+
+  const { data: students } = await supabase
+    .from("students")
+    .select("id, full_name, phone, is_active")
+    .in("id", candidates.map((c) => c.studentId));
+  const byId = new Map((students ?? []).filter((s) => s.is_active).map((s) => [s.id, s]));
+  return candidates.flatMap((c) => {
+    const s = byId.get(c.studentId);
+    return s ? [{ studentId: s.id, name: s.full_name, phone: s.phone, detail: `${usedToComeLabel(c.visits)} · no viene hace ${c.daysAway} días` }] : [];
+  });
 }
 
 export type SlotOccupancy = {

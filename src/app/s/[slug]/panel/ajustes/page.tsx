@@ -6,7 +6,8 @@ import { UpgradeNotice } from "@/components/panel/upgrade-notice";
 import { createClient } from "@/lib/supabase/server";
 import { platformUrl } from "@/lib/urls";
 import { FormMessage } from "@/components/ui/field";
-import { disconnectMercadoPago, setTrialClass, updateSettings } from "./actions";
+import { disconnectMercadoPago, setChurnDays, setTrialClass, updateSettings } from "./actions";
+import { CHURN_DAYS_OPTIONS } from "@/lib/churn";
 import { SettingsForm } from "./settings-form";
 import { StudioBrandForm } from "@/components/brand/studio-brand-form";
 import { saveBrand } from "@/lib/brand.actions";
@@ -29,7 +30,12 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
   const supabase = await createClient();
   const { data: mp } = await supabase.rpc("mp_connection_status", { p_studio_id: studio.id });
   const connection = mp?.[0];
-  const [mpAllowed, trialAllowed] = await Promise.all([can(studio.id, "mp_checkout"), can(studio.id, "trial_class")]);
+  const [mpAllowed, trialAllowed, churnAllowed, { data: extra }] = await Promise.all([
+    can(studio.id, "mp_checkout"),
+    can(studio.id, "trial_class"),
+    can(studio.id, "churn_alert"),
+    supabase.from("studios").select("churn_days").eq("id", studio.id).single(),
+  ]);
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
@@ -128,6 +134,35 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
           </>
         )}
       </section>
+
+      {churnAllowed ? (
+        <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
+          <h2 className="text-lg font-semibold">Alerta de abandono</h2>
+          <p className="text-muted">
+            En tu Inicio y en Alumnos te mostramos a quienes venían seguido y dejaron de venir, para que les escribas a
+            tiempo.
+          </p>
+          <form action={setChurnDays.bind(null, slug)} className="flex flex-wrap items-end gap-3">
+            <label className="block flex-1 space-y-1.5">
+              <span className="text-sm font-medium">Avisame cuando no vienen hace</span>
+              <select
+                name="churnDays"
+                defaultValue={extra?.churn_days ?? 14}
+                className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-base"
+              >
+                {CHURN_DAYS_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d} días
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="h-11 rounded-xl bg-brand px-4 text-sm font-medium text-brand-foreground">
+              Guardar
+            </button>
+          </form>
+        </section>
+      ) : null}
     </div>
   );
 }
