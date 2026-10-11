@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { studioOffersFeature } from "@/lib/packs.server";
-import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
+import { formatDayLabel, formatTime, nowMs, todayYmd, toYmd } from "@/lib/datetime";
 import { ROLE_LABELS } from "@/lib/disciplines";
 import { FormMessage } from "@/components/ui/field";
 import { setStudentActive, updateStudent } from "../actions";
@@ -14,6 +14,9 @@ import { CreditsCard } from "@/components/student/home-cards";
 import { Avatar } from "@/components/ui/avatar";
 import { myAttendance } from "@/lib/student-data.server";
 import { whatsappLink } from "@/lib/dashboard.server";
+import { can } from "@/lib/gating";
+import { freezeStudentPack, unfreezeStudentPack } from "./actions";
+import { FreezeButton, UnfreezeButton } from "./freeze-controls";
 
 export const metadata: Metadata = { title: "Alumno" };
 
@@ -40,7 +43,7 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
   const tz = studio.timezone;
   const supabase = await createClient();
 
-  const [{ data: student }, { data: balances }, { data: bookings }, askRole] = await Promise.all([
+  const [{ data: student }, { data: balances }, { data: bookings }, askRole, freezeOn] = await Promise.all([
     supabase.from("students").select("*").eq("id", id).eq("studio_id", studio.id).maybeSingle(),
     supabase
       .from("student_balances")
@@ -57,11 +60,15 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
       .order("created_at", { ascending: false })
       .limit(15),
     studioOffersFeature(studio.id, "role_balance"),
+    can(studio.id, "pack_freeze"),
   ]);
   if (!student) notFound();
 
   const usable = (balances ?? []).filter((b) => b.is_usable);
-  const past = (balances ?? []).filter((b) => !b.is_usable);
+  const frozen = (balances ?? []).filter((b) => b.status === "frozen");
+  const past = (balances ?? []).filter((b) => !b.is_usable && b.status !== "frozen");
+  const canFreeze = freezeOn && canTakePayments;
+  const today = todayYmd(tz);
   const attendance = await myAttendance(studio.id, student.id, tz, new Date(nowMs()));
   const wa = whatsappLink(student.phone, `¡Hola ${student.full_name.split(" ")[0]}! Te escribimos de ${studio.name}.`);
 
@@ -127,20 +134,43 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
             <p className="text-xs text-muted">{attendance.lastMonth === 1 ? "clase" : "clases"} con presente</p>
           </div>
         </div>
-        {usable.length > 1 ? (
+        {usable.length > 1 || (canFreeze && usable.length) ? (
           <ul className="space-y-2">
             {usable.map((b) => (
-              <li key={b.student_pack_id} className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
+              <li key={b.student_pack_id} className="flex flex-wrap items-center justify-between gap-x-3 rounded-2xl border border-border bg-surface p-4">
                 <div>
                   <p className="font-medium">{b.name}</p>
                   <p className="text-sm text-muted">
                     Vence el {b.expires_on ? shortDate(b.expires_on) : "—"}
                     {b.partner_student_id ? " · compartido en pareja" : ""}
                   </p>
+                  {canFreeze && b.student_pack_id ? (
+                    <FreezeButton freeze={freezeStudentPack.bind(null, slug, student.id, b.student_pack_id)} minDate={today} />
+                  ) : null}
                 </div>
                 <p className="text-right font-semibold">
                   {b.credits_remaining === null ? "Libre" : `${b.credits_remaining} de ${b.credits_total}`}
                 </p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {frozen.length ? (
+          <ul className="space-y-2">
+            {frozen.map((b) => (
+              <li key={b.student_pack_id} className="flex items-center justify-between gap-3 rounded-2xl border border-dashed border-brand/40 bg-brand/5 p-4">
+                <div>
+                  <p className="font-medium">
+                    {b.name} <span className="ml-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">Congelado</span>
+                  </p>
+                  <p className="text-sm text-muted">
+                    {b.frozen_until ? `Congelado hasta el ${shortDate(b.frozen_until)}` : "Sin fecha: descongelalo cuando vuelva"} ·{" "}
+                    {b.credits_remaining === null ? "clases libres" : `le quedan ${b.credits_remaining}`}
+                  </p>
+                </div>
+                {canTakePayments && b.student_pack_id ? (
+                  <UnfreezeButton unfreeze={unfreezeStudentPack.bind(null, slug, student.id, b.student_pack_id)} />
+                ) : null}
               </li>
             ))}
           </ul>
