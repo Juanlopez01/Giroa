@@ -8,6 +8,8 @@ import { platformUrl } from "@/lib/urls";
 import { FormMessage } from "@/components/ui/field";
 import { disconnectMercadoPago, setChurnDays, setTrialClass, updateSettings } from "./actions";
 import { CHURN_DAYS_OPTIONS } from "@/lib/churn";
+import { CopyField } from "@/components/ui/copy-field";
+import { studioUrl } from "@/lib/urls";
 import { SettingsForm } from "./settings-form";
 import { StudioBrandForm } from "@/components/brand/studio-brand-form";
 import { saveBrand } from "@/lib/brand.actions";
@@ -30,10 +32,11 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
   const supabase = await createClient();
   const { data: mp } = await supabase.rpc("mp_connection_status", { p_studio_id: studio.id });
   const connection = mp?.[0];
-  const [mpAllowed, trialAllowed, churnAllowed, { data: extra }] = await Promise.all([
+  const [mpAllowed, trialAllowed, churnAllowed, embedAllowed, { data: extra }] = await Promise.all([
     can(studio.id, "mp_checkout"),
     can(studio.id, "trial_class"),
     can(studio.id, "churn_alert"),
+    can(studio.id, "embed_widget"),
     supabase.from("studios").select("churn_days").eq("id", studio.id).single(),
   ]);
 
@@ -131,6 +134,29 @@ export default async function SettingsPage({ params, searchParams }: PageProps<"
                 {studio.trial_class_enabled ? "Desactivar" : "Activar clase de prueba"}
               </button>
             </form>
+          </>
+        )}
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-border bg-surface p-5">
+        <h2 className="text-lg font-semibold">Tu grilla en tu web</h2>
+        {!embedAllowed ? (
+          <UpgradeNotice feature="embed_widget" what="El widget de reservas" />
+        ) : (
+          <>
+            <p className="text-muted">
+              Pegá este código en tu página (WordPress, Wix, Tiendanube o la que uses) y tus horarios aparecen ahí,
+              siempre actualizados. Al tocar “Reservar”, se abre tu app.
+            </p>
+            <CopyField
+              multiline
+              label="Copiar código"
+              value={`<iframe src="${studioUrl(slug, "/embed")}" style="width:100%;height:640px;border:0;" title="Clases de ${studio.name.replace(/"/g, "")}" loading="lazy"></iframe>`}
+            />
+            <details className="rounded-xl border border-border">
+              <summary className="cursor-pointer px-4 py-3 text-sm font-medium">Ver cómo queda</summary>
+              <iframe src="/embed" title="Vista previa del widget" className="h-[480px] w-full border-t border-border" loading="lazy" />
+            </details>
           </>
         )}
       </section>
