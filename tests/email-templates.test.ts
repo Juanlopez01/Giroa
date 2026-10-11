@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classReminderEmail, eventTicketsEmail, packExpiringEmail, packGrantedEmail } from "@/lib/email/templates";
+import { founderLeadEmail } from "@/lib/email/templates";
 
 const studio = { name: "Tango del Sur", timezone: "America/Argentina/Buenos_Aires", url: (p: string) => `https://demo.giroa.com.ar${p}` };
 
@@ -99,5 +100,24 @@ describe("anuncio", () => {
     expect(mail.html).toContain("Nos vemos el &lt;martes&gt;.");
     expect(mail.html).toContain("https://tango.giroa.com.ar/app");
     expect(mail.text).toContain("Hola, Ana.");
+  });
+});
+
+describe("founderLeadEmail", () => {
+  it("arma el aviso interno con los datos completos y escapados", () => {
+    const m = founderLeadEmail({
+      name: "Ana <b>Paz</b>",
+      email: "ana@test.com",
+      phone: null,
+      kind: "studio",
+      studioName: "Tango Sur",
+      disciplines: "tango",
+      studentsCount: "40",
+      message: null,
+    });
+    expect(m.subject).toBe("Nuevo fundador: Ana <b>Paz</b> (Tango Sur)");
+    expect(m.html).toContain("Ana &lt;b&gt;Paz&lt;/b&gt;");
+    expect(m.html).not.toContain("WhatsApp");
+    expect(m.text).toContain("Es: Estudio");
   });
 });
