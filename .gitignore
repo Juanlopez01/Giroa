@@ -44,3 +44,6 @@ next-env.d.ts
 # supabase
 supabase/.branches
 supabase/.temp
+
+# material de marketing (guiones, PDFs): no va al repo público
+marketing/
