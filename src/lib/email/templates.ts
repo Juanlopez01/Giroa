@@ -263,3 +263,32 @@ export function announcementEmail(studio: StudioInfo, studentName: string | null
     .filter(Boolean);
   return build(studio, d.title, [hola(studentName), ...paragraphs], { label: "Abrir la app", href: studio.url("/app") }, `${studio.name}: ${d.title}`);
 }
+
+export type ReferralRewardData = {
+  ownerName: string | null;
+  referredName: string;
+  gainedPct: number;
+  totalPct: number;
+  maxPct: number;
+  subscribed: boolean;
+};
+
+/** Recomendá Giroa: al dueño del estudio que recomendó, cuando el recomendado paga su primer mes. */
+export function referralRewardEmail(studio: StudioInfo, d: ReferralRewardData): EmailContent {
+  const paragraphs = [hola(d.ownerName), `<strong>${esc(d.referredName)}</strong> se sumó a Giroa con tu recomendación y pagó su primer mes.`];
+  if (d.gainedPct > 0) {
+    paragraphs.push(
+      `Por eso tu plan baja un <strong>${d.gainedPct}%</strong> más, de por vida. Ya llevás ${d.totalPct}% de descuento por recomendar${d.totalPct >= d.maxPct ? " (el máximo)" : ""}.`,
+      d.subscribed
+        ? "Se aplica solo en tu débito de Mercado Pago, desde la próxima cuota."
+        : "Se aplica cuando te suscribas, sumado a tu descuento de fundador si lo tenés.",
+    );
+  } else {
+    paragraphs.push(`Ya tenías el máximo de descuento por recomendar (${d.maxPct}%), así que tu precio no cambia. ¡Gracias igual por correr la voz!`);
+  }
+  if (d.totalPct < d.maxPct) {
+    paragraphs.push(`Seguí compartiendo tu link: cada estudio que se suma y paga te baja un 10% más, hasta ${d.maxPct}%.`);
+  }
+  const subject = d.gainedPct > 0 ? `¡Sumaste ${d.gainedPct}% de descuento en Giroa!` : "Gracias por recomendar Giroa";
+  return build(studio, subject, paragraphs, { label: "Ver tu plan", href: studio.url("/panel/plan") });
+}

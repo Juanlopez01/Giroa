@@ -125,6 +125,7 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   (estudio nuevo, en prueba, no propio). El primer cobro aprobado del estudio nuevo (`giroa_apply_subscription_charge`)
   le da al que recomendó 10% más de descuento de por vida, hasta 25%, sumado al de fundador. La base no habla con MP: el
   webhook llama a `syncReferralPrice` (`giroa_reprice` → cambia el monto del débito en MP → `giroa_set_subscription_price`).
+  Ese mismo cobro encola el mail `giroa_referral_reward` a los owners del que recomendó (remitente "Giroa").
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

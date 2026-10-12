@@ -15,6 +15,7 @@ import {
   giftCardEmail,
   formationEmail,
   auditionEmail,
+  referralRewardEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -69,7 +70,10 @@ export async function POST(request: NextRequest) {
         continue;
       }
       await sendWithResend(email.RESEND_API_KEY, {
-        from: `${n.studio_name.replace(/[<>"]/g, "")} vía Giroa <${email.EMAIL_FROM_ADDRESS}>`,
+        // Los giroa_* los manda Giroa al estudio; el resto, el estudio a sus alumnos.
+        from: n.template.startsWith("giroa_")
+          ? `Giroa <${email.EMAIL_FROM_ADDRESS}>`
+          : `${n.studio_name.replace(/[<>"]/g, "")} vía Giroa <${email.EMAIL_FROM_ADDRESS}>`,
         to: n.to_address,
         ...content,
       });
@@ -204,6 +208,18 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
         packName: g.pack_name,
         code: g.code,
         cardUrl: studio.url(`/regalo/${g.access_token}`),
+      });
+    }
+    case "giroa_referral_reward": {
+      const referredName = str("referred_name");
+      if (!referredName) return null;
+      return referralRewardEmail(studio, {
+        ownerName: str("owner_name"),
+        referredName,
+        gainedPct: num("gained_pct") ?? 0,
+        totalPct: num("total_pct") ?? 0,
+        maxPct: num("max_pct") ?? 25,
+        subscribed: p.subscribed === true,
       });
     }
     case "staff_invite": {

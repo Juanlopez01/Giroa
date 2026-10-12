@@ -1,7 +1,7 @@
 -- Recomendaciones entre estudios: alta con el link, premio al primer cobro
 -- (10% por estudio, hasta 25%), precio con el descuento y permisos.
 begin;
-select plan(27);
+select plan(32);
 select tests.fixture();
 
 -- A y B ya están suscriptos (Inicial mensual, con 50% de fundador). C y D son
@@ -90,6 +90,15 @@ select is((select status::text from public.studio_referrals where referred_studi
 select is(tests.q('service_role', null, $$select public.giroa_apply_subscription_charge('pre-c', true) ->> 'referrer_studio_id' as r$$) -> 0 ->> 'r',
   '10000000-0000-0000-0000-00000000000a', 'un cobro repetido devuelve igual a A (re-precio idempotente)');
 
+-- Mail al dueño de A (uno solo aunque el cobro se repita).
+select is((select count(*)::int from public.notifications where template = 'giroa_referral_reward'), 1,
+  'se encola un solo aviso aunque el cobro llegue dos veces');
+select is((select to_address || ' ' || studio_id from public.notifications where template = 'giroa_referral_reward'),
+  'owner-a@test.com 10000000-0000-0000-0000-00000000000a', 'va al email del owner de A');
+select is((select payload - 'owner_name' from public.notifications where template = 'giroa_referral_reward'),
+  '{"max_pct": 25, "gained_pct": 10, "total_pct": 10, "subscribed": true, "referred_name": "Estudio estudio-c"}'::jsonb,
+  'dice a quién recomendó, cuánto sumó y que ya está suscripto');
+
 select is(pg_temp.quote('00000000-0000-0000-0000-0000000000a1',
   $$public.giroa_quote('inicial', 'monthly', null, '10000000-0000-0000-0000-00000000000a')$$) ->> 'amount_cents', '1196000',
   'A ahora cotiza con fundador 50% + 10%');
@@ -112,12 +121,16 @@ select tests.exec('service_role', null, $$select public.giroa_apply_subscription
 select tests.exec('service_role', null, $$select public.giroa_apply_subscription_charge('pre-e', true)$$);
 select is(tests.q('service_role', null, $$select public.giroa_reprice('10000000-0000-0000-0000-00000000000a') ->> 'referral_pct' as c$$) -> 0 ->> 'c',
   '25', 'el descuento por recomendar tiene un tope de 25%');
+select is((select (payload ->> 'gained_pct') || '/' || (payload ->> 'total_pct') from public.notifications
+  where template = 'giroa_referral_reward' order by id desc limit 1), '5/25', 'el tercero suma solo hasta el tope');
 
 -- Un cobro rechazado no premia.
 update public.studio_subscriptions set status = 'active', mp_preapproval_id = 'pre-f' where studio_id = pg_temp.sid('estudio-f');
 select tests.exec('service_role', null, $$select public.giroa_apply_subscription_charge('pre-f', false)$$);
 select is((select status::text from public.studio_referrals where referred_studio_id = pg_temp.sid('estudio-f')), 'pending',
   'un cobro rechazado no cuenta');
+select is((select count(*)::int from public.notifications where template = 'giroa_referral_reward'), 3,
+  'y no manda aviso');
 
 -- ---------------------------------------------------------------- solo servidor
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1',

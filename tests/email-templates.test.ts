@@ -101,3 +101,27 @@ describe("anuncio", () => {
     expect(mail.text).toContain("Hola, Ana.");
   });
 });
+
+describe("Recomendá Giroa", () => {
+  it("cuenta cuánto sumó y que se aplica solo en el débito", async () => {
+    const { referralRewardEmail } = await import("@/lib/email/templates");
+    const m = referralRewardEmail(studio, { ownerName: "Juan Pérez", referredName: "Salsa Norte", gainedPct: 10, totalPct: 10, maxPct: 25, subscribed: true });
+    expect(m.subject).toBe("¡Sumaste 10% de descuento en Giroa!");
+    expect(m.text).toContain("Hola, Juan.");
+    expect(m.text).toContain("Salsa Norte se sumó a Giroa");
+    expect(m.text).toContain("próxima cuota");
+    expect(m.text).toContain("hasta 25%");
+    expect(m.html).toContain("https://demo.giroa.com.ar/panel/plan");
+  });
+
+  it("en prueba se aplica al suscribirse; en el tope no promete más", async () => {
+    const { referralRewardEmail } = await import("@/lib/email/templates");
+    const trial = referralRewardEmail(studio, { ownerName: null, referredName: "A", gainedPct: 5, totalPct: 25, maxPct: 25, subscribed: false });
+    expect(trial.text).toContain("cuando te suscribas");
+    expect(trial.text).toContain("(el máximo)");
+    expect(trial.text).not.toContain("Seguí compartiendo");
+    const maxed = referralRewardEmail(studio, { ownerName: null, referredName: "<b>X</b>", gainedPct: 0, totalPct: 25, maxPct: 25, subscribed: true });
+    expect(maxed.subject).toBe("Gracias por recomendar Giroa");
+    expect(maxed.html).toContain("&lt;b&gt;X&lt;/b&gt;");
+  });
+});
