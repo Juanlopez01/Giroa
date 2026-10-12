@@ -24,11 +24,19 @@ export async function preapprovalFetch(path: string, init: RequestInit, token?: 
   return body;
 }
 
-// external_reference: "giroa|<studioId>|<plan>|<cycle>|<coupon>"
-export type SubscriptionRef = { studioId: string; plan: "profe" | "inicial" | "estudio" | "pro"; cycle: "monthly" | "annual"; coupon: string | null };
+// external_reference: "giroa|<studioId>|<plan>|<cycle>|<coupon>|<referralPct>"
+// referralPct = descuento por recomendar con el que se calculó el precio (las
+// suscripciones de antes no lo tienen: vale 0).
+export type SubscriptionRef = {
+  studioId: string;
+  plan: "profe" | "inicial" | "estudio" | "pro";
+  cycle: "monthly" | "annual";
+  coupon: string | null;
+  referralPct: number;
+};
 
 export function encodeRef(r: SubscriptionRef): string {
-  return ["giroa", r.studioId, r.plan, r.cycle, r.coupon ?? ""].join("|");
+  return ["giroa", r.studioId, r.plan, r.cycle, r.coupon ?? "", String(r.referralPct)].join("|");
 }
 
 const refSchema = z.object({
@@ -36,12 +44,19 @@ const refSchema = z.object({
   plan: z.enum(["profe", "inicial", "estudio", "pro"]),
   cycle: z.enum(["monthly", "annual"]),
   coupon: z.string().nullable(),
+  referralPct: z.coerce.number().int().min(0).max(25),
 });
 
 export function decodeRef(ref: string | null | undefined): SubscriptionRef | null {
   const parts = (ref ?? "").split("|");
-  if (parts[0] !== "giroa" || parts.length !== 5) return null;
-  const parsed = refSchema.safeParse({ studioId: parts[1], plan: parts[2], cycle: parts[3], coupon: parts[4] || null });
+  if (parts[0] !== "giroa" || (parts.length !== 5 && parts.length !== 6)) return null;
+  const parsed = refSchema.safeParse({
+    studioId: parts[1],
+    plan: parts[2],
+    cycle: parts[3],
+    coupon: parts[4] || null,
+    referralPct: parts[5] ?? "0",
+  });
   return parsed.success ? parsed.data : null;
 }
 
@@ -84,6 +99,14 @@ export async function createPreapproval(input: {
 
 export async function getPreapproval(id: string, token?: string): Promise<Preapproval> {
   return preapprovalSchema.parse(await preapprovalFetch(`/preapproval/${encodeURIComponent(id)}`, { method: "GET" }, token));
+}
+
+/** Cambia el monto de los próximos cobros (descuento por recomendar). */
+export async function updatePreapprovalAmount(id: string, amountCents: number): Promise<void> {
+  await preapprovalFetch(`/preapproval/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify({ auto_recurring: { transaction_amount: amountCents / 100, currency_id: "ARS" } }),
+  });
 }
 
 export async function cancelPreapproval(id: string, token?: string): Promise<void> {

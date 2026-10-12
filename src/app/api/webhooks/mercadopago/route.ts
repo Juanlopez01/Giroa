@@ -6,6 +6,7 @@ import { verifyMpSignature } from "@/lib/mp/signature";
 import { applyStudioPayment } from "@/lib/mp/apply-payment";
 import { cancelPreapproval, decodeRef, getAuthorizedPayment, getPreapproval } from "@/lib/mp/subscriptions";
 import { applyMembershipCharge, applyMembershipPreapproval, membershipStudioFor } from "@/lib/mp/memberships";
+import { syncReferralPrice } from "@/lib/mp/referral-price";
 
 // Webhook de Mercado Pago. Nunca se confía en el body:
 //   1. se valida la firma x-signature,
@@ -156,12 +157,28 @@ async function handlePreapproval(admin: Admin, preapprovalId: string) {
   });
   if (error) throw error;
 
+  if (pre.status === "authorized") {
+    // El monto que autorizó (con el descuento por recomendar de ese momento) y,
+    // si desde entonces sumó otra recomendación, el precio nuevo.
+    const { error: priceError } = await admin.rpc("giroa_set_subscription_price", {
+      p_studio_id: ref.studioId,
+      p_preapproval_id: pre.id,
+      p_amount_cents: amount,
+      p_referral_pct: ref.referralPct,
+    });
+    if (priceError) throw priceError;
+    await syncReferralPrice(admin, ref.studioId);
+  }
+
   // Cambio de plan: la suscripción nueva reemplaza a la vieja → se cancela la vieja.
   const previous = (data as { previous_preapproval_id?: string | null } | null)?.previous_preapproval_id;
   if (previous) await cancelPreapproval(previous).catch((e) => console.error("[mp webhook] cancelar anterior", e));
 }
 
-/** Cobro periódico de la suscripción: aprobado → activo; rechazado → gracia. */
+/**
+ * Cobro periódico de la suscripción: aprobado → activo; rechazado → gracia.
+ * El primer cobro aprobado de un estudio recomendado le baja el precio al que lo recomendó.
+ */
 async function handleSubscriptionCharge(admin: Admin, authorizedPaymentId: string) {
   const charge = await getAuthorizedPayment(authorizedPaymentId);
   const approved = charge.payment?.status === "approved";
@@ -171,10 +188,13 @@ async function handleSubscriptionCharge(admin: Admin, authorizedPaymentId: strin
   let next: string | undefined;
   if (approved) next = (await getPreapproval(charge.preapproval_id)).next_payment_date ?? undefined;
 
-  const { error } = await admin.rpc("giroa_apply_subscription_charge", {
+  const { data, error } = await admin.rpc("giroa_apply_subscription_charge", {
     p_preapproval_id: charge.preapproval_id,
     p_approved: approved,
     p_next_payment_at: next,
   });
   if (error) throw error;
+
+  const referrer = (data as { referrer_studio_id?: string | null } | null)?.referrer_studio_id;
+  if (referrer) await syncReferralPrice(admin, referrer);
 }

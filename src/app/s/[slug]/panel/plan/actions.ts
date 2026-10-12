@@ -29,8 +29,9 @@ export async function chooseTrialPlan(slug: string, plan: string): Promise<Actio
 }
 
 /**
- * Suscribirse: calcula el precio en la base (plan, ciclo y código), crea la
- * suscripción en MP con el token de Giroa y manda a autorizar el débito.
+ * Suscribirse: calcula el precio en la base (plan, ciclo, código y descuento por
+ * recomendar), crea la suscripción en MP con el token de Giroa y manda a
+ * autorizar el débito.
  * El plan se activa recién cuando el webhook confirma la autorización.
  */
 export async function subscribe(slug: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -47,12 +48,13 @@ export async function subscribe(slug: string, _prev: ActionState, formData: Form
     p_plan: plan.data,
     p_cycle: cycle.data,
     p_coupon: coupon ?? undefined,
+    p_studio_id: studio.id,
   });
   if (error) {
     const state = fromSupabaseError(error, "subscribe.quote");
     return state.code === "invalid_coupon" ? { ok: false, fieldErrors: { coupon: state.message ?? "" } } : state;
   }
-  const q = quote as { amount_cents: number; coupon: string | null };
+  const q = quote as { amount_cents: number; coupon: string | null; referral_pct: number };
   const { data: planRow } = await supabase.from("plans").select("name").eq("key", plan.data).single();
 
   let initPoint: string | null | undefined;
@@ -63,7 +65,7 @@ export async function subscribe(slug: string, _prev: ActionState, formData: Form
       frequencyMonths: cycle.data === "annual" ? 12 : 1,
       payerEmail: user.email,
       backUrl: studioUrl(slug, "/panel/plan?mp=ok"),
-      ref: { studioId: studio.id, plan: plan.data, cycle: cycle.data, coupon: q.coupon },
+      ref: { studioId: studio.id, plan: plan.data, cycle: cycle.data, coupon: q.coupon, referralPct: q.referral_pct },
     });
     initPoint = pre.init_point;
   } catch (e) {

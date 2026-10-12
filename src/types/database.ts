@@ -1298,15 +1298,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"studio_subscriptions": {
+                },"studio_referrals": {
                   Row: {
-                    "amount_cents": number | null,"billing_cycle": Database["public"]['Enums']["billing_cycle"],"cancelled_at": string | null,"coupon_code": string | null,"created_at": string,"current_period_end": string | null,"discount_pct": number,"founder_discount_pct": number,"grace_until": string | null,"last_payment_at": string | null,"mp_preapproval_id": string | null,"notes": string | null,"payment_method": string,"plan": Database["public"]['Enums']["studio_plan"] | null,"status": Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at": string | null,"updated_at": string
+                    "created_at": string,"id": string,"referred_studio_id": string,"referrer_studio_id": string,"rewarded_at": string | null,"status": Database["public"]['Enums']["referral_status"]
                   }
                   Insert: {
-                    "amount_cents"?: number | null,"billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"cancelled_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"discount_pct"?: number,"founder_discount_pct"?: number,"grace_until"?: string | null,"last_payment_at"?: string | null,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"id"?: string,"referred_studio_id": string,"referrer_studio_id": string,"rewarded_at"?: string | null,"status"?: Database["public"]['Enums']["referral_status"]
                   }
                   Update: {
-                    "amount_cents"?: number | null,"billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"cancelled_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"discount_pct"?: number,"founder_discount_pct"?: number,"grace_until"?: string | null,"last_payment_at"?: string | null,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id"?: string,"trial_ends_at"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"id"?: string,"referred_studio_id"?: string,"referrer_studio_id"?: string,"rewarded_at"?: string | null,"status"?: Database["public"]['Enums']["referral_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "studio_referrals_referred_studio_id_fkey"
+      columns: ["referred_studio_id"]
+isOneToOne: true
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "studio_referrals_referrer_studio_id_fkey"
+      columns: ["referrer_studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"studio_subscriptions": {
+                  Row: {
+                    "amount_cents": number | null,"billing_cycle": Database["public"]['Enums']["billing_cycle"],"cancelled_at": string | null,"coupon_code": string | null,"created_at": string,"current_period_end": string | null,"discount_pct": number,"founder_discount_pct": number,"grace_until": string | null,"last_payment_at": string | null,"mp_preapproval_id": string | null,"notes": string | null,"payment_method": string,"plan": Database["public"]['Enums']["studio_plan"] | null,"referral_discount_pct": number,"status": Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at": string | null,"updated_at": string
+                  }
+                  Insert: {
+                    "amount_cents"?: number | null,"billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"cancelled_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"discount_pct"?: number,"founder_discount_pct"?: number,"grace_until"?: string | null,"last_payment_at"?: string | null,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"referral_discount_pct"?: number,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id": string,"trial_ends_at"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "amount_cents"?: number | null,"billing_cycle"?: Database["public"]['Enums']["billing_cycle"],"cancelled_at"?: string | null,"coupon_code"?: string | null,"created_at"?: string,"current_period_end"?: string | null,"discount_pct"?: number,"founder_discount_pct"?: number,"grace_until"?: string | null,"last_payment_at"?: string | null,"mp_preapproval_id"?: string | null,"notes"?: string | null,"payment_method"?: string,"plan"?: Database["public"]['Enums']["studio_plan"] | null,"referral_discount_pct"?: number,"status"?: Database["public"]['Enums']["subscription_status"],"studio_id"?: string,"trial_ends_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1643,6 +1668,9 @@ isOneToOne: false
 "claim_referral":
 { Args: { "p_code": string,"p_studio_id": string }; Returns: boolean
                            },
+"claim_studio_referral":
+{ Args: { "p_referrer_slug": string,"p_studio_id": string }; Returns: boolean
+                           },
 "create_event_order":
 { Args: { "p_buyer_email": string,"p_buyer_name": string,"p_buyer_phone"?: string,"p_coupon"?: string,"p_quantity": number,"p_ticket_type_id": string }; Returns: {
               "access_token": string,
@@ -1838,7 +1866,7 @@ isOneToOne: false
 { Args: { "p_amount_cents": number,"p_coupon": string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_discount_pct": number,"p_next_payment_at"?: string,"p_plan": Database["public"]['Enums']["studio_plan"],"p_preapproval_id": string,"p_status": string,"p_studio_id": string }; Returns: Json
                            },
 "giroa_apply_subscription_charge":
-{ Args: { "p_approved": boolean,"p_next_payment_at"?: string,"p_preapproval_id": string }; Returns: undefined
+{ Args: { "p_approved": boolean,"p_next_payment_at"?: string,"p_preapproval_id": string }; Returns: Json
                            },
 "giroa_founder_spots":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -1846,7 +1874,13 @@ isOneToOne: false
             }[]
                            },
 "giroa_quote":
-{ Args: { "p_coupon"?: string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_plan": Database["public"]['Enums']["studio_plan"] }; Returns: Json
+{ Args: { "p_coupon"?: string,"p_cycle": Database["public"]['Enums']["billing_cycle"],"p_plan": Database["public"]['Enums']["studio_plan"],"p_studio_id"?: string }; Returns: Json
+                           },
+"giroa_reprice":
+{ Args: { "p_studio_id": string }; Returns: Json
+                           },
+"giroa_set_subscription_price":
+{ Args: { "p_amount_cents": number,"p_preapproval_id": string,"p_referral_pct": number,"p_studio_id": string }; Returns: undefined
                            },
 "grant_pack":
 { Args: { "p_payment_id": string }; Returns: {
@@ -2179,6 +2213,9 @@ isOneToOne: false
                            },
 "studio_has_feature":
 { Args: { "p_feature": string,"p_studio_id": string }; Returns: boolean
+                           },
+"studio_referral_summary":
+{ Args: { "p_studio_id": string }; Returns: Json
                            },
 "studio_usage":
 { Args: { "p_studio_id": string }; Returns: Json

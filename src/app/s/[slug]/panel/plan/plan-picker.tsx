@@ -22,11 +22,13 @@ type Props = {
   plans: PlanOption[];
   currentPlan: string | null;
   inTrial: boolean;
+  /** Descuento por recomendar Giroa (se suma al de fundador). */
+  referralPct: number;
   subscribe: (prev: ActionState, formData: FormData) => Promise<ActionState>;
   chooseTrialPlan: (plan: string) => Promise<ActionState>;
 };
 
-export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrialPlan }: Props) {
+export function PlanPicker({ plans, currentPlan, inTrial, referralPct, subscribe, chooseTrialPlan }: Props) {
   const [state, formAction, pending] = useActionState(subscribe, initialActionState);
   const [cycle, setCycle] = useState<"monthly" | "annual">("monthly");
   // Un plan "Próximamente" no se puede elegir: si es el que está probando, arranca en Estudio.
@@ -35,7 +37,8 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
   const [trialPending, startTrial] = useTransition();
 
   const price = (p: PlanOption) => (cycle === "annual" ? p.monthlyCents * 10 : p.monthlyCents);
-  const finalPrice = (p: PlanOption) => Math.round((price(p) * (100 - (p.founder?.discountPct ?? 0))) / 100);
+  const discount = (p: PlanOption) => (p.founder?.discountPct ?? 0) + referralPct;
+  const finalPrice = (p: PlanOption) => Math.round((price(p) * (100 - discount(p))) / 100);
   const chosen = plans.find((p) => p.key === selected);
 
   return (
@@ -78,7 +81,7 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
                 <span className="rounded-full bg-[var(--gold,#c8a46b)]/20 px-2 py-0.5 text-xs font-medium">Próximamente</span>
               ) : (
                 <p className="text-right font-semibold tabular-nums">
-                  {p.founder ? <span className="mr-1.5 text-sm font-normal text-muted line-through">{formatArs(price(p))}</span> : null}
+                  {discount(p) ? <span className="mr-1.5 text-sm font-normal text-muted line-through">{formatArs(price(p))}</span> : null}
                   {formatArs(finalPrice(p))}
                 </p>
               )}
@@ -89,6 +92,11 @@ export function PlanPicker({ plans, currentPlan, inTrial, subscribe, chooseTrial
             {p.founder && !p.soon ? (
               <p className="mt-2 inline-flex rounded-full bg-[var(--gold,#c8a46b)]/20 px-2.5 py-0.5 text-xs font-medium">
                 Fundador: {p.founder.discountPct}% de por vida · {p.founder.spotsLeft === 1 ? "queda 1" : `quedan ${p.founder.spotsLeft}`}
+              </p>
+            ) : null}
+            {referralPct > 0 && !p.soon ? (
+              <p className="mt-2 ml-1 inline-flex rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+                Por recomendar: {referralPct}% menos
               </p>
             ) : null}
           </button>
