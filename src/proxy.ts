@@ -3,6 +3,7 @@ import { publicEnv } from "@/lib/env";
 import { resolveHost } from "@/lib/tenancy/host";
 import { decideRoute } from "@/lib/tenancy/route";
 import { withSupabaseSession } from "@/lib/supabase/proxy";
+import { parseReferrerSlug, REFERRAL_COOKIE, REFERRAL_COOKIE_MAX_AGE, REFERRAL_PARAM } from "@/lib/studio-referrals";
 
 // Detecta el subdominio, reescribe a /s/[slug]/... y refresca la sesión.
 // La autorización real está en RLS y en las RPC, no acá.
@@ -17,15 +18,32 @@ export async function proxy(request: NextRequest) {
     case "not_found":
       return new NextResponse(null, { status: 404 });
     case "redirect":
-      return NextResponse.redirect(decision.url, 308);
+      return rememberReferrer(request, NextResponse.redirect(decision.url, 308));
     case "rewrite": {
       const url = request.nextUrl.clone();
       url.pathname = decision.pathname;
-      return withSupabaseSession(request, () => NextResponse.rewrite(url, { request }));
+      return rememberReferrer(request, await withSupabaseSession(request, () => NextResponse.rewrite(url, { request })));
     }
     case "next":
-      return withSupabaseSession(request, () => NextResponse.next({ request }));
+      return rememberReferrer(request, await withSupabaseSession(request, () => NextResponse.next({ request })));
   }
+}
+
+// "Recomendá Giroa": quien llega con ?desde=<slug> queda anotado en una cookie
+// que lee el onboarding (en app.giroa.com.ar, por eso va en el dominio raíz).
+function rememberReferrer(request: NextRequest, response: NextResponse): NextResponse {
+  const slug = parseReferrerSlug(request.nextUrl.searchParams.get(REFERRAL_PARAM));
+  if (!slug) return response;
+  const domain = publicEnv().NEXT_PUBLIC_COOKIE_DOMAIN;
+  response.cookies.set(REFERRAL_COOKIE, slug, {
+    ...(domain ? { domain } : {}),
+    path: "/",
+    maxAge: REFERRAL_COOKIE_MAX_AGE,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.nextUrl.protocol === "https:",
+  });
+  return response;
 }
 
 export const config = {

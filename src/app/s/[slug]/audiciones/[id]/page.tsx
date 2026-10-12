@@ -10,6 +10,7 @@ import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { applyToAudition } from "./actions";
 import { AuditionApplyForm } from "./audition-apply-form";
+import { MadeWithGiroa } from "@/components/brand/made-with-giroa";
 
 async function load(slug: string, id: string) {
   if (!z.uuid().safeParse(id).success) return null;
@@ -123,7 +124,7 @@ export default async function PublicAuditionPage({ params }: PageProps<"/s/[slug
           </section>
         )}
       </main>
-      <footer className="px-5 py-6 text-center text-xs text-muted">Audiciones con Giroa</footer>
+      <MadeWithGiroa slug={slug} label="Audiciones con" />
     </div>
   );
 }

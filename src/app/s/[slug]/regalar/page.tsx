@@ -7,6 +7,7 @@ import { packSummary } from "@/lib/packs.server";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { buyGiftCard } from "./actions";
 import { GiftForm } from "./gift-form";
+import { MadeWithGiroa } from "@/components/brand/made-with-giroa";
 
 export async function generateMetadata({ params }: PageProps<"/s/[slug]/regalar">): Promise<Metadata> {
   const studio = await getStudioBySlug((await params).slug);
@@ -62,7 +63,7 @@ export default async function GiftPage({ params }: PageProps<"/s/[slug]/regalar"
           />
         )}
       </main>
-      <footer className="px-5 py-6 text-center text-xs text-muted">Regalos con Giroa</footer>
+      <MadeWithGiroa slug={slug} label="Regalos con" />
     </div>
   );
 }

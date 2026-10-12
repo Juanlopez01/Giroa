@@ -1,6 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { publicEnv } from "@/lib/env";
+import { parseReferrerSlug, REFERRAL_COOKIE } from "@/lib/studio-referrals";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { createStudioSchema, slugSchema } from "@/lib/validation/studio";
@@ -41,5 +44,20 @@ export async function createStudio(_prev: ActionState, formData: FormData): Prom
     return state;
   }
 
+  await claimStudioReferral(data.id);
   redirect(`/onboarding/marca?estudio=${data.id}`);
+}
+
+/** Si llegó con el link de otro estudio ("Recomendá Giroa"), lo anota. Nunca frena el alta. */
+async function claimStudioReferral(studioId: string) {
+  const cookieStore = await cookies();
+  const referrer = parseReferrerSlug(cookieStore.get(REFERRAL_COOKIE)?.value);
+  if (!referrer) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("claim_studio_referral", { p_studio_id: studioId, p_referrer_slug: referrer });
+  if (error) console.warn("[createStudio] recomendación", error.message);
+
+  const domain = publicEnv().NEXT_PUBLIC_COOKIE_DOMAIN;
+  cookieStore.set(REFERRAL_COOKIE, "", { ...(domain ? { domain } : {}), path: "/", maxAge: 0 });
 }

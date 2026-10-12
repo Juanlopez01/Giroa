@@ -11,6 +11,7 @@ import { fmtYmd } from "@/lib/formations";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { applyToFormation } from "./actions";
 import { ApplyForm } from "./apply-form";
+import { MadeWithGiroa } from "@/components/brand/made-with-giroa";
 
 async function load(slug: string, id: string) {
   if (!z.uuid().safeParse(id).success) return null;
@@ -140,7 +141,7 @@ export default async function PublicFormationPage({ params }: PageProps<"/s/[slu
           )}
         </section>
       </main>
-      <footer className="px-5 py-6 text-center text-xs text-muted">Formaciones con Giroa</footer>
+      <MadeWithGiroa slug={slug} label="Formaciones con" />
     </div>
   );
 }

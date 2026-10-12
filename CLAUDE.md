@@ -119,6 +119,12 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   alumnos directo). Link `…/sumate?ref=<código>`; al sumarse, `claim_referral` (solo alumnos nuevos: 7 días y sin pagos).
   El primer pago de pack aprobado del invitado (trigger en `payments`) les da a los dos un pack de regalo de
   `studios.referral_credits` clases (0 = apagado), 60 días (`private.grant_gift_credits`).
+- Recomendá Giroa (`studio_referrals`, todos los planes): el link de cada estudio es la landing con `?desde=<slug>`
+  (`src/lib/studio-referrals.ts`); el pie "Reservas con Giroa" de sus páginas (`MadeWithGiroa`, siempre visible) lleva
+  ese link. El proxy guarda `desde` en la cookie `giroa_desde` y el onboarding lo anota con `claim_studio_referral`
+  (estudio nuevo, en prueba, no propio). El primer cobro aprobado del estudio nuevo (`giroa_apply_subscription_charge`)
+  le da al que recomendó 10% más de descuento de por vida, hasta 25%, sumado al de fundador. La base no habla con MP: el
+  webhook llama a `syncReferralPrice` (`giroa_reprice` → cambia el monto del débito en MP → `giroa_set_subscription_price`).
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

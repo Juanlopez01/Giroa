@@ -9,6 +9,7 @@ import { formatEventWhen, TICKET_QR_PREFIX } from "@/lib/events";
 import { formatArs } from "@/lib/money";
 import { StudioHeader } from "@/components/studio/studio-header";
 import { AutoRefresh } from "./auto-refresh";
+import { MadeWithGiroa } from "@/components/brand/made-with-giroa";
 
 export const metadata: Metadata = { title: "Tus entradas", robots: { index: false } };
 
@@ -125,7 +126,7 @@ export default async function TicketsPage({ params, searchParams }: PageProps<"/
           </div>
         )}
       </main>
-      <footer className="px-5 py-6 text-center text-xs text-muted">Entradas con Giroa</footer>
+      <MadeWithGiroa slug={slug} label="Entradas con" />
     </div>
   );
 }

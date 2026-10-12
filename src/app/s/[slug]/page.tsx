@@ -11,6 +11,7 @@ import { StudioHeader } from "@/components/studio/studio-header";
 import { SessionCard } from "@/components/studio/session-card";
 import { UpcomingEvents } from "@/components/studio/upcoming-events";
 import { can } from "@/lib/gating";
+import { MadeWithGiroa } from "@/components/brand/made-with-giroa";
 
 // Página pública del estudio ({slug}.giroa.com.ar): grilla, packs y "Sumate".
 export default async function StudioPublicPage({ params, searchParams }: PageProps<"/s/[slug]">) {
@@ -191,7 +192,7 @@ export default async function StudioPublicPage({ params, searchParams }: PagePro
         ) : null}
       </main>
 
-      <footer className="px-5 py-6 text-center text-xs text-muted">Reservas con Giroa</footer>
+      <MadeWithGiroa slug={slug} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { buyTickets } from "./actions";
 import { BuyForm } from "./buy-form";
 import { previewCoupon } from "../../coupon-actions";
 import { can } from "@/lib/gating";
+import { MadeWithGiroa } from "@/components/brand/made-with-giroa";
 
 async function loadEvent(slug: string, id: string) {
   if (!z.uuid().safeParse(id).success) return null;
@@ -120,7 +121,7 @@ export default async function PublicEventPage({ params }: PageProps<"/s/[slug]/e
         )}
       </main>
 
-      <footer className="px-5 py-6 text-center text-xs text-muted">Entradas con Giroa</footer>
+      <MadeWithGiroa slug={slug} label="Entradas con" />
     </div>
   );
 }
