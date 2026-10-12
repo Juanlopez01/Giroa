@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireStudent } from "@/lib/student-app";
-import { myAttendance, myBalances, myUpcomingBookings } from "@/lib/student-data.server";
+import { myAttendance, myBalances, myFrozenPacks, myUpcomingBookings, shortDate } from "@/lib/student-data.server";
 import { formatDayLabel, formatTime, nowMs, toYmd } from "@/lib/datetime";
 import { greeting } from "@/lib/student-home";
 import { FormMessage } from "@/components/ui/field";
@@ -24,7 +24,7 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
   const now = new Date(nowMs());
 
   const supabase = await createClient();
-  const [balances, bookings, attendance, { data: trialAvailable }, { data: announcements }, { data: dismissed }, { data: failedSubs }] = await Promise.all([
+  const [balances, bookings, attendance, { data: trialAvailable }, { data: announcements }, { data: dismissed }, { data: failedSubs }, frozenPacks] = await Promise.all([
     myBalances(studio.id, student.id),
     myUpcomingBookings(studio.id, student.id, now),
     myAttendance(studio.id, student.id, tz, now),
@@ -40,6 +40,7 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
     supabase.from("announcement_dismissals").select("announcement_id").eq("student_id", student.id),
     // Abonos con el último cobro rechazado.
     supabase.from("student_subscriptions").select("id, name").eq("student_id", student.id).eq("status", "past_due"),
+    myFrozenPacks(studio.id, student.id),
   ]);
   const trial = Boolean(trialAvailable) && balances.length === 0;
   const firstName = student.full_name.split(" ")[0];
@@ -85,6 +86,12 @@ export default async function StudentHomePage({ params, searchParams }: PageProp
       ) : (
         <CreditsCard balances={balances} />
       )}
+      {frozenPacks.map((p) => (
+        <p key={p.id} className="-mt-3 rounded-2xl bg-brand/5 px-4 py-3 text-sm">
+          ❄️ Tu pack <span className="font-medium">{p.name}</span> está congelado
+          {p.until ? ` hasta el ${shortDate(p.until)}` : ""}. No vence mientras tanto.
+        </p>
+      ))}
 
       <AttendanceCard attendance={attendance} today={today} />
 

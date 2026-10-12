@@ -818,6 +818,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"library_items": {
+                  Row: {
+                    "audience": string,"created_at": string,"created_by": string | null,"description": string | null,"id": string,"kind": string,"mime_type": string | null,"size_bytes": number | null,"storage_path": string | null,"studio_id": string,"title": string,"url": string | null
+                  }
+                  Insert: {
+                    "audience"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"kind": string,"mime_type"?: string | null,"size_bytes"?: number | null,"storage_path"?: string | null,"studio_id": string,"title": string,"url"?: string | null
+                  }
+                  Update: {
+                    "audience"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"kind"?: string,"mime_type"?: string | null,"size_bytes"?: number | null,"storage_path"?: string | null,"studio_id"?: string,"title"?: string,"url"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "library_items_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"mp_connections": {
                   Row: {
                     "access_token_enc": string,"connected_by": string | null,"created_at": string,"expires_at": string,"live_mode": boolean,"mp_user_id": string,"public_key": string | null,"refresh_token_enc": string,"scope": string | null,"studio_id": string,"updated_at": string
@@ -1150,13 +1169,13 @@ isOneToOne: false
                   ]
                 },"student_packs": {
                   Row: {
-                    "created_at": string,"credits_total": number | null,"credits_used": number,"expires_at": string,"frozen_at": string | null,"id": string,"name": string,"pack_product_id": string | null,"partner_student_id": string | null,"payment_id": string | null,"rules": NonNullable<Json>,"starts_at": string,"status": Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at": string
+                    "created_at": string,"credits_total": number | null,"credits_used": number,"expires_at": string,"frozen_at": string | null,"frozen_until": string | null,"id": string,"name": string,"pack_product_id": string | null,"partner_student_id": string | null,"payment_id": string | null,"rules": NonNullable<Json>,"starts_at": string,"status": Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at": string,"frozen_at"?: string | null,"id"?: string,"name": string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"rules"?: NonNullable<Json>,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at"?: string
+                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at": string,"frozen_at"?: string | null,"frozen_until"?: string | null,"id"?: string,"name": string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"rules"?: NonNullable<Json>,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id": string,"studio_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at"?: string,"frozen_at"?: string | null,"id"?: string,"name"?: string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"rules"?: NonNullable<Json>,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
+                    "created_at"?: string,"credits_total"?: number | null,"credits_used"?: number,"expires_at"?: string,"frozen_at"?: string | null,"frozen_until"?: string | null,"id"?: string,"name"?: string,"pack_product_id"?: string | null,"partner_student_id"?: string | null,"payment_id"?: string | null,"rules"?: NonNullable<Json>,"starts_at"?: string,"status"?: Database["public"]['Enums']["pack_status"],"student_id"?: string,"studio_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1344,13 +1363,13 @@ isOneToOne: true
                   ]
                 },"studios": {
                   Row: {
-                    "brand_color": string,"cancel_window_hours": number,"cover_path": string | null,"created_at": string,"id": string,"is_active": boolean,"logo_path": string | null,"name": string,"plan": Database["public"]['Enums']["studio_plan"],"referral_credits": number,"slug": string,"timezone": string,"trial_class_enabled": boolean,"updated_at": string
+                    "brand_color": string,"cancel_window_hours": number,"churn_days": number,"cover_path": string | null,"created_at": string,"id": string,"is_active": boolean,"logo_path": string | null,"name": string,"plan": Database["public"]['Enums']["studio_plan"],"referral_credits": number,"slug": string,"timezone": string,"trial_class_enabled": boolean,"updated_at": string
                   }
                   Insert: {
-                    "brand_color"?: string,"cancel_window_hours"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name": string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug": string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
+                    "brand_color"?: string,"cancel_window_hours"?: number,"churn_days"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name": string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug": string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
                   }
                   Update: {
-                    "brand_color"?: string,"cancel_window_hours"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name"?: string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug"?: string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
+                    "brand_color"?: string,"cancel_window_hours"?: number,"churn_days"?: number,"cover_path"?: string | null,"created_at"?: string,"id"?: string,"is_active"?: boolean,"logo_path"?: string | null,"name"?: string,"plan"?: Database["public"]['Enums']["studio_plan"],"referral_credits"?: number,"slug"?: string,"timezone"?: string,"trial_class_enabled"?: boolean,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1385,7 +1404,7 @@ isOneToOne: false
                   ]
                 },"student_balances": {
                   Row: {
-                    "credits_remaining": number | null,"credits_total": number | null,"credits_used": number | null,"expires_at": string | null,"expires_on": string | null,"is_usable": boolean | null,"name": string | null,"partner_student_id": string | null,"starts_at": string | null,"status": Database["public"]['Enums']["pack_status"] | null,"student_id": string | null,"student_pack_id": string | null,"studio_id": string | null
+                    "credits_remaining": number | null,"credits_total": number | null,"credits_used": number | null,"expires_at": string | null,"expires_on": string | null,"frozen_until": string | null,"is_usable": boolean | null,"name": string | null,"partner_student_id": string | null,"starts_at": string | null,"status": Database["public"]['Enums']["pack_status"] | null,"student_id": string | null,"student_pack_id": string | null,"studio_id": string | null
                   }
                   Relationships: [
                     {
@@ -1777,6 +1796,7 @@ isOneToOne: false
 { Args: { "p_name": string,"p_slug": string }; Returns: {
               "brand_color": string,
 "cancel_window_hours": number,
+"churn_days": number,
 "cover_path": string | null,
 "created_at": string,
 "id": string,
@@ -1850,6 +1870,32 @@ isOneToOne: false
 "formation_set_grade":
 { Args: { "p_assessment_id": string,"p_enrollment_id": string,"p_feedback"?: string,"p_grade": number,"p_passed": boolean }; Returns: undefined
                            },
+"freeze_pack":
+{ Args: { "p_pack_id": string,"p_until"?: string }; Returns: {
+              "created_at": string,
+"credits_total": number | null,
+"credits_used": number,
+"expires_at": string,
+"frozen_at": string | null,
+"frozen_until": string | null,
+"id": string,
+"name": string,
+"pack_product_id": string | null,
+"partner_student_id": string | null,
+"payment_id": string | null,
+"rules": NonNullable<Json>,
+"starts_at": string,
+"status": Database["public"]['Enums']["pack_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "student_packs"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "generate_sessions":
 { Args: { "p_from"?: string,"p_studio_id": string,"p_weeks"?: number }; Returns: number
                            },
@@ -1889,6 +1935,7 @@ isOneToOne: false
 "credits_used": number,
 "expires_at": string,
 "frozen_at": string | null,
+"frozen_until": string | null,
 "id": string,
 "name": string,
 "pack_product_id": string | null,
@@ -2220,6 +2267,35 @@ isOneToOne: false
 "studio_usage":
 { Args: { "p_studio_id": string }; Returns: Json
                            },
+"unfreeze_due_packs":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"unfreeze_pack":
+{ Args: { "p_pack_id": string }; Returns: {
+              "created_at": string,
+"credits_total": number | null,
+"credits_used": number,
+"expires_at": string,
+"frozen_at": string | null,
+"frozen_until": string | null,
+"id": string,
+"name": string,
+"pack_product_id": string | null,
+"partner_student_id": string | null,
+"payment_id": string | null,
+"rules": NonNullable<Json>,
+"starts_at": string,
+"status": Database["public"]['Enums']["pack_status"],
+"student_id": string,
+"studio_id": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "student_packs"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "update_member":
 { Args: { "p_can_take_payments": boolean,"p_member_id": string,"p_role": Database["public"]['Enums']["member_role"] }; Returns: {
               "can_take_payments": boolean,

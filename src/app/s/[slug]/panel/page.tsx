@@ -7,10 +7,12 @@ import { addDaysYmd, formatDayLabel, nowMs, startOfDay, todayYmd } from "@/lib/d
 import { formatArs } from "@/lib/money";
 import { studioUrl } from "@/lib/urls";
 import { greeting } from "@/lib/student-home";
+import { can } from "@/lib/gating";
 import {
   activeWithoutBalance,
   expiringSoon,
   trialNotConverted,
+  stoppedComing,
   incomeSummary,
   occupancyBySlot,
   whatsappLink,
@@ -44,6 +46,10 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
     supabase.from("offerings").select("id", { count: "exact", head: true }).eq("studio_id", studio.id),
   ]);
 
+  const churnOn = isAdmin && (await can(studio.id, "churn_alert"));
+  const churnDays = churnOn
+    ? ((await supabase.from("studios").select("churn_days").eq("id", studio.id).single()).data?.churn_days ?? 14)
+    : 14;
   const owner = isAdmin
     ? await Promise.all([
         supabase.rpc("studio_usage", { p_studio_id: studio.id }),
@@ -52,6 +58,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
         activeWithoutBalance(studio.id, now),
         occupancyBySlot(studio.id, tz, now),
         trialNotConverted(studio.id, now),
+        churnOn ? stoppedComing(studio.id, now, churnDays) : Promise.resolve([]),
       ])
     : null;
   const usage = (owner?.[0].data ?? null) as Usage | null;
@@ -60,6 +67,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   const noBalance = owner?.[3] ?? [];
   const slots = owner?.[4] ?? [];
   const trials = owner?.[5] ?? [];
+  const churned = owner?.[6] ?? [];
 
   if (offeringsCount === 0) {
     return (
@@ -81,7 +89,7 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
   const delta = income ? income.thisMonth - income.lastMonthSameDay : 0;
   // La clase en curso o la próxima de hoy.
   const live = sessions.find((s) => s.status === "scheduled" && new Date(s.endsAt).getTime() >= now.getTime());
-  const followUps = expiring.length + noBalance.length + trials.length;
+  const followUps = expiring.length + noBalance.length + trials.length + churned.length;
 
   return (
     <div className="space-y-8">
@@ -172,6 +180,13 @@ export default async function PanelHome({ params }: PageProps<"/s/[slug]/panel">
                 title="Vienen pero no tienen saldo"
                 people={noBalance}
                 message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: se te terminaron las clases del pack. ¿Te cargamos uno nuevo?`}
+              />
+            ) : null}
+            {churned.length ? (
+              <FollowUpList
+                title="Dejaron de venir"
+                people={churned}
+                message={(p) => `¡Hola ${p.name.split(" ")[0]}! Te escribimos de ${studio.name}: hace rato que no te vemos y te extrañamos en clase. ¿Te reservamos un lugar esta semana?`}
               />
             ) : null}
             {trials.length ? (

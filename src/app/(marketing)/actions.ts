@@ -3,6 +3,12 @@
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fieldErrorsFromZod, type ActionState } from "@/lib/errors";
+import { emailEnv } from "@/lib/env.server";
+import { sendWithResend } from "@/lib/email/send";
+import { founderLeadEmail } from "@/lib/email/templates";
+
+/** A dónde llegan los contactos del formulario de fundadores. */
+const LEADS_TO = process.env.LEADS_EMAIL || "juanldevelop@gmail.com";
 
 const blank = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : v);
 
@@ -51,6 +57,23 @@ export async function submitFounderLead(_prev: ActionState, formData: FormData):
   if (error) {
     console.error("[submitFounderLead]", error);
     return { ok: false, message: "No pudimos enviar el formulario. Probá de nuevo en un rato." };
+  }
+
+  // Aviso por mail (si falla, el contacto igual quedó guardado en founder_leads).
+  const mail = emailEnv();
+  if (mail) {
+    try {
+      await sendWithResend(mail.RESEND_API_KEY, {
+        from: `Giroa <${mail.EMAIL_FROM_ADDRESS}>`,
+        to: LEADS_TO,
+        reply_to: l.email,
+        ...founderLeadEmail(l),
+      });
+    } catch (e) {
+      console.error("[submitFounderLead.mail]", e);
+    }
+  } else {
+    console.warn("[submitFounderLead] sin RESEND_API_KEY: el contacto quedó solo en founder_leads");
   }
   return { ok: true, message: `¡Gracias, ${l.name.split(" ")[0]}! Te escribimos en las próximas 24 horas.` };
 }

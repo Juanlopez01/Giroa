@@ -25,16 +25,19 @@ export function MaterialList({
   sessions,
   empty,
   renderAction,
+  generalLabel = "De toda la formación",
 }: {
   materials: MaterialRow[];
   sessions: { id: string; label: string }[];
   empty: string;
   renderAction?: (m: MaterialRow) => React.ReactNode;
+  /** Título del grupo sin encuentro (en la biblioteca: "Material"). */
+  generalLabel?: string;
 }) {
   if (!materials.length) return <p className="rounded-2xl border border-dashed border-border p-5 text-center text-muted">{empty}</p>;
 
   const groups = [
-    { key: "general", label: "De toda la formación", items: materials.filter((m) => !m.session_id) },
+    { key: "general", label: generalLabel, items: materials.filter((m) => !m.session_id) },
     ...sessions.map((s) => ({ key: s.id, label: s.label, items: materials.filter((m) => m.session_id === s.id) })),
   ].filter((g) => g.items.length);
 

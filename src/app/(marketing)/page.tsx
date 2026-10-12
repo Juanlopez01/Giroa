@@ -26,16 +26,16 @@ const SOON = new Set([
 const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight?: boolean }> = {
   profe: {
     tagline: "Para profes independientes",
-    features: ["Hasta 20 alumnos activos", "Packs por link con Mercado Pago", "Tus alumnos reservan solos", "Balance de roles"],
+    features: ["Packs por link con Mercado Pago", "Tus alumnos reservan solos", "Balance de roles y packs de pareja"],
   },
   inicial: {
     tagline: "Para arrancar ordenado",
     features: [
-      "Hasta 50 alumnos activos",
       "Clases, packs y saldo de cada alumno",
       "Compra desde el celular con Mercado Pago",
       "Check-in con QR",
-      "Balance de roles y cupo por equipo",
+      "Balance de roles y packs de pareja",
+      "Cupo por equipo (camas, máquinas)",
       "Panel de ingresos",
     ],
   },
@@ -43,7 +43,6 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
     tagline: "El estudio completo",
     highlight: true,
     features: [
-      "Hasta 150 alumnos activos",
       "Todo lo de Inicial",
       "Eventos con entradas y control por QR",
       "Formaciones con cuotas y asistencia",
@@ -52,6 +51,10 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
       "Workshops y clases sueltas",
       "Packs con restricciones (días, horarios, disciplinas)",
       "Abonos mensuales con débito automático",
+      "Congelar packs (lesiones, viajes)",
+      "Alerta de alumnos que dejaron de venir",
+      "Biblioteca de material para tus alumnos",
+      "Tu grilla en tu propia web",
       "Cupones y gift cards",
       "Anuncios a tus alumnos",
       "Referidos",
@@ -61,7 +64,6 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
   pro: {
     tagline: "Para crecer sin límites",
     features: [
-      "Alumnos ilimitados",
       "Todo lo de Estudio",
       "Certificados y jurado en audiciones",
       "Liquidación de profes",
@@ -74,7 +76,7 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
 export default async function LandingPage() {
   const supabase = await createClient();
   const [{ data: plans }, founder] = await Promise.all([
-    supabase.from("plans").select("key, name, monthly_price_cents").order("sort"),
+    supabase.from("plans").select("key, name, monthly_price_cents, max_active_students").order("sort"),
     getFounderSpots(),
   ]);
   const spotsLabel = (n: number) => (n === 1 ? "Queda 1 lugar" : `Quedan ${n} lugares`);
@@ -171,11 +173,15 @@ export default async function LandingPage() {
           <div>
             <p className="text-sm font-medium tracking-wide text-[var(--gold)] uppercase">Para danzas en pareja</p>
             <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">
-              Balance de roles automático
+              Balance de roles y packs de pareja
             </h2>
             <p className="mt-4 text-muted">
               En tango, salsa, bachata o swing, cada alumno elige si va como líder o seguidor/a al reservar. Vos
               definís la diferencia máxima y Giroa no deja que la clase se desbalancee: nadie se queda sin pareja.
+            </p>
+            <p className="mt-3 text-muted">
+              Y si vienen en pareja, les vendés un <span className="font-medium text-foreground">pack de pareja</span>: los dos
+              comparten el mismo saldo de clases y cada uno reserva desde su celular.
             </p>
           </div>
           <div className="space-y-3 rounded-3xl border border-border bg-background p-6">
@@ -196,6 +202,12 @@ export default async function LandingPage() {
               </span>
             </div>
             <p className="text-sm text-muted">“Por ahora no hay lugar como líder: faltan seguidores/as.”</p>
+            <div className="flex items-center justify-between rounded-2xl bg-[var(--gold)]/15 px-4 py-3 text-sm">
+              <span>
+                <span className="font-medium">Pack de pareja</span> · Ana y Leo
+              </span>
+              <span className="tabular-nums text-muted">6 clases compartidas</span>
+            </div>
           </div>
         </div>
       </section>
@@ -244,7 +256,8 @@ export default async function LandingPage() {
                   </p>
                 )}
                 <ul className="mt-5 flex-1 space-y-2 text-sm">
-                  {copy?.features.map((f) => (
+                  {/* El límite sale de la base, así la landing nunca queda desactualizada. */}
+                  {[p.max_active_students ? `Hasta ${p.max_active_students} alumnos activos` : "Alumnos ilimitados", ...(copy?.features ?? [])].map((f) => (
                     <li key={f} className={SOON.has(f) || soonPlan ? "text-muted" : undefined}>
                       {SOON.has(f) || soonPlan ? "○" : "✓"} {f}
                       {SOON.has(f) && !soonPlan ? (

@@ -33,17 +33,17 @@ export function PanelMockup() {
             <p className="text-[10px] font-medium tracking-widest uppercase opacity-80">En curso</p>
             <p className="font-serif text-lg font-semibold">Tango intermedio</p>
             <p className="text-[11px] opacity-85">20:30 a 22:00 · 6 líd. · 6 seg.</p>
-            <div className="absolute top-3 right-3 h-16 w-16">
-              <svg viewBox="0 0 56 56" className="h-16 w-16 -rotate-90">
-                <circle cx="28" cy="28" r={r} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="5" />
-                <circle cx="28" cy="28" r={r} fill="none" stroke="var(--gold)" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(8 / 12) * c} ${c}`} />
-              </svg>
-              <span className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-                <span className="font-serif text-base font-semibold">
+            <div className="absolute top-3 right-3 flex flex-col items-center gap-1">
+              <div className="relative h-16 w-16">
+                <svg viewBox="0 0 56 56" className="h-16 w-16 -rotate-90">
+                  <circle cx="28" cy="28" r={r} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="5" />
+                  <circle cx="28" cy="28" r={r} fill="none" stroke="var(--gold)" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(8 / 12) * c} ${c}`} />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center font-serif text-base leading-none font-semibold">
                   8<span className="text-[10px] opacity-70">/12</span>
                 </span>
-                <span className="mt-0.5 text-[8px] tracking-wide uppercase opacity-80">presentes</span>
-              </span>
+              </div>
+              <span className="text-[9px] tracking-wide uppercase opacity-80">presentes</span>
             </div>
             <span className="mt-3 inline-block rounded-full bg-background px-3 py-1 text-[11px] font-medium text-brand">Ver la lista</span>
           </div>

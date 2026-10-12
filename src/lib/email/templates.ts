@@ -292,3 +292,43 @@ export function referralRewardEmail(studio: StudioInfo, d: ReferralRewardData): 
   const subject = d.gainedPct > 0 ? `¡Sumaste ${d.gainedPct}% de descuento en Giroa!` : "Gracias por recomendar Giroa";
   return build(studio, subject, paragraphs, { label: "Ver tu plan", href: studio.url("/panel/plan") });
 }
+
+export type FounderLead = {
+  name: string;
+  email: string;
+  phone: string | null;
+  kind: "studio" | "teacher";
+  studioName: string | null;
+  disciplines: string | null;
+  studentsCount: string | null;
+  message: string | null;
+};
+
+/** Aviso interno a Giroa: alguien completó el formulario de fundadores de la landing. */
+export function founderLeadEmail(l: FounderLead): EmailContent {
+  const rows: [string, string | null][] = [
+    ["Nombre", l.name],
+    ["Email", l.email],
+    ["WhatsApp", l.phone],
+    ["Es", l.kind === "studio" ? "Estudio" : "Profe"],
+    ["Estudio", l.studioName],
+    ["Disciplinas", l.disciplines],
+    ["Alumnos", l.studentsCount],
+    ["Mensaje", l.message],
+  ];
+  const filled = rows.filter((r): r is [string, string] => Boolean(r[1]));
+  const who = l.studioName ? `${l.name} (${l.studioName})` : l.name;
+  const html = `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1f1a17;">
+<p style="font-size:13px;color:#6f6259;margin:0 0 8px;">Giroa · Formulario de fundadores</p>
+<h1 style="font-size:22px;margin:0 0 16px;">Nuevo contacto: ${esc(who)}</h1>
+<table style="border-collapse:collapse;width:100%;font-size:15px;">${filled
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:6px 12px 6px 0;color:#6f6259;vertical-align:top;white-space:nowrap;">${esc(k)}</td><td style="padding:6px 0;white-space:pre-wrap;">${esc(v)}</td></tr>`,
+    )
+    .join("")}</table>
+<p style="font-size:13px;color:#6f6259;margin:24px 0 0;">Respondé este mail y le llega directo a ${esc(l.email)}.</p>
+</div>`;
+  const text = [`Nuevo contacto: ${who}`, "", ...filled.map(([k, v]) => `${k}: ${v}`)].join("\n");
+  return { subject: `Nuevo fundador: ${who}`, html, text };
+}

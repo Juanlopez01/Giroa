@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { emailEnv, serverEnv } from "@/lib/env.server";
+import { sendWithResend } from "@/lib/email/send";
 import { platformUrl, studioUrl } from "@/lib/urls";
 import {
   announcementEmail,
@@ -246,17 +247,4 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
     default:
       return null;
   }
-}
-
-async function sendWithResend(
-  apiKey: string,
-  mail: { from: string; to: string; subject: string; html: string; text: string },
-): Promise<void> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(mail),
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 300)}`);
 }

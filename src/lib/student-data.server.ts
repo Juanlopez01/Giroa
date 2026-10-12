@@ -57,6 +57,18 @@ export async function myBalances(studioId: string, studentId: string): Promise<M
   );
 }
 
+/** Packs congelados del alumno (no cuentan para reservar). */
+export async function myFrozenPacks(studioId: string, studentId: string): Promise<{ id: string; name: string; until: string | null }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("student_balances")
+    .select("student_pack_id, name, frozen_until")
+    .eq("studio_id", studioId)
+    .or(`student_id.eq.${studentId},partner_student_id.eq.${studentId}`)
+    .eq("status", "frozen");
+  return (data ?? []).flatMap((b) => (b.student_pack_id ? [{ id: b.student_pack_id, name: b.name ?? "Pack", until: b.frozen_until }] : []));
+}
+
 /** "Te quedan 3 clases" / "Clases libres" sumando todos los packs vigentes. */
 export function balanceHeadline(balances: MyBalance[]): string {
   if (balances.length === 0) return "No tenés clases disponibles";

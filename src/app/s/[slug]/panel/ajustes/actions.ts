@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { deleteConnection } from "@/lib/mp/connections";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
+import { CHURN_DAYS_OPTIONS } from "@/lib/churn";
 
 const settingsSchema = z.object({
   cancelWindowHours: z.coerce
@@ -43,4 +44,15 @@ export async function setTrialClass(slug: string, enabled: boolean): Promise<voi
   const { error } = await supabase.from("studios").update({ trial_class_enabled: enabled }).eq("id", studio.id);
   if (error) console.error("[setTrialClass]", error);
   revalidatePath(`/s/${slug}`, "layout");
+}
+
+/** Cuántos días sin venir cuentan como "dejó de venir" (alerta de abandono). */
+export async function setChurnDays(slug: string, formData: FormData): Promise<void> {
+  const { studio } = await requireAdmin(slug);
+  const days = Number(formData.get("churnDays"));
+  if (!(CHURN_DAYS_OPTIONS as readonly number[]).includes(days)) return;
+  const supabase = await createClient();
+  const { error } = await supabase.from("studios").update({ churn_days: days }).eq("id", studio.id);
+  if (error) console.error("[setChurnDays]", error);
+  revalidatePath(`/s/${slug}/panel`, "layout");
 }

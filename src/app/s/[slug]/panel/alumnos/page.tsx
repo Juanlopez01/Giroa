@@ -6,6 +6,8 @@ import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { balancesByStudent, formatBalance, type BalanceSummary } from "@/lib/students.server";
 import { addDaysYmd, nowMs, todayYmd } from "@/lib/datetime";
+import { can } from "@/lib/gating";
+import { stoppedComing } from "@/lib/dashboard.server";
 
 export const metadata: Metadata = { title: "Alumnos" };
 
@@ -15,6 +17,7 @@ const FILTERS = [
   { key: "", label: "Todos" },
   { key: "sin-saldo", label: "Sin saldo" },
   { key: "vencen", label: "Vencen pronto" },
+  { key: "dejaron", label: "Dejaron de venir" },
   { key: "app", label: "Usan la app" },
   { key: "inactivos", label: "Inactivos" },
 ] as const;
@@ -59,11 +62,21 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
     query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`);
   }
 
-  const [{ data: rows, count }, balances, usageRes] = await Promise.all([
+  const churnOn = await can(studio.id, "churn_alert");
+  const [{ data: rows, count }, balances, usageRes, churned] = await Promise.all([
     query,
     balancesByStudent(studio.id),
     isAdmin ? supabase.rpc("studio_usage", { p_studio_id: studio.id }) : Promise.resolve({ data: null }),
+    churnOn && filter === "dejaron"
+      ? supabase
+          .from("studios")
+          .select("churn_days")
+          .eq("id", studio.id)
+          .single()
+          .then(({ data }) => stoppedComing(studio.id, new Date(nowMs()), data?.churn_days ?? 14))
+      : Promise.resolve([]),
   ]);
+  const churnDetail = new Map(churned.map((c) => [c.studentId, c.detail]));
   const usage = usageRes.data as { at_limit?: boolean; max_active_students?: number | null } | null;
   const atLimit = Boolean(usage?.at_limit);
 
@@ -71,6 +84,7 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
     const b = balances.get(s.id);
     if (filter === "sin-saldo") return !b;
     if (filter === "vencen") return Boolean(b?.nextExpiry && b.nextExpiry <= soonYmd);
+    if (filter === "dejaron") return churnDetail.has(s.id);
     return true;
   });
   const href = (f: FilterKey) => {
@@ -128,7 +142,7 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
           {filter ? <input type="hidden" name="filtro" value={filter} /> : null}
         </form>
         <nav aria-label="Filtros" className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] md:mx-0 md:px-0">
-          {FILTERS.map((f) => (
+          {FILTERS.filter((f) => f.key !== "dejaron" || churnOn).map((f) => (
             <Link
               key={f.key || "todos"}
               href={href(f.key)}
@@ -161,7 +175,7 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
                 <Avatar name={s.full_name} online={Boolean(s.user_id)} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{s.full_name}</span>
-                  <span className="block truncate text-sm text-muted">{s.email ?? s.phone ?? "Sin contacto"}</span>
+                  <span className="block truncate text-sm text-muted">{churnDetail.get(s.id) ?? s.email ?? s.phone ?? "Sin contacto"}</span>
                 </span>
                 <BalanceChip balance={balances.get(s.id)} soonYmd={soonYmd} />
               </Link>
@@ -171,7 +185,7 @@ export default async function StudentsPage({ params, searchParams }: PageProps<"
       )}
 
       <p className="text-sm text-muted">
-        {filter === "sin-saldo" || filter === "vencen" ? students.length : (count ?? 0)} {(count ?? 0) === 1 ? "alumno" : "alumnos"}
+        {filter === "sin-saldo" || filter === "vencen" || filter === "dejaron" ? students.length : (count ?? 0)} {(count ?? 0) === 1 ? "alumno" : "alumnos"}
         {!filter && count && count > PAGE_SIZE ? ` (se muestran ${PAGE_SIZE}; usá la búsqueda)` : ""}
         {" · "}
         <span className="inline-flex items-center gap-1">
