@@ -6,6 +6,8 @@ export type PublicSession = {
   title: string;
   description: string | null;
   disciplineName: string;
+  disciplineKey: string;
+  offeringId: string;
   level: string | null;
   teacherName: string | null;
   startsAt: string;
@@ -39,6 +41,8 @@ export async function listPublicSessions(slug: string, from: Date, to: Date): Pr
     title: s.title,
     description: s.description,
     disciplineName: s.discipline_name,
+    disciplineKey: s.discipline_key,
+    offeringId: s.offering_id,
     level: s.level,
     teacherName: s.teacher_name,
     startsAt: s.starts_at,

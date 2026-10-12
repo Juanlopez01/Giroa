@@ -68,3 +68,32 @@ export function describePackRules(
   else if (rules.from) parts.push(`Desde las ${rules.from}`);
   return parts.length ? parts.join(" · ") : null;
 }
+
+/**
+ * ¿El pack sirve para esta clase? Misma regla que private.pack_rules_allow en la
+ * base (que es la que decide al reservar): disciplina o clase, día de la semana
+ * y horario de inicio, en la hora local del estudio. Sirve para ofrecer de
+ * entrada "Reservar suelta" cuando ningún pack vale.
+ */
+export function packRulesAllow(
+  rules: PackRules,
+  session: { disciplineKey: string; offeringId: string; startsAt: string },
+  timeZone: string,
+): boolean {
+  const lists = Boolean(rules.disciplines?.length || rules.offerings?.length);
+  if (lists && !(rules.disciplines?.includes(session.disciplineKey) || rules.offerings?.includes(session.offeringId))) return false;
+  const local = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(session.startsAt));
+  const part = (t: string) => local.find((p) => p.type === t)?.value ?? "";
+  const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(part("weekday"));
+  const hhmm = `${part("hour")}:${part("minute")}`;
+  if (rules.weekdays?.length && !rules.weekdays.includes(dow)) return false;
+  if (rules.from && hhmm < rules.from) return false;
+  if (rules.until && hhmm >= rules.until) return false;
+  return true;
+}

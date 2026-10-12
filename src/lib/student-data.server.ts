@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { startOfDay, toYmd } from "@/lib/datetime";
+import { parsePackRules, type PackRules } from "@/lib/pack-rules";
 
 export type MyBooking = {
   id: string;
@@ -39,20 +40,43 @@ export async function myUpcomingBookings(studioId: string, studentId: string, fr
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
-export type MyBalance = { id: string; name: string; remaining: number | null; total: number | null; expiresOn: string | null };
+export type MyBalance = {
+  id: string;
+  name: string;
+  remaining: number | null;
+  total: number | null;
+  expiresOn: string | null;
+  /** Primer instante en que ya no vale (para saber si llega a una clase). */
+  expiresAt?: string | null;
+  /** Restricciones del pack ("Solo yoga", "Lunes a viernes"…). */
+  rules?: PackRules;
+};
 
 export async function myBalances(studioId: string, studentId: string): Promise<MyBalance[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("student_balances")
-    .select("student_pack_id, name, credits_remaining, credits_total, expires_on")
+    .select("student_pack_id, name, credits_remaining, credits_total, expires_on, expires_at")
     .eq("studio_id", studioId)
     .or(`student_id.eq.${studentId},partner_student_id.eq.${studentId}`)
     .eq("is_usable", true)
     .order("expires_at");
+  const ids = (data ?? []).flatMap((b) => (b.student_pack_id ? [b.student_pack_id] : []));
+  const { data: packs } = ids.length ? await supabase.from("student_packs").select("id, rules").in("id", ids) : { data: [] };
+  const rulesById = new Map((packs ?? []).map((p) => [p.id, parsePackRules(p.rules)]));
   return (data ?? []).flatMap((b) =>
     b.student_pack_id
-      ? [{ id: b.student_pack_id, name: b.name ?? "Pack", remaining: b.credits_remaining, total: b.credits_total, expiresOn: b.expires_on }]
+      ? [
+          {
+            id: b.student_pack_id,
+            name: b.name ?? "Pack",
+            remaining: b.credits_remaining,
+            total: b.credits_total,
+            expiresOn: b.expires_on,
+            expiresAt: b.expires_at,
+            rules: rulesById.get(b.student_pack_id) ?? {},
+          },
+        ]
       : [],
   );
 }

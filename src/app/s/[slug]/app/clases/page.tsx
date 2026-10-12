@@ -10,6 +10,7 @@ import { can } from "@/lib/gating";
 import { bookSession, bookTrialClass, joinWaitlist, leaveWaitlist, payForClass } from "../actions";
 import { formatArs } from "@/lib/money";
 import { BookButton } from "../booking-buttons";
+import { packRulesAllow } from "@/lib/pack-rules";
 
 export const metadata: Metadata = { title: "Clases" };
 
@@ -46,11 +47,15 @@ export default async function StudentClassesPage({ params, searchParams }: PageP
   const trial = Boolean(trialAvailable) && balances.length === 0;
   const waitingAt = new Map((myWaitlist ?? []).map((w) => [w.session_id, w.position]));
   const booked = new Set(bookings.map((b) => b.sessionId));
+  // ¿Algún pack vigente sirve para esta clase? (restricciones y vencimiento; la
+  // base vuelve a validar al reservar).
+  const packFits = (s: PublicSession) =>
+    balances.some((b) => (!b.expiresAt || b.expiresAt > s.startsAt) && packRulesAllow(b.rules ?? {}, s, tz));
   // Se paga aparte: el workshop que no vale con pack, o la clase con precio
-  // suelto cuando no tenés saldo (y no te toca la clase de prueba).
+  // suelto cuando ningún pack sirve para ella (y no te toca la clase de prueba).
   const payWith = (s: PublicSession) =>
     Boolean(s.priceCents) &&
-    ((s.kind === "special" && !s.packAllowed) || (balances.length === 0 && !(trial && s.kind === "regular")));
+    ((s.kind === "special" && !s.packAllowed) || (!packFits(s) && !(trial && s.kind === "regular")));
 
   const byDay = new Map<string, PublicSession[]>();
   for (const s of sessions) {
