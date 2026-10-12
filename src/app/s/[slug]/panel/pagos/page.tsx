@@ -67,10 +67,10 @@ export default async function PaymentsPage({ params, searchParams }: PageProps<"
             </Link>
           ) : null}
           <Link
-          href="/panel/pagos/nuevo"
+          href="/panel/cobrar"
           className="inline-flex h-10 items-center rounded-full bg-brand px-4 text-sm font-medium text-brand-foreground"
         >
-          + Registrar pago
+          + Cobrar
           </Link>
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Megaphone,
   Gift,
+  HandCoins,
   LibraryBig,
   Plus,
   QrCode,
@@ -30,12 +31,13 @@ import {
 
 // Las rutas son las del subdominio del estudio (el proxy agrega /s/[slug]).
 type Access = { isAdmin: boolean; isOwner: boolean; canTakePayments: boolean };
-type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean; adminOnly?: boolean; ownerOnly?: boolean };
+type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean; adminOnly?: boolean; ownerOnly?: boolean; paymentsOnly?: boolean };
 
 const ITEMS: Item[] = [
   { href: "/panel", label: "Inicio", icon: House, exact: true },
   { href: "/panel/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/panel/alumnos", label: "Alumnos", icon: Users },
+  { href: "/panel/cobrar", label: "Cobrar", icon: HandCoins, paymentsOnly: true },
   { href: "/panel/pagos", label: "Pagos", icon: Wallet, adminOnly: true },
   { href: "/panel/clases", label: "Clases", icon: Layers, adminOnly: true },
   { href: "/panel/packs", label: "Packs", icon: Ticket, adminOnly: true },
@@ -59,8 +61,10 @@ function useActive() {
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-function visibleItems({ isAdmin, isOwner }: Access) {
-  return ITEMS.filter((i) => (isAdmin || !i.adminOnly) && (isOwner || !i.ownerOnly));
+function visibleItems({ isAdmin, isOwner, canTakePayments }: Access) {
+  return ITEMS.filter(
+    (i) => (isAdmin || !i.adminOnly) && (isOwner || !i.ownerOnly) && (canTakePayments || !i.paymentsOnly),
+  );
 }
 
 /** Compu: barra lateral con íconos. */
@@ -123,7 +127,7 @@ export function PanelTabBar(access: Access) {
   };
 
   const actions = [
-    access.canTakePayments && { href: "/panel/pagos/nuevo", label: "Registrar un pago", icon: Wallet },
+    access.canTakePayments && { href: "/panel/cobrar", label: "Cobrar", icon: HandCoins },
     { href: "/panel/alumnos/nuevo", label: "Nuevo alumno", icon: UserPlus },
     access.isAdmin && { href: "/panel/clases/nueva", label: "Nueva clase", icon: Layers },
     access.isAdmin && { href: "/panel/workshops", label: "Nuevo workshop", icon: Flame },

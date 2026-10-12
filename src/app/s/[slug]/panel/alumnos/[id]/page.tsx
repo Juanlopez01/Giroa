@@ -114,9 +114,9 @@ export default async function StudentPage({ params, searchParams }: PageProps<"/
           action={
             student.is_active && canTakePayments
               ? {
-                  href: `/panel/pagos/nuevo?alumno=${student.id}`,
-                  label: "Registrar pago",
-                  empty: "Registrar pago",
+                  href: `/panel/cobrar?alumno=${student.id}`,
+                  label: "Cobrar",
+                  empty: "Cobrar",
                   emptyHint: "Cuando pague, le cargás el pack acá.",
                 }
               : null
