@@ -150,3 +150,61 @@ export async function sellGift(slug: string, _prev: ActionState, formData: FormD
   const code = (data as { code?: string } | null)?.code;
   return done(slug, code ? `¡Listo! Código de la gift card: ${code}` : "¡Listo! Gift card vendida.");
 }
+
+const newStudentSchema = z.object({
+  fullName: z.string().trim().min(2, "Poné su nombre y apellido.").max(120),
+  email: z.email("Poné su email: ahí le llega su cuenta y su compra.").transform((v) => v.toLowerCase()),
+  phone: z.string().trim().max(40).optional(),
+  packId: uuid.or(z.literal("").transform(() => null)).refine((v) => v, "Elegí un pack."),
+  method,
+});
+
+/**
+ * Pack a alguien que todavía no es alumno: se lo da de alta con su email (si ese
+ * email ya es de un alumno, se usa esa ficha), se cobra y le llegan dos mails:
+ * la bienvenida (cómo entrar a la app) y "tu pack está acreditado".
+ */
+export async function sellPackToNewStudent(slug: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { studio } = await staff(slug);
+  const parsed = newStudentSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsFromZod(parsed.error.issues) };
+  const d = parsed.data;
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("students")
+    .select("id, full_name, user_id")
+    .eq("studio_id", studio.id)
+    .ilike("email", d.email)
+    .maybeSingle();
+  let studentId = existing?.id;
+  if (!studentId) {
+    const { data: created, error } = await supabase
+      .from("students")
+      .insert({ studio_id: studio.id, full_name: d.fullName, email: d.email, phone: d.phone || null })
+      .select("id")
+      .single();
+    if (error) return fromSupabaseError(error, "sellPackToNewStudent.create");
+    studentId = created.id;
+  }
+
+  const { error: payError } = await supabase.rpc("record_manual_payment", {
+    p_student_id: studentId,
+    p_pack_product_id: d.packId!,
+    p_method: d.method,
+  });
+  if (payError) return fromSupabaseError(payError, "sellPackToNewStudent.pay");
+
+  // La bienvenida, si todavía no entró nunca a la app (una sola vez por alumno).
+  if (!existing?.user_id) {
+    const { error: mailError } = await supabase.rpc("send_student_welcome", { p_student_id: studentId });
+    if (mailError) console.error("[sellPackToNewStudent.welcome]", mailError);
+  }
+
+  return done(
+    slug,
+    existing
+      ? `${existing.full_name} ya era alumno/a: le cargamos el pack y le avisamos por mail.`
+      : `¡Listo! ${d.fullName} ya es alumno/a: le mandamos un mail para entrar a la app y otro con su pack.`,
+  );
+}

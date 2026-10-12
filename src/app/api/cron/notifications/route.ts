@@ -17,6 +17,7 @@ import {
   formationEmail,
   auditionEmail,
   referralRewardEmail,
+  studentWelcomeEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -223,6 +224,8 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
         subscribed: p.subscribed === true,
       });
     }
+    case "student_welcome":
+      return studentWelcomeEmail(studio, n.student_name, { email: n.to_address, hasAccount: p.has_account === true });
     case "staff_invite": {
       const token = str("token");
       if (!token) return null;

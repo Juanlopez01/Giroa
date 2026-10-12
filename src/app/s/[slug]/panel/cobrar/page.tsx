@@ -12,12 +12,12 @@ import { pendingCharges } from "@/lib/charge.server";
 import { Avatar } from "@/components/ui/avatar";
 import { Field, Input, Select } from "@/components/ui/field";
 import { ChargeForm, PayPendingButtons } from "./charge-form";
-import { payPending, sellClass, sellGift, sellPack, sellTickets } from "./actions";
+import { payPending, sellClass, sellGift, sellPack, sellPackToNewStudent, sellTickets } from "./actions";
 
 export const metadata: Metadata = { title: "Cobrar" };
 
-type Tab = "pack" | "clase" | "entrada" | "regalo";
-const TAB_LABEL: Record<Tab, string> = { pack: "Pack", clase: "Clase suelta", entrada: "Entrada", regalo: "Gift card" };
+type Tab = "pack" | "nuevo" | "clase" | "entrada" | "regalo";
+const TAB_LABEL: Record<Tab, string> = { pack: "Pack", nuevo: "Pack (alumno nuevo)", clase: "Clase suelta", entrada: "Entrada", regalo: "Gift card" };
 const EXTERNAL = "externo";
 
 export default async function ChargePage({ params, searchParams }: PageProps<"/s/[slug]/panel/cobrar">) {
@@ -120,7 +120,7 @@ export default async function ChargePage({ params, searchParams }: PageProps<"/s
   if (studentId && !student) notFound();
 
   const tabs: Tab[] = [
-    ...(student ? (["pack"] as const) : []),
+    ...(student ? (["pack"] as const) : (["nuevo"] as const)),
     ...(student && (dropIn || specials) ? (["clase"] as const) : []),
     ...(ticketsOn ? (["entrada"] as const) : []),
     ...(giftsOn ? (["regalo"] as const) : []),
@@ -130,7 +130,7 @@ export default async function ChargePage({ params, searchParams }: PageProps<"/s
 
   const [pending, packs, partners, sessions, tickets] = await Promise.all([
     student ? pendingCharges(studio.id, student.id, tz) : Promise.resolve([]),
-    tab === "pack" || tab === "regalo"
+    tab === "pack" || tab === "nuevo" || tab === "regalo"
       ? supabase
           .from("pack_products")
           .select("id, name, price_cents, is_couple")
@@ -289,6 +289,44 @@ export default async function ChargePage({ params, searchParams }: PageProps<"/s
                     Crear un pack
                   </Link>
                 </p>
+              )
+            ) : null}
+
+            {tab === "nuevo" && !student ? (
+              packs.length ? (
+                <ChargeForm action={sellPackToNewStudent.bind(null, slug)} submitLabel="Darlo de alta y cobrar">
+                  <p className="text-sm text-muted">
+                    Lo damos de alta con su email y le llegan dos mails: uno para entrar a la app (sin contraseña) y otro con su pack.
+                    Si ese email ya es de un alumno, le cargamos el pack a esa ficha.
+                  </p>
+                  <Field label="Nombre y apellido">
+                    <Input name="fullName" required maxLength={120} />
+                  </Field>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Email">
+                      <Input name="email" type="email" inputMode="email" required />
+                    </Field>
+                    <Field label="Celular" hint="Opcional">
+                      <Input name="phone" type="tel" inputMode="tel" />
+                    </Field>
+                  </div>
+                  <Field label="Pack">
+                    <Select name="packId" defaultValue="" required>
+                      <option value="" disabled>
+                        Elegí el pack
+                      </option>
+                      {packs
+                        .filter((p) => !p.is_couple)
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} · {formatArs(p.price_cents)}
+                          </option>
+                        ))}
+                    </Select>
+                  </Field>
+                </ChargeForm>
+              ) : (
+                <p className="text-muted">No tenés packs activos.</p>
               )
             ) : null}
 

@@ -51,6 +51,15 @@ export function StudentForm({ action, initial, askRole, submitLabel }: Props) {
         </Field>
       ) : null}
       <FormMessage ok={state.ok} message={state.message} />
+      {!initial ? (
+        <label className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4">
+          <input type="checkbox" name="welcome" defaultChecked className="mt-1 h-5 w-5 accent-[var(--brand)]" />
+          <span>
+            <span className="block font-medium">Mandarle un mail de bienvenida</span>
+            <span className="block text-sm text-muted">Si tiene email, le explicamos cómo entrar a la app para reservar y ver su saldo.</span>
+          </span>
+        </label>
+      ) : null}
       <Button type="submit" disabled={pending}>
         {pending ? "Guardando…" : submitLabel}
       </Button>

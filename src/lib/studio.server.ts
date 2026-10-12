@@ -26,7 +26,7 @@ export const getStudioBySlug = cache(async (slug: string): Promise<PublicStudio 
 });
 
 /** Ficha de alumno del usuario en el estudio, o null si todavía no se sumó. */
-export const getMyStudent = cache(async (studioId: string, userId: string) => {
+export async function fetchMyStudent(studioId: string, userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("students")
@@ -35,7 +35,10 @@ export const getMyStudent = cache(async (studioId: string, userId: string) => {
     .eq("user_id", userId)
     .maybeSingle();
   return data;
-});
+}
+
+/** fetchMyStudent memoizado por request. */
+export const getMyStudent = cache(fetchMyStudent);
 
 /** Membresía del usuario en el estudio (rol, id y permiso de cobro), o null si no es staff. */
 export const getMyMembership = cache(async (studioId: string, userId: string) => {

@@ -139,6 +139,9 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Cobrar (`/panel/cobrar`, staff con permiso de cobro): una sola pantalla para el mostrador. Elegís alumno (o "no es alumno"),
   ve lo pendiente (`src/lib/charge.server.ts`: cuotas de formación, clases reservadas sin pagar, aranceles) y vende pack, clase
   suelta, entrada o gift card. Sin RPC nuevas: usa las de siempre (`record_manual_payment`, `sell_class_manual`, etc.).
+- Alumno cargado por el estudio (mostrador o alta): `send_student_welcome` encola el mail `student_welcome` (una vez por
+  alumno, lo pide el staff: no es trigger para no mandarle a toda una importación). Al entrar por primera vez con ese email,
+  `requireStudent` llama a `join_studio` sin nombre, que vincula la ficha sola (sin pasar por "Sumate").
 - Al llegar al límite de alumnos activos del plan: se avisa en el panel
   (`studio_usage.at_limit`) y se **bloquean las altas** de alumnos nuevos.
   Nunca se bloquean reservas de alumnos existentes.

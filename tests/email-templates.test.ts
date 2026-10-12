@@ -145,3 +145,14 @@ describe("founderLeadEmail", () => {
     expect(m.text).toContain("Es: Estudio");
   });
 });
+
+describe("studentWelcomeEmail", () => {
+  it("explica cómo entrar con su email y escapa los datos", async () => {
+    const { studentWelcomeEmail } = await import("@/lib/email/templates");
+    const m = studentWelcomeEmail(studio, "Nadia Pérez", { email: "nadia@test.com", hasAccount: false });
+    expect(m.subject).toBe("¡Bienvenido/a a Tango del Sur!");
+    expect(m.html).toContain("nadia@test.com");
+    expect(m.html).toContain("https://demo.giroa.com.ar/ingresar?next=/app");
+    expect(studentWelcomeEmail(studio, null, { email: "x@y.com", hasAccount: true }).text).toContain("Ya tenés tu cuenta");
+  });
+});

@@ -2197,6 +2197,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"send_student_welcome":
+{ Args: { "p_student_id": string }; Returns: boolean
+                           },
 "set_audition_result":
 { Args: { "p_application_id": string,"p_notes"?: string,"p_result": Database["public"]['Enums']["audition_application_status"] }; Returns: {
               "answers": NonNullable<Json>,

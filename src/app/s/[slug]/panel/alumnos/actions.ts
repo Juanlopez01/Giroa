@@ -42,6 +42,12 @@ export async function createStudent(slug: string, _prev: ActionState, formData: 
     .single();
   if (error) return studentError(error, "createStudent");
 
+  // "Mandarle un mail de bienvenida": entra a la app con su email (no frena el alta si falla).
+  if (formData.get("welcome") === "on" && parsed.data.email) {
+    const { error: mailError } = await supabase.rpc("send_student_welcome", { p_student_id: data.id });
+    if (mailError) console.error("[createStudent.welcome]", mailError);
+  }
+
   revalidatePath(`/s/${slug}/panel/alumnos`);
   redirect(`/panel/alumnos/${data.id}?nuevo=1`);
 }

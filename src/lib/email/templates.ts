@@ -332,3 +332,15 @@ export function founderLeadEmail(l: FounderLead): EmailContent {
   const text = [`Nuevo contacto: ${who}`, "", ...filled.map(([k, v]) => `${k}: ${v}`)].join("\n");
   return { subject: `Nuevo fundador: ${who}`, html, text };
 }
+
+/** Bienvenida a un alumno que cargó el estudio: ya tiene su lugar y entra a la app con su email. */
+export function studentWelcomeEmail(studio: StudioInfo, studentName: string | null, d: { email: string; hasAccount: boolean }): EmailContent {
+  const paragraphs = [
+    hola(studentName),
+    `${esc(studio.name)} te sumó como alumno/a. Desde la app ves tus clases disponibles, reservás y te das el presente.`,
+    d.hasAccount
+      ? "Ya tenés tu cuenta: entrá como siempre."
+      : `Para entrar, poné tu email (<strong>${esc(d.email)}</strong>) y te llega un link. No hace falta contraseña.`,
+  ];
+  return build(studio, `¡Bienvenido/a a ${studio.name}!`, paragraphs, { label: "Entrar a la app", href: studio.url("/ingresar?next=/app") });
+}
