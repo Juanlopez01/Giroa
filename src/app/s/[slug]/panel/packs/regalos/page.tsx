@@ -117,10 +117,20 @@ export default async function GiftCardsPage({ params }: PageProps<"/s/[slug]/pan
             <p className="text-muted">Todavía no se vendieron gift cards.</p>
           )}
 
-          {allowed && canTakePayments && packs?.length ? (
+          {allowed && canTakePayments ? (
             <section className="space-y-3 border-t border-border pt-6">
               <h2 className="text-lg font-semibold">Vender en el mostrador</h2>
-              <SellGiftForm action={sellGiftCard.bind(null, slug)} packs={packs.map((p) => ({ id: p.id, name: p.name, priceCents: p.price_cents }))} />
+              {packs?.length ? (
+                <SellGiftForm action={sellGiftCard.bind(null, slug)} packs={packs.map((p) => ({ id: p.id, name: p.name, priceCents: p.price_cents }))} />
+              ) : (
+                <p className="rounded-xl bg-brand/10 px-4 py-3 text-sm">
+                  Para vender gift cards necesitás al menos un pack individual activo: una gift card es un pack para una sola
+                  persona, así que los packs de pareja no se pueden regalar.{" "}
+                  <Link href="/panel/packs/nuevo" className="font-medium underline">
+                    Crear un pack
+                  </Link>
+                </p>
+              )}
             </section>
           ) : null}
         </>
