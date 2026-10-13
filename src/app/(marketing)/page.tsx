@@ -64,7 +64,7 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
     tagline: "Para crecer sin límites",
     features: [
       "Todo lo de Estudio",
-      "Alumnos y formaciones sin límite",
+      "Formaciones sin límite",
       "Liquidación de profes",
       "Certificados de formaciones con QR",
       "Jurado en audiciones",
