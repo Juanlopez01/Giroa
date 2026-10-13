@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { parseArsToCents } from "@/lib/money";
 import { fromSupabaseError, type ActionState } from "@/lib/errors";
 import { loadMonthPayouts } from "@/lib/payouts.server";
+import { parseMonth } from "@/lib/payouts";
 
 export type RuleInput = { payeeName: string; memberId: string; kind: string; value: string };
 
@@ -48,7 +49,7 @@ export async function saveRules(slug: string, offeringId: string, rules: RuleInp
 }
 
 const markSchema = z.object({
-  month: z.string().regex(/^d{4}-(0[1-9]|1[0-2])$/),
+  month: z.string().refine((v) => parseMonth(v) !== null, "Elegí un mes."),
   payeeKey: z.string().min(1).max(200),
   method: z.enum(["cash", "transfer"], "Elegí si le pagaste en efectivo o por transferencia."),
 });

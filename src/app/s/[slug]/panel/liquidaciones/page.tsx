@@ -130,6 +130,7 @@ export default async function PayoutsPage({ params, searchParams }: PageProps<"/
                           <span className="block font-medium">{l.title}</span>
                           <span className="block text-muted">
                             {formatDayLabel(toYmd(new Date(l.startsAt), tz))} · {formatTime(l.startsAt, tz)} · {l.present} presentes · {l.rule}
+                            {l.kind === "percent" ? ` (generó ${formatArs(l.revenueCents)})` : ""}
                           </span>
                         </span>
                         <span className="shrink-0 tabular-nums">{formatArs(l.earnedCents)}</span>

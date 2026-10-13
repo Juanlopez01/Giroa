@@ -31,6 +31,7 @@ export type PayoutLine = {
   startsAt: string;
   present: number;
   revenueCents: number;
+  kind: PayoutKind;
   rule: string;
   earnedCents: number;
 };
@@ -53,7 +54,8 @@ export function payeeKey(memberId: string | null, name: string): string {
 export function earned(rule: Pick<PayoutRule, "kind" | "amountCents" | "percent">, s: Pick<PayoutSession, "present" | "revenueCents">): number {
   if (rule.kind === "per_class") return rule.amountCents ?? 0;
   if (rule.kind === "per_student") return (rule.amountCents ?? 0) * s.present;
-  return Math.round((s.revenueCents * (rule.percent ?? 0)) / 100);
+  // El porcentaje se redondea a pesos enteros (nadie paga centavos).
+  return Math.round((s.revenueCents * (rule.percent ?? 0)) / 10000) * 100;
 }
 
 export function describeRule(rule: Pick<PayoutRule, "kind" | "amountCents" | "percent">): string {
@@ -82,6 +84,7 @@ export function computePayouts(sessions: PayoutSession[], rules: PayoutRule[]): 
         startsAt: s.startsAt,
         present: s.present,
         revenueCents: s.revenueCents,
+        kind: r.kind,
         rule: describeRule(r),
         earnedCents: amount,
       });

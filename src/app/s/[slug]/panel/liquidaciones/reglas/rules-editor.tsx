@@ -8,8 +8,8 @@ import type { RuleInput } from "../actions";
 
 const KINDS = [
   { value: "per_class", label: "Fijo por clase", prefix: "$" },
-  { value: "per_student", label: "Por alumno presente", prefix: "$" },
-  { value: "percent", label: "% de lo que generó la clase", prefix: "%" },
+  { value: "per_student", label: "Por alumno", prefix: "$" },
+  { value: "percent", label: "% de la clase", prefix: "%" },
 ] as const;
 
 /** Los profes de una clase y lo que cobra cada uno. */

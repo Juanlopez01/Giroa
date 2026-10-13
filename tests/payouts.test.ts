@@ -43,6 +43,11 @@ describe("computePayouts", () => {
     expect(lucia.lines[1]).toMatchObject({ rule: `${formatArs(1500000)} por clase`, earnedCents: 1500000 });
   });
 
+  it("el porcentaje se redondea a pesos", () => {
+    const [p] = computePayouts([session("x", tango, "2026-10-01T22:00:00Z", 3, 8553273)], [rules[0]!]);
+    expect(p!.totalCents).toBe(2566000); // 30% de $85.532,73 = $25.659,82 → $25.660
+  });
+
   it("sin reglas no hay nada que liquidar", () => {
     expect(computePayouts(sessions, [])).toEqual([]);
   });
