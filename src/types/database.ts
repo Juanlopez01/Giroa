@@ -252,6 +252,43 @@ isOneToOne: false
       referencedColumns: ["studio_id","id"]
     }
                   ]
+                },"certificates": {
+                  Row: {
+                    "certificate_text": string | null,"code": string,"completed_on": string,"enrollment_id": string,"forced": boolean,"formation_id": string,"formation_title": string,"id": string,"issued_at": string,"issued_by": string | null,"revoke_reason": string | null,"revoked_at": string | null,"signer_name": string | null,"signer_role": string | null,"student_id": string,"student_name": string,"studio_id": string
+                  }
+                  Insert: {
+                    "certificate_text"?: string | null,"code"?: string,"completed_on": string,"enrollment_id": string,"forced"?: boolean,"formation_id": string,"formation_title": string,"id"?: string,"issued_at"?: string,"issued_by"?: string | null,"revoke_reason"?: string | null,"revoked_at"?: string | null,"signer_name"?: string | null,"signer_role"?: string | null,"student_id": string,"student_name": string,"studio_id": string
+                  }
+                  Update: {
+                    "certificate_text"?: string | null,"code"?: string,"completed_on"?: string,"enrollment_id"?: string,"forced"?: boolean,"formation_id"?: string,"formation_title"?: string,"id"?: string,"issued_at"?: string,"issued_by"?: string | null,"revoke_reason"?: string | null,"revoked_at"?: string | null,"signer_name"?: string | null,"signer_role"?: string | null,"student_id"?: string,"student_name"?: string,"studio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "certificates_studio_id_enrollment_id_fkey"
+      columns: ["studio_id","enrollment_id"]
+isOneToOne: false
+      referencedRelation: "formation_enrollments"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "certificates_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "certificates_studio_id_formation_id_fkey"
+      columns: ["studio_id","formation_id"]
+isOneToOne: false
+      referencedRelation: "formations"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "certificates_studio_id_student_id_fkey"
+      columns: ["studio_id","student_id"]
+isOneToOne: false
+      referencedRelation: "students"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
                 },"class_purchases": {
                   Row: {
                     "amount_cents": number,"booking_id": string | null,"created_at": string,"created_by": string | null,"external_reference": string,"hold_expires_at": string | null,"id": string,"method": Database["public"]['Enums']["payment_method"] | null,"mp_payment_id": string | null,"mp_preference_id": string | null,"notes": string | null,"paid_at": string | null,"session_id": string,"status": string,"student_id": string,"studio_id": string,"updated_at": string
@@ -732,13 +769,13 @@ isOneToOne: false
                   ]
                 },"formations": {
                   Row: {
-                    "capacity": number | null,"created_at": string,"description": string | null,"ends_on": string,"enrollment_fee_cents": number,"enrollment_open": boolean,"first_due_on": string | null,"full_payment_cents": number | null,"id": string,"installment_cents": number,"installments_count": number,"min_attendance_pct": number,"requires_approval": boolean,"starts_on": string,"status": Database["public"]['Enums']["formation_status"],"studio_id": string,"title": string,"updated_at": string
+                    "capacity": number | null,"certificate_signer_name": string | null,"certificate_signer_role": string | null,"certificate_text": string | null,"created_at": string,"description": string | null,"ends_on": string,"enrollment_fee_cents": number,"enrollment_open": boolean,"first_due_on": string | null,"full_payment_cents": number | null,"id": string,"installment_cents": number,"installments_count": number,"min_attendance_pct": number,"requires_approval": boolean,"starts_on": string,"status": Database["public"]['Enums']["formation_status"],"studio_id": string,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "capacity"?: number | null,"created_at"?: string,"description"?: string | null,"ends_on": string,"enrollment_fee_cents"?: number,"enrollment_open"?: boolean,"first_due_on"?: string | null,"full_payment_cents"?: number | null,"id"?: string,"installment_cents"?: number,"installments_count"?: number,"min_attendance_pct"?: number,"requires_approval"?: boolean,"starts_on": string,"status"?: Database["public"]['Enums']["formation_status"],"studio_id": string,"title": string,"updated_at"?: string
+                    "capacity"?: number | null,"certificate_signer_name"?: string | null,"certificate_signer_role"?: string | null,"certificate_text"?: string | null,"created_at"?: string,"description"?: string | null,"ends_on": string,"enrollment_fee_cents"?: number,"enrollment_open"?: boolean,"first_due_on"?: string | null,"full_payment_cents"?: number | null,"id"?: string,"installment_cents"?: number,"installments_count"?: number,"min_attendance_pct"?: number,"requires_approval"?: boolean,"starts_on": string,"status"?: Database["public"]['Enums']["formation_status"],"studio_id": string,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "capacity"?: number | null,"created_at"?: string,"description"?: string | null,"ends_on"?: string,"enrollment_fee_cents"?: number,"enrollment_open"?: boolean,"first_due_on"?: string | null,"full_payment_cents"?: number | null,"id"?: string,"installment_cents"?: number,"installments_count"?: number,"min_attendance_pct"?: number,"requires_approval"?: boolean,"starts_on"?: string,"status"?: Database["public"]['Enums']["formation_status"],"studio_id"?: string,"title"?: string,"updated_at"?: string
+                    "capacity"?: number | null,"certificate_signer_name"?: string | null,"certificate_signer_role"?: string | null,"certificate_text"?: string | null,"created_at"?: string,"description"?: string | null,"ends_on"?: string,"enrollment_fee_cents"?: number,"enrollment_open"?: boolean,"first_due_on"?: string | null,"full_payment_cents"?: number | null,"id"?: string,"installment_cents"?: number,"installments_count"?: number,"min_attendance_pct"?: number,"requires_approval"?: boolean,"starts_on"?: string,"status"?: Database["public"]['Enums']["formation_status"],"studio_id"?: string,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1672,6 +1709,11 @@ isOneToOne: false
 "cancel_session":
 { Args: { "p_reason"?: string,"p_session_id": string }; Returns: number
                            },
+"certificate_status":
+{ Args: { "p_formation_id": string }; Returns: {
+              "attendance_pct": number,"certificate_id": string,"code": string,"eligible": boolean,"enrollment_id": string,"forced": boolean,"issued_at": string,"reasons": Json,"revoked_at": string,"student_name": string
+            }[]
+                           },
 "check_in":
 { Args: { "p_session_id": string,"p_student_id": string }; Returns: {
               "cancelled_at": string | null,
@@ -1955,6 +1997,9 @@ isOneToOne: false
 "generate_sessions":
 { Args: { "p_from"?: string,"p_studio_id": string,"p_weeks"?: number }; Returns: number
                            },
+"get_certificate":
+{ Args: { "p_code": string }; Returns: Json
+                           },
 "get_event_order":
 { Args: { "p_access_token": string }; Returns: Json
                            },
@@ -2035,6 +2080,35 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"issue_certificate":
+{ Args: { "p_enrollment_id": string,"p_force"?: boolean }; Returns: {
+              "certificate_text": string | null,
+"code": string,
+"completed_on": string,
+"enrollment_id": string,
+"forced": boolean,
+"formation_id": string,
+"formation_title": string,
+"id": string,
+"issued_at": string,
+"issued_by": string | null,
+"revoke_reason": string | null,
+"revoked_at": string | null,
+"signer_name": string | null,
+"signer_role": string | null,
+"student_id": string,
+"student_name": string,
+"studio_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "certificates"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"issue_certificates":
+{ Args: { "p_formation_id": string }; Returns: number
+                           },
 "join_studio":
 { Args: { "p_full_name": string,"p_phone"?: string,"p_role"?: Database["public"]['Enums']["dance_role"],"p_slug": string }; Returns: {
               "created_at": string,
@@ -2202,6 +2276,32 @@ isOneToOne: false
 "remove_schedule":
 { Args: { "p_schedule_id": string }; Returns: number
                            },
+"revoke_certificate":
+{ Args: { "p_certificate_id": string,"p_reason"?: string }; Returns: {
+              "certificate_text": string | null,
+"code": string,
+"completed_on": string,
+"enrollment_id": string,
+"forced": boolean,
+"formation_id": string,
+"formation_title": string,
+"id": string,
+"issued_at": string,
+"issued_by": string | null,
+"revoke_reason": string | null,
+"revoked_at": string | null,
+"signer_name": string | null,
+"signer_role": string | null,
+"student_id": string,
+"student_name": string,
+"studio_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "certificates"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "rotate_checkin_code":
 { Args: { "p_studio_id": string }; Returns: string
                            },
