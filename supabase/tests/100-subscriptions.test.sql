@@ -40,7 +40,7 @@ select is((tests.q('authenticated', '00000000-0000-0000-0000-0000000000a1',
   'anual: se pagan 10 meses, y sin código se aplica el precio fundador');
 select is((tests.q('authenticated', '00000000-0000-0000-0000-0000000000a1',
   $$select (public.giroa_quote('pro', 'monthly') ->> 'discount_pct') || '/' || (public.giroa_quote('pro', 'monthly') ->> 'founder') as a$$) -> 0 ->> 'a'),
-  '0/false', 'Pro no tiene precio fundador');
+  '50/true', 'Pro también tiene precio fundador');
 select is((tests.q('authenticated', '00000000-0000-0000-0000-0000000000a1',
   $$select public.giroa_quote('inicial', 'monthly', 'fundador-inicial') ->> 'amount_cents' as a$$) -> 0 ->> 'a'), '1495000',
   'con el código de fundador de su plan paga la mitad');
@@ -50,7 +50,7 @@ select is(tests.err_message('authenticated', '00000000-0000-0000-0000-0000000000
   $$select public.giroa_quote('inicial', 'monthly', 'FUNDADOR-PROFE')$$), 'Este código es para el plan Profe.', 'y dice para qué plan es');
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1',
   $$select public.giroa_quote('inicial', 'monthly', 'FUNDADOR')$$), 'invalid_coupon', 'el FUNDADOR compartido ya no vale');
-select is(tests.count('anon', null, $$select * from public.giroa_founder_spots() where spots_left = 10$$), 3,
+select is(tests.count('anon', null, $$select * from public.giroa_founder_spots() where spots_left = 10$$), 4,
   'la landing ve los 10 lugares de fundador de cada plan');
 update public.giroa_coupons set used_count = 10 where code = 'FUNDADOR-ESTUDIO';
 select is((tests.q('authenticated', '00000000-0000-0000-0000-0000000000a1',
