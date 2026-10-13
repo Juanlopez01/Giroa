@@ -98,9 +98,10 @@ export async function cheapestPlanWith(feature: Feature): Promise<string | null>
 
 /**
  * Planes que se muestran como "Próximamente": no se pueden contratar ni elegir
- * para la prueba hasta que tengan sus funciones propias.
+ * para la prueba hasta que tengan sus funciones propias. Hoy ninguno (Pro se
+ * abrió con liquidación de profes y certificados).
  */
-export const COMING_SOON_PLANS: readonly string[] = ["pro"];
+export const COMING_SOON_PLANS: readonly string[] = [];
 export function isPlanComingSoon(plan: string): boolean {
   return COMING_SOON_PLANS.includes(plan);
 }

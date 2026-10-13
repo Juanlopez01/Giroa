@@ -17,8 +17,7 @@ export const metadata: Metadata = {
 
 // Lo que todavía no está construido se muestra como "Próximamente": nadie paga por algo que no existe.
 const SOON = new Set([
-  "Certificados y jurado en audiciones",
-  "Liquidación de profes",
+  "Jurado en audiciones",
   "Multi-sede y dominio propio",
   "Facturación ARCA",
 ]);
@@ -65,8 +64,10 @@ const PLAN_COPY: Record<string, { tagline: string; features: string[]; highlight
     tagline: "Para crecer sin límites",
     features: [
       "Todo lo de Estudio",
-      "Certificados y jurado en audiciones",
+      "Alumnos y formaciones sin límite",
       "Liquidación de profes",
+      "Certificados de formaciones con QR",
+      "Jurado en audiciones",
       "Multi-sede y dominio propio",
       "Facturación ARCA",
     ],
