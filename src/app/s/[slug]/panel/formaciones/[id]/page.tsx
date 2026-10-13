@@ -94,6 +94,19 @@ export default async function FormationPage({ params, searchParams }: PageProps<
 
       {isAdmin ? (
         <Link
+          href={`/panel/formaciones/${f.id}/certificados`}
+          className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-foreground"
+        >
+          <span>
+            <span className="block font-semibold">Certificados</span>
+            <span className="block text-sm text-muted">Quién cumple los requisitos, emitir y verificar con QR.</span>
+          </span>
+          <span className="shrink-0 font-medium text-brand">Ver →</span>
+        </Link>
+      ) : null}
+
+      {isAdmin ? (
+        <Link
           href={`/panel/formaciones/${f.id}/audicion`}
           className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-foreground"
         >
