@@ -1036,6 +1036,37 @@ isOneToOne: false
       referencedColumns: ["studio_id","id"]
     }
                   ]
+                },"payout_rules": {
+                  Row: {
+                    "amount_cents": number | null,"created_at": string,"id": string,"kind": Database["public"]['Enums']["payout_kind"],"member_id": string | null,"offering_id": string,"payee_name": string,"percent": number | null,"studio_id": string
+                  }
+                  Insert: {
+                    "amount_cents"?: number | null,"created_at"?: string,"id"?: string,"kind": Database["public"]['Enums']["payout_kind"],"member_id"?: string | null,"offering_id": string,"payee_name": string,"percent"?: number | null,"studio_id": string
+                  }
+                  Update: {
+                    "amount_cents"?: number | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["payout_kind"],"member_id"?: string | null,"offering_id"?: string,"payee_name"?: string,"percent"?: number | null,"studio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payout_rules_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payout_rules_studio_id_member_id_fkey"
+      columns: ["studio_id","member_id"]
+isOneToOne: false
+      referencedRelation: "studio_members"
+      referencedColumns: ["studio_id","id"]
+    },{
+      foreignKeyName: "payout_rules_studio_id_offering_id_fkey"
+      columns: ["studio_id","offering_id"]
+isOneToOne: false
+      referencedRelation: "offerings"
+      referencedColumns: ["studio_id","id"]
+    }
+                  ]
                 },"plan_features": {
                   Row: {
                     "feature": string,"plan": Database["public"]['Enums']["studio_plan"]
@@ -1378,6 +1409,31 @@ isOneToOne: true
 isOneToOne: false
       referencedRelation: "plans"
       referencedColumns: ["key"]
+    }
+                  ]
+                },"teacher_payouts": {
+                  Row: {
+                    "amount_cents": number,"breakdown": NonNullable<Json>,"id": string,"member_id": string | null,"method": Database["public"]['Enums']["payment_method"],"note": string | null,"paid_at": string,"paid_by": string | null,"payee_key": string,"payee_name": string,"period": string,"studio_id": string
+                  }
+                  Insert: {
+                    "amount_cents": number,"breakdown"?: NonNullable<Json>,"id"?: string,"member_id"?: string | null,"method": Database["public"]['Enums']["payment_method"],"note"?: string | null,"paid_at"?: string,"paid_by"?: string | null,"payee_key": string,"payee_name": string,"period": string,"studio_id": string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"breakdown"?: NonNullable<Json>,"id"?: string,"member_id"?: string | null,"method"?: Database["public"]['Enums']["payment_method"],"note"?: string | null,"paid_at"?: string,"paid_by"?: string | null,"payee_key"?: string,"payee_name"?: string,"period"?: string,"studio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "teacher_payouts_studio_id_fkey"
+      columns: ["studio_id"]
+isOneToOne: false
+      referencedRelation: "studios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teacher_payouts_studio_id_member_id_fkey"
+      columns: ["studio_id","member_id"]
+isOneToOne: false
+      referencedRelation: "studio_members"
+      referencedColumns: ["studio_id","id"]
     }
                   ]
                 }
@@ -2026,6 +2082,27 @@ isOneToOne: false
               "booked_count": number,"capacity": number,"description": string,"discipline_key": string,"discipline_name": string,"ends_at": string,"follower_count": number,"kind": Database["public"]['Enums']["offering_kind"],"leader_count": number,"level": string,"offering_id": string,"pack_allowed": boolean,"price_cents": number,"role_balance": boolean,"role_balance_max_diff": number,"session_id": string,"spots_left": number,"starts_at": string,"status": Database["public"]['Enums']["session_status"],"teacher_name": string,"title": string
             }[]
                            },
+"mark_payout_paid":
+{ Args: { "p_amount_cents": number,"p_breakdown": Json,"p_member_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_note"?: string,"p_payee_name": string,"p_period": string,"p_studio_id": string }; Returns: {
+              "amount_cents": number,
+"breakdown": NonNullable<Json>,
+"id": string,
+"member_id": string | null,
+"method": Database["public"]['Enums']["payment_method"],
+"note": string | null,
+"paid_at": string,
+"paid_by": string | null,
+"payee_key": string,
+"payee_name": string,
+"period": string,
+"studio_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "teacher_payouts"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "mp_apply_audition_payment":
 { Args: { "p_amount_cents": number,"p_external_reference": string,"p_mp_payment_id": string,"p_mp_status": string }; Returns: Json
                            },
@@ -2068,6 +2145,11 @@ isOneToOne: false
                            },
 "notify_new_material":
 { Args: { "p_id": string,"p_kind": string }; Returns: number
+                           },
+"payout_sessions":
+{ Args: { "p_from": string,"p_studio_id": string,"p_to": string }; Returns: {
+              "offering_id": string,"present": number,"revenue_cents": number,"session_id": string,"starts_at": string,"title": string,"used": number
+            }[]
                            },
 "preview_coupon":
 { Args: { "p_base_cents": number,"p_code": string,"p_studio_id": string,"p_target": Database["public"]['Enums']["coupon_target"] }; Returns: Json
@@ -2233,6 +2315,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"set_payout_rules":
+{ Args: { "p_offering_id": string,"p_rules": Json }; Returns: number
+                           },
 "start_membership":
 { Args: { "p_pack_product_id": string }; Returns: {
               "amount_cents": number,
@@ -2272,6 +2357,9 @@ isOneToOne: false
                            },
 "studio_usage":
 { Args: { "p_studio_id": string }; Returns: Json
+                           },
+"undo_payout":
+{ Args: { "p_payout_id": string }; Returns: boolean
                            },
 "unfreeze_due_packs":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -2344,7 +2432,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "assessment_kind": "grade"|"pass_fail","audition_application_status": "pending_payment"|"submitted"|"admitted"|"waitlisted"|"rejected"|"cancelled","audition_field_kind": "short_text"|"long_text"|"choice"|"yes_no","audition_status": "draft"|"open"|"closed","billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","coupon_kind": "percent"|"amount","coupon_redemption_status": "pending"|"confirmed"|"void","coupon_target": "all"|"packs"|"events","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","enrollment_status": "applied"|"approved"|"enrolled"|"rejected"|"withdrawn","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","formation_charge_kind": "enrollment"|"installment"|"full","formation_charge_status": "pending"|"paid"|"cancelled","formation_status": "draft"|"published"|"archived","gift_card_status": "pending"|"active"|"redeemed"|"cancelled"|"expired","member_role": "owner"|"admin"|"teacher","membership_status": "pending"|"active"|"past_due"|"cancelled","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","referral_status": "pending"|"rewarded"|"void","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
+            "assessment_kind": "grade"|"pass_fail","audition_application_status": "pending_payment"|"submitted"|"admitted"|"waitlisted"|"rejected"|"cancelled","audition_field_kind": "short_text"|"long_text"|"choice"|"yes_no","audition_status": "draft"|"open"|"closed","billing_cycle": "monthly"|"annual","booking_status": "booked"|"attended"|"cancelled"|"no_show","coupon_kind": "percent"|"amount","coupon_redemption_status": "pending"|"confirmed"|"void","coupon_target": "all"|"packs"|"events","credit_event_kind": "grant"|"consume"|"refund"|"adjust"|"expire","dance_role": "leader"|"follower","enrollment_status": "applied"|"approved"|"enrolled"|"rejected"|"withdrawn","event_order_status": "pending"|"paid"|"expired"|"cancelled"|"refunded","event_status": "draft"|"published"|"cancelled","event_ticket_status": "valid"|"cancelled","formation_charge_kind": "enrollment"|"installment"|"full","formation_charge_status": "pending"|"paid"|"cancelled","formation_status": "draft"|"published"|"archived","gift_card_status": "pending"|"active"|"redeemed"|"cancelled"|"expired","member_role": "owner"|"admin"|"teacher","membership_status": "pending"|"active"|"past_due"|"cancelled","offering_kind": "regular"|"special"|"formation","pack_status": "active"|"frozen"|"expired"|"cancelled","payment_method": "mercadopago"|"cash"|"transfer","payment_purpose": "pack","payment_status": "pending"|"approved"|"rejected"|"refunded"|"cancelled","payout_kind": "per_class"|"per_student"|"percent","referral_status": "pending"|"rewarded"|"void","session_status": "scheduled"|"cancelled","studio_plan": "profe"|"inicial"|"estudio"|"pro","subscription_status": "trialing"|"active"|"past_due"|"cancelled","waitlist_status": "waiting"|"booked"|"left"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2464,7 +2552,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "assessment_kind": ["grade", "pass_fail"],"audition_application_status": ["pending_payment", "submitted", "admitted", "waitlisted", "rejected", "cancelled"],"audition_field_kind": ["short_text", "long_text", "choice", "yes_no"],"audition_status": ["draft", "open", "closed"],"billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"coupon_kind": ["percent", "amount"],"coupon_redemption_status": ["pending", "confirmed", "void"],"coupon_target": ["all", "packs", "events"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"enrollment_status": ["applied", "approved", "enrolled", "rejected", "withdrawn"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"formation_charge_kind": ["enrollment", "installment", "full"],"formation_charge_status": ["pending", "paid", "cancelled"],"formation_status": ["draft", "published", "archived"],"gift_card_status": ["pending", "active", "redeemed", "cancelled", "expired"],"member_role": ["owner", "admin", "teacher"],"membership_status": ["pending", "active", "past_due", "cancelled"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"referral_status": ["pending", "rewarded", "void"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
+            "assessment_kind": ["grade", "pass_fail"],"audition_application_status": ["pending_payment", "submitted", "admitted", "waitlisted", "rejected", "cancelled"],"audition_field_kind": ["short_text", "long_text", "choice", "yes_no"],"audition_status": ["draft", "open", "closed"],"billing_cycle": ["monthly", "annual"],"booking_status": ["booked", "attended", "cancelled", "no_show"],"coupon_kind": ["percent", "amount"],"coupon_redemption_status": ["pending", "confirmed", "void"],"coupon_target": ["all", "packs", "events"],"credit_event_kind": ["grant", "consume", "refund", "adjust", "expire"],"dance_role": ["leader", "follower"],"enrollment_status": ["applied", "approved", "enrolled", "rejected", "withdrawn"],"event_order_status": ["pending", "paid", "expired", "cancelled", "refunded"],"event_status": ["draft", "published", "cancelled"],"event_ticket_status": ["valid", "cancelled"],"formation_charge_kind": ["enrollment", "installment", "full"],"formation_charge_status": ["pending", "paid", "cancelled"],"formation_status": ["draft", "published", "archived"],"gift_card_status": ["pending", "active", "redeemed", "cancelled", "expired"],"member_role": ["owner", "admin", "teacher"],"membership_status": ["pending", "active", "past_due", "cancelled"],"offering_kind": ["regular", "special", "formation"],"pack_status": ["active", "frozen", "expired", "cancelled"],"payment_method": ["mercadopago", "cash", "transfer"],"payment_purpose": ["pack"],"payment_status": ["pending", "approved", "rejected", "refunded", "cancelled"],"payout_kind": ["per_class", "per_student", "percent"],"referral_status": ["pending", "rewarded", "void"],"session_status": ["scheduled", "cancelled"],"studio_plan": ["profe", "inicial", "estudio", "pro"],"subscription_status": ["trialing", "active", "past_due", "cancelled"],"waitlist_status": ["waiting", "booked", "left"]
           }
         }
 } as const
