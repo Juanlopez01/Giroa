@@ -40,10 +40,13 @@ function readPack(formData: FormData) {
     price: formData.get("price") ?? "",
     isCouple: formData.get("isCouple"),
     isMembership: formData.get("isMembership"),
+    membershipOnly: formData.get("membershipOnly"),
   });
 }
 
 async function toRow(studioId: string, input: PackInput) {
+  // El abono es de un alumno solo (no de pareja) y solo si el plan lo incluye.
+  const isMembership = input.isMembership && !input.isCouple && (await can(studioId, "memberships"));
   return {
     name: input.name,
     description: input.description,
@@ -52,8 +55,8 @@ async function toRow(studioId: string, input: PackInput) {
     price_cents: input.price,
     // Solo si el estudio da alguna disciplina con packs de pareja.
     is_couple: input.isCouple && (await studioOffersCouplePacks(studioId)),
-    // El abono es de un alumno solo (no de pareja) y solo si el plan lo incluye.
-    is_membership: input.isMembership && !input.isCouple && (await can(studioId, "memberships")),
+    is_membership: isMembership,
+    membership_only: isMembership && input.membershipOnly,
   };
 }
 

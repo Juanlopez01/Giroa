@@ -30,6 +30,7 @@ export default async function GiftPage({ params }: PageProps<"/s/[slug]/regalar"
       .eq("studio_id", studio.id)
       .eq("is_active", true)
       .eq("is_couple", false)
+      .eq("membership_only", false)
       .gt("price_cents", 0)
       .order("sort")
       .order("price_cents"),

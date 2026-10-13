@@ -970,13 +970,13 @@ isOneToOne: false
                   ]
                 },"pack_products": {
                   Row: {
-                    "created_at": string,"credits": number | null,"description": string | null,"id": string,"is_active": boolean,"is_couple": boolean,"is_membership": boolean,"name": string,"price_cents": number,"rules": NonNullable<Json>,"sort": number,"studio_id": string,"updated_at": string,"validity_days": number
+                    "created_at": string,"credits": number | null,"description": string | null,"id": string,"is_active": boolean,"is_couple": boolean,"is_membership": boolean,"membership_only": boolean,"name": string,"price_cents": number,"rules": NonNullable<Json>,"sort": number,"studio_id": string,"updated_at": string,"validity_days": number
                   }
                   Insert: {
-                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"is_membership"?: boolean,"name": string,"price_cents": number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id": string,"updated_at"?: string,"validity_days": number
+                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"is_membership"?: boolean,"membership_only"?: boolean,"name": string,"price_cents": number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id": string,"updated_at"?: string,"validity_days": number
                   }
                   Update: {
-                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"is_membership"?: boolean,"name"?: string,"price_cents"?: number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id"?: string,"updated_at"?: string,"validity_days"?: number
+                    "created_at"?: string,"credits"?: number | null,"description"?: string | null,"id"?: string,"is_active"?: boolean,"is_couple"?: boolean,"is_membership"?: boolean,"membership_only"?: boolean,"name"?: string,"price_cents"?: number,"rules"?: NonNullable<Json>,"sort"?: number,"studio_id"?: string,"updated_at"?: string,"validity_days"?: number
                   }
                   Relationships: [
                     {

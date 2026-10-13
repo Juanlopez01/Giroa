@@ -15,6 +15,7 @@ export type PackFormValues = {
   price: string;
   isCouple: boolean;
   isMembership?: boolean;
+  membershipOnly?: boolean;
   rules?: PackRules;
 };
 
@@ -32,6 +33,7 @@ type Props = {
 export function PackForm({ action, initial, allowCouple, submitLabel, allowMembership = false, ruleOptions = null }: Props) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
   const [unlimited, setUnlimited] = useState(initial ? initial.credits === null : false);
+  const [membership, setMembership] = useState(initial?.isMembership ?? false);
   const errors = state.fieldErrors ?? {};
 
   return (
@@ -110,22 +112,41 @@ export function PackForm({ action, initial, allowCouple, submitLabel, allowMembe
       ) : null}
 
       {allowMembership ? (
-        <label className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4">
-          <input
-            type="checkbox"
-            name="isMembership"
-            defaultChecked={initial?.isMembership}
-            className="mt-1 h-5 w-5 accent-[var(--brand)]"
-          />
-          <span>
-            <span className="block font-medium">Abono mensual</span>
-            <span className="block text-sm text-muted">
-              Tus alumnos se pueden abonar: Mercado Pago les cobra el precio todos los meses y cada cobro les carga
-              las clases del mes. Lo que no usan no se acumula. Si después cambiás el precio, los abonos que ya
-              existen siguen con el precio anterior.
+        <div className="space-y-3 rounded-2xl border border-border bg-surface p-4">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              name="isMembership"
+              defaultChecked={initial?.isMembership}
+              onChange={(e) => setMembership(e.target.checked)}
+              className="mt-1 h-5 w-5 accent-[var(--brand)]"
+            />
+            <span>
+              <span className="block font-medium">Abono mensual</span>
+              <span className="block text-sm text-muted">
+                Tus alumnos se pueden abonar: Mercado Pago les cobra el precio todos los meses y cada cobro les carga
+                las clases del mes. Lo que no usan no se acumula. Si después cambiás el precio, los abonos que ya
+                existen siguen con el precio anterior.
+              </span>
             </span>
-          </span>
-        </label>
+          </label>
+          {membership ? (
+            <label className="flex items-start gap-3 border-t border-border pt-3">
+              <input
+                type="checkbox"
+                name="membershipOnly"
+                defaultChecked={initial?.membershipOnly}
+                className="mt-1 h-5 w-5 accent-[var(--brand)]"
+              />
+              <span>
+                <span className="block font-medium">Vender solo como abono</span>
+                <span className="block text-sm text-muted">
+                  Online no se puede comprar suelto ni regalar: solo abonarse. En el mostrador lo podés seguir vendiendo.
+                </span>
+              </span>
+            </label>
+          ) : null}
+        </div>
       ) : null}
 
       <Field label="Descripción" hint="Opcional. La ven tus alumnos al comprar." error={errors.description}>

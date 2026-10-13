@@ -116,6 +116,8 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   los abonos por `mp_preapproval_id` o por el `user_id` del aviso (`mp_connections.mp_user_id`); si no, es una suscripción a
   Giroa. Baja (`cancelMembershipFor`): primero se cancela en MP, después `cancel_membership`. Rebote (`failed_at` pasa de null a
   algo): un trigger encola `membership_failed` (alumno) y `membership_failed_staff` (dueños y encargados), una vez por rebote.
+  `pack_products.membership_only` (requiere `is_membership`): online no se compra suelto ni se regala por MP (triggers en
+  `payments` y `gift_cards`, código `membership_only`); en el mostrador sí se vende.
 - Referidos (`referrals`, Estudio y Pro): cada alumno tiene `students.referral_code` (lo pone un trigger; el panel inserta
   alumnos directo). Link `…/sumate?ref=<código>`; al sumarse, `claim_referral` (solo alumnos nuevos: 7 días y sin pagos).
   El primer pago de pack aprobado del invitado (trigger en `payments`) les da a los dos un pack de regalo de

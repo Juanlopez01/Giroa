@@ -28,7 +28,7 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
   const [{ data: packs }, { data: canPayOnline }, couponsOn, giftsOn, membershipsOn] = await Promise.all([
     supabase
       .from("pack_products")
-      .select("id, name, description, credits, validity_days, price_cents, rules, is_membership")
+      .select("id, name, description, credits, validity_days, price_cents, rules, is_membership, membership_only")
       .eq("studio_id", studio.id)
       .eq("is_active", true)
       .order("sort")
@@ -96,7 +96,7 @@ export default async function StudentPacksPage({ params, searchParams }: PagePro
                   label={`Abonarme · ${formatArs(p.price_cents)} por mes`}
                 />
               ) : null}
-              {canPayOnline ? (
+              {canPayOnline && !p.membership_only ? (
                 <BuyButton
                   label={membershipsOn && p.is_membership ? "Comprar una sola vez" : undefined}
                   buy={buyPack.bind(null, slug, p.id)}

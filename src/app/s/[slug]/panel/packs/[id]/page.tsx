@@ -51,6 +51,7 @@ export default async function PackPage({ params }: PageProps<"/s/[slug]/panel/pa
           price: centsToInput(pack.price_cents),
           isCouple: pack.is_couple,
           isMembership: pack.is_membership,
+          membershipOnly: pack.membership_only,
           rules: parsePackRules(pack.rules),
         }}
       />

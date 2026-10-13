@@ -30,6 +30,7 @@ export const packSchema = z
     }),
     isCouple: z.preprocess((v) => v === "on" || v === true, z.boolean()),
     isMembership: z.preprocess((v) => v === "on" || v === true, z.boolean()),
+    membershipOnly: z.preprocess((v) => v === "on" || v === true, z.boolean()),
   })
   .superRefine((p, ctx) => {
     if (!p.unlimited && (p.credits === undefined || p.credits < 1 || p.credits > 1000)) {
