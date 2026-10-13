@@ -261,7 +261,7 @@ function Stat({ label, value, hint, href, pct }: { label: string; value: string;
 
 function FollowUpList({ title, people, message }: { title: string; people: FollowUp[]; message: (p: FollowUp) => string }) {
   return (
-    <div className="space-y-1 rounded-2xl border border-border bg-surface p-4">
+    <div className="min-w-0 space-y-1 rounded-2xl border border-border bg-surface p-4">
       <p className="font-semibold">
         {title} <span className="font-normal text-muted">· {people.length}</span>
       </p>
