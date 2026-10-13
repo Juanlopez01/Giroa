@@ -370,3 +370,17 @@ export function membershipFailedStaffEmail(
   paragraphs.push("MP lo reintenta solo. Ya le avisamos por mail; si querés, escribile o cobrale el mes en el mostrador.");
   return build(studio, `Rebotó el abono de ${d.studentName}`, paragraphs, { label: "Ver abonos", href: studio.url("/panel/pagos/abonos") });
 }
+
+export function materialNewEmail(
+  studio: StudioInfo,
+  studentName: string | null,
+  d: { title: string; formation: { id: string; title: string } | null },
+): EmailContent {
+  const where = d.formation ? `al material de <strong>${esc(d.formation.title)}</strong>` : "a la biblioteca";
+  return build(
+    studio,
+    `Material nuevo: ${d.title}`,
+    [hola(studentName), `${esc(studio.name)} sumó <strong>${esc(d.title)}</strong> ${where}.`, "Lo ves en la app cuando quieras."],
+    { label: "Ver el material", href: studio.url(d.formation ? `/app/formaciones/${d.formation.id}` : "/app/biblioteca") },
+  );
+}

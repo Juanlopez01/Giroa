@@ -2066,6 +2066,9 @@ isOneToOne: false
               "dance_role": Database["public"]['Enums']["dance_role"],"position": number,"session_id": string
             }[]
                            },
+"notify_new_material":
+{ Args: { "p_id": string,"p_kind": string }; Returns: number
+                           },
 "preview_coupon":
 { Args: { "p_base_cents": number,"p_code": string,"p_studio_id": string,"p_target": Database["public"]['Enums']["coupon_target"] }; Returns: Json
                            },

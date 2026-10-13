@@ -171,3 +171,16 @@ describe("membershipFailedEmail", () => {
     expect(membershipFailedStaffEmail(studio, { staffName: null, studentName: "Ana", name: "M", amountCents: 1, error: null }).text).not.toContain("Motivo");
   });
 });
+
+describe("materialNewEmail", () => {
+  it("lleva a la biblioteca o a la formación", async () => {
+    const { materialNewEmail } = await import("@/lib/email/templates");
+    const lib = materialNewEmail(studio, "Ana", { title: "Rutina <casa>", formation: null });
+    expect(lib.subject).toBe("Material nuevo: Rutina <casa>");
+    expect(lib.html).toContain("Rutina &lt;casa&gt;");
+    expect(lib.html).toContain("https://demo.giroa.com.ar/app/biblioteca");
+    const f = materialNewEmail(studio, null, { title: "Apunte 1", formation: { id: "f1", title: "Profesorado" } });
+    expect(f.text).toContain("al material de Profesorado");
+    expect(f.html).toContain("https://demo.giroa.com.ar/app/formaciones/f1");
+  });
+});

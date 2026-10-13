@@ -20,6 +20,7 @@ import {
   studentWelcomeEmail,
   membershipFailedEmail,
   membershipFailedStaffEmail,
+  materialNewEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -238,6 +239,15 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
         amountCents: num("amount_cents") ?? 0,
         error: str("error"),
       });
+    case "material_new": {
+      const title = str("title");
+      if (!title) return null;
+      const formationId = str("formation_id");
+      return materialNewEmail(studio, n.student_name, {
+        title,
+        formation: formationId ? { id: formationId, title: str("formation_title") ?? "tu formación" } : null,
+      });
+    }
     case "staff_invite": {
       const token = str("token");
       if (!token) return null;

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireStaff } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrorsFromZod, fromSupabaseError, type ActionState } from "@/lib/errors";
+import { notifyNewMaterial } from "@/lib/material-notify";
 import { isMaterialPath, MATERIAL_MAX_BYTES, MATERIAL_MIME_TYPES, MATERIALS_BUCKET } from "@/lib/materials";
 
 const base = z.object({
@@ -38,7 +39,7 @@ export async function addMaterial(slug: string, formationId: string, _prev: Acti
     return { ok: false, fieldErrors: { file: "No pudimos usar ese archivo. Subilo de nuevo." } };
   }
 
-  const { error } = await supabase.from("formation_materials").insert({
+  const { data: inserted, error } = await supabase.from("formation_materials").insert({
     studio_id: studio.id,
     formation_id: formationId,
     session_id: d.sessionId || null,
@@ -50,7 +51,7 @@ export async function addMaterial(slug: string, formationId: string, _prev: Acti
     mime_type: d.kind === "file" ? d.mimeType : null,
     size_bytes: d.kind === "file" ? d.sizeBytes : null,
     created_by: user.id,
-  });
+  }).select("id").single();
   if (error) {
     // No queda un archivo huérfano en el bucket.
     if (d.kind === "file") await supabase.storage.from(MATERIALS_BUCKET).remove([d.storagePath]);
@@ -58,7 +59,9 @@ export async function addMaterial(slug: string, formationId: string, _prev: Acti
   }
 
   revalidatePath(`/s/${slug}/panel/formaciones/${formationId}`, "layout");
-  return { ok: true, message: d.kind === "file" ? "¡Listo! Subiste el archivo." : "¡Listo! Agregaste el link." };
+  const saved = d.kind === "file" ? "¡Listo! Subiste el archivo." : "¡Listo! Agregaste el link.";
+  if (formData.get("notify") !== "on") return { ok: true, message: saved };
+  return { ok: true, message: `${saved} ${await notifyNewMaterial(supabase, "formation", inserted.id)}` };
 }
 
 export async function deleteMaterial(slug: string, formationId: string, materialId: string): Promise<ActionState> {

@@ -138,7 +138,8 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   (`next.config.ts`: `frame-ancestors 'self'` para todo lo demás). El código para pegar está en Ajustes.
 - Biblioteca (`library`): `library_items` (audiencia 'all' o 'pack' = con pack vigente, `private.library_access`), bucket privado
   `library` (`<studio>/<archivo>`), URLs firmadas de 10 min (`src/lib/library.server.ts`). Formulario compartido con el material
-  de formaciones (`MaterialForm` con `folder` y `bucket`).
+  de formaciones (`MaterialForm` con `folder` y `bucket`). Aviso por mail opcional (check "Avisarles por mail", apagado):
+  `notify_new_material(kind, id)` encola `material_new` solo a quien lo puede ver, una vez por material y alumno.
 - Cobrar (`/panel/cobrar`, staff con permiso de cobro): una sola pantalla para el mostrador. Elegís alumno (o "no es alumno"),
   ve lo pendiente (`src/lib/charge.server.ts`: cuotas de formación, clases reservadas sin pagar, aranceles) y vende pack, clase
   suelta, entrada o gift card. Sin RPC nuevas: usa las de siempre (`record_manual_payment`, `sell_class_manual`, etc.).

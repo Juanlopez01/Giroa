@@ -138,6 +138,13 @@ export function MaterialForm({
         </Field>
       ) : null}
       {children}
+      <label className="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="notify" className="mt-0.5 h-5 w-5 accent-[var(--brand)]" />
+        <span>
+          <span className="block font-medium">Avisarles por mail</span>
+          <span className="block text-muted">Les llega un mail a los alumnos que lo pueden ver. Dejalo apagado si vas a subir varios seguidos.</span>
+        </span>
+      </label>
 
       <FormMessage ok={state.ok} message={state.message} />
       <Button type="submit" disabled={pending || uploading || (kind === "file" && !uploaded)}>
