@@ -384,3 +384,16 @@ export function materialNewEmail(
     { label: "Ver el material", href: studio.url(d.formation ? `/app/formaciones/${d.formation.id}` : "/app/biblioteca") },
   );
 }
+
+export function certificateIssuedEmail(studio: StudioInfo, studentName: string | null, d: { formationTitle: string; code: string }): EmailContent {
+  return build(
+    studio,
+    `¡Tu certificado de ${d.formationTitle}!`,
+    [
+      hola(studentName),
+      `${esc(studio.name)} te emitió el certificado de <strong>${esc(d.formationTitle)}</strong>. ¡Felicitaciones!`,
+      `Lo podés descargar en PDF y compartir el link: tiene un QR y el código <strong>${esc(d.code)}</strong> para que cualquiera lo verifique.`,
+    ],
+    { label: "Ver mi certificado", href: studio.url(`/certificado/${d.code}`) },
+  );
+}

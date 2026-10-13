@@ -84,6 +84,12 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Cupones (`coupons`): `create_pack_payment` y `create_event_order` reciben `p_coupon`; los usos van en
   `coupon_redemptions` (triggers los confirman o anulan según el pago). Gift cards (`gift_cards`): un pack
   de regalo; MP con `external_reference = "regalo:<uuid>"`, canje con `redeem_gift_card`.
+- Certificados de formaciones (`certificates`, Pro): uno por inscripción, con copia de los datos y código público `CERT-XXXX-XXXX`.
+  Requisitos en `private.certificate_check` (asistencia mínima sobre los encuentros dados, evaluaciones aprobadas, sin cuotas
+  vencidas); `issue_certificate(enrollment, force)` (el estudio puede emitir igual: queda `forced`), `issue_certificates(formation)`,
+  `revoke_certificate` (anular y volver a emitir = código nuevo). Verificación pública `get_certificate(code)` en
+  `/certificado/<código>` y PDF en `/certificado/<código>/pdf` (pdf-lib + Fraunces en `src/lib/certificates/fonts`, incluidas en la
+  función por `outputFileTracingIncludes`). Mail `certificate_issued`.
 - Audiciones (`auditions`): puerta de entrada a una formación. `apply_to_audition` valida el formulario
   armable, el video y el turno (reserva 20 min si hay arancel; MP `"audicion:<uuid>"`).
   `set_audition_result(admitted)` crea o aprueba la inscripción a la formación (matrícula).

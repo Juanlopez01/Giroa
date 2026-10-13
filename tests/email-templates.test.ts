@@ -184,3 +184,13 @@ describe("materialNewEmail", () => {
     expect(f.html).toContain("https://demo.giroa.com.ar/app/formaciones/f1");
   });
 });
+
+describe("certificateIssuedEmail", () => {
+  it("lleva a la verificación con el código", async () => {
+    const { certificateIssuedEmail } = await import("@/lib/email/templates");
+    const m = certificateIssuedEmail(studio, "Ana", { formationTitle: "Profesorado <1>", code: "CERT-AB2C-XY9Z" });
+    expect(m.subject).toBe("¡Tu certificado de Profesorado <1>!");
+    expect(m.html).toContain("Profesorado &lt;1&gt;");
+    expect(m.html).toContain("https://demo.giroa.com.ar/certificado/CERT-AB2C-XY9Z");
+  });
+});

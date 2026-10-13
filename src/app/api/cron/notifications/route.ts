@@ -21,6 +21,7 @@ import {
   membershipFailedEmail,
   membershipFailedStaffEmail,
   materialNewEmail,
+  certificateIssuedEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -247,6 +248,11 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
         title,
         formation: formationId ? { id: formationId, title: str("formation_title") ?? "tu formación" } : null,
       });
+    }
+    case "certificate_issued": {
+      const code = str("code");
+      if (!code) return null;
+      return certificateIssuedEmail(studio, n.student_name, { formationTitle: str("formation_title") ?? "tu formación", code });
     }
     case "staff_invite": {
       const token = str("token");

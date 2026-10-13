@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { Award } from "lucide-react";
+import { studioUrl } from "@/lib/urls";
 import { requireStudent } from "@/lib/student-app";
 import { createClient } from "@/lib/supabase/server";
 import { MATERIALS_BUCKET } from "@/lib/materials";
@@ -43,6 +45,13 @@ export default async function MyFormationPage({ params, searchParams }: PageProp
       supabase.from("formation_grades").select("assessment_id, grade, passed, feedback").eq("enrollment_id", e.id),
       supabase.from("formation_attendance").select("formation_session_id").eq("enrollment_id", e.id),
     ]);
+  const { data: certificate } = await supabase
+    .from("certificates")
+    .select("code")
+    .eq("enrollment_id", e.id)
+    .is("revoked_at", null)
+    .maybeSingle();
+  const certificateUrl = certificate ? studioUrl(slug, `/certificado/${certificate.code}`) : null;
   const p = progressData as Progress | null;
 
   // Material: RLS lo devuelve solo si está inscripto y al día. Los archivos se
@@ -81,6 +90,34 @@ export default async function MyFormationPage({ params, searchParams }: PageProp
           Del {fmtYmd(f.starts_on)} al {fmtYmd(f.ends_on)}
         </p>
       </div>
+
+      {certificate && certificateUrl ? (
+        <section className="space-y-3 rounded-2xl border border-border border-l-4 border-l-brand bg-surface p-5">
+          <div className="flex items-center gap-3">
+            <Award className="h-8 w-8 shrink-0 text-brand" aria-hidden />
+            <div>
+              <p className="font-semibold">¡Tenés tu certificado!</p>
+              <p className="text-sm text-muted">Descargalo o compartí el link: cualquiera lo puede verificar.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={`/certificado/${certificate.code}/pdf?descargar`}
+              className="flex h-11 items-center justify-center rounded-xl bg-brand text-sm font-semibold text-brand-foreground"
+            >
+              Descargar PDF
+            </a>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Terminé ${f.title} en ${studio.name} 🎓 ${certificateUrl}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-11 items-center justify-center rounded-xl border border-border bg-surface text-sm font-semibold"
+            >
+              Compartir
+            </a>
+          </div>
+        </section>
+      ) : null}
 
       {e.status === "applied" ? (
         <div className="space-y-1 rounded-2xl border border-border bg-surface p-5">
