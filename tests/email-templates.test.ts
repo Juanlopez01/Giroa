@@ -156,3 +156,18 @@ describe("studentWelcomeEmail", () => {
     expect(studentWelcomeEmail(studio, null, { email: "x@y.com", hasAccount: true }).text).toContain("Ya tenés tu cuenta");
   });
 });
+
+describe("membershipFailedEmail", () => {
+  it("le avisa al alumno y al estudio, con el motivo escapado", async () => {
+    const { membershipFailedEmail, membershipFailedStaffEmail } = await import("@/lib/email/templates");
+    const m = membershipFailedEmail(studio, "Ana Gómez", { name: "Mensual 8", amountCents: 3000000 });
+    expect(m.subject).toBe("No pudimos cobrar tu abono Mensual 8");
+    expect(m.text).toContain("$ 30.000");
+    expect(m.html).toContain("https://demo.giroa.com.ar/app/perfil/abono");
+
+    const s = membershipFailedStaffEmail(studio, { staffName: "Juan", studentName: "Ana", name: "Mensual 8", amountCents: 3000000, error: "<b>sin fondos</b>" });
+    expect(s.subject).toBe("Rebotó el abono de Ana");
+    expect(s.html).toContain("&lt;b&gt;sin fondos");
+    expect(membershipFailedStaffEmail(studio, { staffName: null, studentName: "Ana", name: "M", amountCents: 1, error: null }).text).not.toContain("Motivo");
+  });
+});

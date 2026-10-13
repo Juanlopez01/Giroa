@@ -344,3 +344,29 @@ export function studentWelcomeEmail(studio: StudioInfo, studentName: string | nu
   ];
   return build(studio, `¡Bienvenido/a a ${studio.name}!`, paragraphs, { label: "Entrar a la app", href: studio.url("/ingresar?next=/app") });
 }
+
+export function membershipFailedEmail(studio: StudioInfo, studentName: string | null, d: { name: string; amountCents: number }): EmailContent {
+  return build(
+    studio,
+    `No pudimos cobrar tu abono ${d.name}`,
+    [
+      hola(studentName),
+      `Mercado Pago no pudo cobrar la cuota de tu abono <strong>${esc(d.name)}</strong> (${ars(d.amountCents)}).`,
+      "Lo va a reintentar solo en los próximos días: revisá que tu tarjeta tenga saldo y esté vigente. Si preferís, podés pagar el mes en el estudio.",
+    ],
+    { label: "Ver mi abono", href: studio.url("/app/perfil/abono") },
+  );
+}
+
+export function membershipFailedStaffEmail(
+  studio: StudioInfo,
+  d: { staffName: string | null; studentName: string; name: string; amountCents: number; error: string | null },
+): EmailContent {
+  const paragraphs = [
+    hola(d.staffName),
+    `Mercado Pago no pudo cobrarle a <strong>${esc(d.studentName)}</strong> la cuota de su abono <strong>${esc(d.name)}</strong> (${ars(d.amountCents)}).`,
+  ];
+  if (d.error) paragraphs.push(`Motivo: ${esc(d.error)}.`);
+  paragraphs.push("MP lo reintenta solo. Ya le avisamos por mail; si querés, escribile o cobrale el mes en el mostrador.");
+  return build(studio, `Rebotó el abono de ${d.studentName}`, paragraphs, { label: "Ver abonos", href: studio.url("/panel/pagos/abonos") });
+}

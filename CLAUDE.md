@@ -114,7 +114,8 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
   (`mp_apply_membership_charge`, idempotente por pago de MP) crea un `payments` con `subscription_id` y el pack del mes, que
   vence al próximo cobro + 3 días; el pack del mes anterior vence en ese momento (lo no usado se pierde). El webhook reconoce
   los abonos por `mp_preapproval_id` o por el `user_id` del aviso (`mp_connections.mp_user_id`); si no, es una suscripción a
-  Giroa. Baja (`cancelMembershipFor`): primero se cancela en MP, después `cancel_membership`.
+  Giroa. Baja (`cancelMembershipFor`): primero se cancela en MP, después `cancel_membership`. Rebote (`failed_at` pasa de null a
+  algo): un trigger encola `membership_failed` (alumno) y `membership_failed_staff` (dueños y encargados), una vez por rebote.
 - Referidos (`referrals`, Estudio y Pro): cada alumno tiene `students.referral_code` (lo pone un trigger; el panel inserta
   alumnos directo). Link `…/sumate?ref=<código>`; al sumarse, `claim_referral` (solo alumnos nuevos: 7 días y sin pagos).
   El primer pago de pack aprobado del invitado (trigger en `payments`) les da a los dos un pack de regalo de

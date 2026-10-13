@@ -18,6 +18,8 @@ import {
   auditionEmail,
   referralRewardEmail,
   studentWelcomeEmail,
+  membershipFailedEmail,
+  membershipFailedStaffEmail,
   type EmailContent,
   type StudioInfo,
 } from "@/lib/email/templates";
@@ -226,6 +228,16 @@ async function render(admin: ReturnType<typeof createAdminClient>, n: Claimed): 
     }
     case "student_welcome":
       return studentWelcomeEmail(studio, n.student_name, { email: n.to_address, hasAccount: p.has_account === true });
+    case "membership_failed":
+      return membershipFailedEmail(studio, n.student_name, { name: str("name") ?? "mensual", amountCents: num("amount_cents") ?? 0 });
+    case "membership_failed_staff":
+      return membershipFailedStaffEmail(studio, {
+        staffName: str("staff_name"),
+        studentName: str("student_name") ?? "un alumno",
+        name: str("name") ?? "mensual",
+        amountCents: num("amount_cents") ?? 0,
+        error: str("error"),
+      });
     case "staff_invite": {
       const token = str("token");
       if (!token) return null;
