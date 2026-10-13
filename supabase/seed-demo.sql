@@ -46,6 +46,22 @@ declare
   v_target integer;
   v_role public.dance_role;
   v_paid_at timestamptz;
+  -- Formación y milonga
+  v_today date;
+  v_f uuid;
+  v_enr uuid;
+  v_start date;
+  v_first_due date;
+  v_last_due date;
+  v_due date;
+  v_debt boolean;
+  v_e uuid;
+  v_ant uuid;
+  v_pre uuid;
+  v_o uuid;
+  v_party date;
+  v_qty integer;
+  n integer;
 begin
   perform setseed(0.42);
 
@@ -55,6 +71,15 @@ begin
     delete from public.pack_credit_events where studio_id = v_studio;
     delete from public.bookings where studio_id = v_studio;
     delete from public.notifications where studio_id = v_studio;
+    delete from public.event_tickets where studio_id = v_studio;
+    delete from public.event_orders where studio_id = v_studio;
+    delete from public.event_ticket_types where studio_id = v_studio;
+    delete from public.events where studio_id = v_studio;
+    delete from public.formation_attendance where studio_id = v_studio;
+    delete from public.formation_charges where studio_id = v_studio;
+    delete from public.formation_enrollments where studio_id = v_studio;
+    delete from public.formation_sessions where studio_id = v_studio;
+    delete from public.formations where studio_id = v_studio;
     delete from public.student_packs where studio_id = v_studio;
     delete from public.payments where studio_id = v_studio;
     delete from public.sessions where studio_id = v_studio;
@@ -228,6 +253,92 @@ begin
 
   -- Arreglo del check: un no_show no tiene checked_in_at.
   update public.bookings set checked_in_at = null where studio_id = v_studio and status = 'no_show';
+
+  -- ---------------------------------------------------------------- formación
+  -- Arrancó un sábado hace unas 10 semanas: matrícula + 5 cuotas (vencen el 10 de cada mes),
+  -- 9 inscriptos (2 con la última cuota vencida sin pagar), 2 postulaciones por revisar y
+  -- asistencia a los encuentros que ya pasaron.
+  v_today := (now() at time zone v_tz)::date;
+  v_start := (date_trunc('week', v_today - 70)::date + 5);
+  v_first_due := make_date(extract(year from v_start)::int, extract(month from v_start)::int, 10);
+  select max(d)::date into v_last_due
+  from generate_series(v_first_due, v_first_due + interval '4 months', interval '1 month') d where d::date <= v_today;
+
+  insert into public.formations (studio_id, title, description, starts_on, ends_on, capacity, status, enrollment_open,
+    requires_approval, enrollment_fee_cents, installments_count, installment_cents, first_due_on, min_attendance_pct)
+  values (v_studio, 'Formación de Instructores de Tango',
+    'Cinco meses para aprender a enseñar: técnica, pedagogía, musicalidad y práctica con alumnos reales. Sábados de 15 a 18.',
+    v_start, v_start + 140, 15, 'published', true, true, 3000000, 5, 4500000, v_first_due, 75)
+  returning id into v_f;
+
+  insert into public.formation_sessions (studio_id, formation_id, title, starts_at, ends_at, location, teacher_name)
+  select v_studio, v_f, 'Encuentro ' || row_number() over (order by d),
+         (d::date + time '15:00') at time zone v_tz, (d::date + time '18:00') at time zone v_tz,
+         'Salón principal', 'Lucía Ferrari'
+  from generate_series(v_start, v_start + 140, interval '7 days') d;
+
+  for i in 1 .. 11 loop
+    if i <= 9 then
+      insert into public.formation_enrollments (studio_id, formation_id, student_id, status, applied_at, decided_at, enrolled_at)
+      values (v_studio, v_f, v_students[i], 'enrolled', v_start - 21, v_start - 19, v_start - 16)
+      returning id into v_enr;
+      insert into public.formation_charges (studio_id, enrollment_id, formation_id, kind, amount_cents, due_on, status, method, paid_at)
+      values (v_studio, v_enr, v_f, 'enrollment', 3000000, v_start - 16, 'paid', 'mercadopago', v_start - 16);
+      for n in 1 .. 5 loop
+        v_due := (v_first_due + make_interval(months => n - 1))::date;
+        v_debt := v_due > v_today or (i in (4, 7) and v_due = v_last_due);
+        insert into public.formation_charges (studio_id, enrollment_id, formation_id, kind, number, amount_cents, due_on, status, method, paid_at)
+        values (v_studio, v_enr, v_f, 'installment', n, 4500000, v_due,
+          (case when v_debt then 'pending' else 'paid' end)::public.formation_charge_status,
+          (case when v_debt then null when i % 3 = 0 then 'cash' else 'mercadopago' end)::public.payment_method,
+          case when not v_debt then v_due - 2 end);
+      end loop;
+      insert into public.formation_attendance (studio_id, formation_session_id, enrollment_id, checked_in_at)
+      select v_studio, fs.id, v_enr, fs.starts_at + interval '5 minutes'
+      from public.formation_sessions fs
+      where fs.formation_id = v_f and fs.starts_at < now() and random() < 0.88;
+    else
+      insert into public.formation_enrollments (studio_id, formation_id, student_id, status, application_message, applied_at)
+      values (v_studio, v_f, v_students[i], 'applied', 'Bailo hace 4 años y me encantaría empezar a enseñar.', now() - interval '2 days');
+    end if;
+  end loop;
+
+  -- ---------------------------------------------------------------- milonga con entradas
+  -- El sábado que viene (al menos dentro de una semana), con 35 entradas vendidas.
+  v_party := date_trunc('week', v_today + 7)::date + 5;
+  insert into public.events (studio_id, title, description, venue, starts_at, ends_at, status)
+  values (v_studio, 'Milonga de Primavera',
+    'Música en vivo con el Trío Arrabal, clase de pre-milonga a las 21 y exhibición de los profes.',
+    'Salón del Sur · Av. Rivadavia 4321',
+    (v_party + time '22:00') at time zone v_tz, (v_party + 1 + time '03:00') at time zone v_tz, 'published')
+  returning id into v_e;
+  insert into public.event_ticket_types (studio_id, event_id, name, price_cents, quantity, sort)
+  values (v_studio, v_e, 'Anticipada', 800000, 80, 1) returning id into v_ant;
+  insert into public.event_ticket_types (studio_id, event_id, name, price_cents, quantity, sort)
+  values (v_studio, v_e, 'Con clase de pre-milonga', 1200000, 30, 2) returning id into v_pre;
+
+  for i in 1 .. 28 loop
+    v_qty := case when i % 4 = 0 then 2 else 1 end;
+    v_paid_at := now() - make_interval(days => 1 + i % 9, hours => i % 7);
+    insert into public.event_orders (studio_id, event_id, ticket_type_id, quantity, buyer_name, buyer_email,
+      unit_price_cents, amount_cents, method, status, paid_at, created_at)
+    values (v_studio, v_e, case when i % 3 = 0 then v_pre else v_ant end, v_qty,
+      (array['Ana','Pablo','Laura','Diego','Carla','Nico','Vero','Seba','Flor','Mariano','Lu','Gaby','Romi','Fede'])[1 + i % 14] || ' ' ||
+      (array['García','López','Martínez','Romero','Sosa','Díaz','Benítez','Acosta','Medina','Herrera'])[1 + i % 10],
+      'comprador' || i || '@ejemplo.com',
+      case when i % 3 = 0 then 1200000 else 800000 end,
+      v_qty * case when i % 3 = 0 then 1200000 else 800000 end,
+      (case when i % 5 = 0 then 'cash' else 'mercadopago' end)::public.payment_method, 'paid', v_paid_at, v_paid_at)
+    returning id into v_o;
+    insert into public.event_tickets (studio_id, order_id, event_id, ticket_type_id, number)
+    select v_studio, v_o, v_e, o.ticket_type_id, g
+    from public.event_orders o, generate_series(1, v_qty) g where o.id = v_o;
+  end loop;
+
+  raise notice 'Formación: % inscriptos, % postulaciones. Milonga: % entradas vendidas.',
+    (select count(*) from public.formation_enrollments where formation_id = v_f and status = 'enrolled'),
+    (select count(*) from public.formation_enrollments where formation_id = v_f and status = 'applied'),
+    (select count(*) from public.event_tickets where event_id = v_e);
 
   raise notice 'Estudio demo listo: % alumnos, % sesiones, % reservas.',
     (select count(*) from public.students where studio_id = v_studio),
