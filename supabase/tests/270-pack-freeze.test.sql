@@ -15,9 +15,9 @@ select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000b1',
   $$select public.freeze_pack('70000000-0000-0000-0000-0000000000a1')$$), 'pack_not_found', 'otro estudio tampoco');
 
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1',
-  $$select public.freeze_pack('70000000-0000-0000-0000-0000000000a1', current_date - 1)$$), 'invalid_date', 'no se congela hasta una fecha pasada');
+  $$select public.freeze_pack('70000000-0000-0000-0000-0000000000a1', (now() at time zone 'America/Argentina/Buenos_Aires')::date - 1)$$), 'invalid_date', 'no se congela hasta una fecha pasada');
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1',
-  $$select public.freeze_pack('70000000-0000-0000-0000-0000000000a1', current_date + 10)$$), 'OK', 'el dueño congela el pack de Ana');
+  $$select public.freeze_pack('70000000-0000-0000-0000-0000000000a1', (now() at time zone 'America/Argentina/Buenos_Aires')::date + 10)$$), 'OK', 'el dueño congela el pack de Ana');
 select is(tests.err('authenticated', '00000000-0000-0000-0000-0000000000a1',
   $$select public.freeze_pack('70000000-0000-0000-0000-0000000000a1')$$), 'already_frozen', 'no se congela dos veces');
 
