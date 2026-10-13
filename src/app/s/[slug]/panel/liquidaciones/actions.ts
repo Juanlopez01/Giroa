@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/panel";
 import { createClient } from "@/lib/supabase/server";
 import { parseArsToCents } from "@/lib/money";
 import { fromSupabaseError, type ActionState } from "@/lib/errors";
+import { loadMonthPayouts } from "@/lib/payouts.server";
 
 export type RuleInput = { payeeName: string; memberId: string; kind: string; value: string };
 
@@ -44,4 +45,47 @@ export async function saveRules(slug: string, offeringId: string, rules: RuleInp
   if (error) return fromSupabaseError(error, "saveRules");
   revalidatePath(`/s/${slug}/panel/liquidaciones`, "layout");
   return { ok: true, message: payload.length ? "¡Listo! Guardamos lo que cobra cada profe." : "Listo: esta clase no se liquida." };
+}
+
+const markSchema = z.object({
+  month: z.string().regex(/^d{4}-(0[1-9]|1[0-2])$/),
+  payeeKey: z.string().min(1).max(200),
+  method: z.enum(["cash", "transfer"], "Elegí si le pagaste en efectivo o por transferencia."),
+});
+
+/** Marca pagado el mes de un profe. El monto y el detalle se recalculan acá (no vienen del navegador). */
+export async function markPaid(slug: string, month: string, payeeKey: string, method: "cash" | "transfer"): Promise<ActionState> {
+  const { studio } = await requireAdmin(slug, "/panel/liquidaciones");
+  const parsed = markSchema.safeParse({ month, payeeKey, method });
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Revisá los datos." };
+  const d = parsed.data;
+
+  const { payees } = await loadMonthPayouts(studio.id, d.month, studio.timezone);
+  const payee = payees.find((p) => p.key === d.payeeKey);
+  if (!payee) return { ok: false, message: "No encontramos a ese profe en este mes." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("mark_payout_paid", {
+    p_studio_id: studio.id,
+    p_period: `${d.month}-01`,
+    p_payee_name: payee.name,
+    // null = profe sin cuenta (los tipos generados no lo admiten en un parámetro sin default).
+    p_member_id: payee.memberId as string,
+    p_amount_cents: payee.totalCents,
+    p_breakdown: payee.lines,
+    p_method: d.method,
+  });
+  if (error) return fromSupabaseError(error, "markPaid");
+  revalidatePath(`/s/${slug}/panel/liquidaciones`);
+  return { ok: true, message: `Listo: ${payee.name} figura como pagado.` };
+}
+
+export async function undoPayout(slug: string, payoutId: string): Promise<ActionState> {
+  await requireAdmin(slug, "/panel/liquidaciones");
+  if (!z.uuid().safeParse(payoutId).success) return { ok: false, message: "No encontramos ese pago." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("undo_payout", { p_payout_id: payoutId });
+  if (error) return fromSupabaseError(error, "undoPayout");
+  revalidatePath(`/s/${slug}/panel/liquidaciones`);
+  return { ok: true, message: "Pago deshecho." };
 }
