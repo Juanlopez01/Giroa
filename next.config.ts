@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
       { source: "/s/:slug/embed", headers: csp("*") },
     ];
   },
+  // Las fuentes del PDF de los certificados se leen del disco: que viajen con la función.
+  outputFileTracingIncludes: {
+    "/s/*/certificado/*/pdf": ["./src/lib/certificates/fonts/*.ttf"],
+  },
   experimental: {
     serverActions: {
       // Las imágenes (logo, portada) se suben directo a Storage desde el navegador.
