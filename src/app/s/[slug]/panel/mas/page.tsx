@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowLeftRight,
+  Calculator,
   ChevronRight,
   CreditCard,
   Flame,
@@ -20,12 +21,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { requireStaff } from "@/lib/panel";
+import { can } from "@/lib/gating";
 import { platformUrl } from "@/lib/urls";
 import { signOut } from "@/app/(platform)/login/actions";
 
 export const metadata: Metadata = { title: "Más" };
 
-const LINKS: { href: string; label: string; detail: string; icon: LucideIcon; access?: "admin" | "owner" }[] = [
+const LINKS: { href: string; label: string; detail: string; icon: LucideIcon; access?: "admin" | "owner" | "payouts" }[] = [
   { href: "/panel/pagos", label: "Pagos", detail: "Lo cobrado en el mes, por medio de pago", icon: Wallet, access: "admin" },
   { href: "/panel/clases", label: "Clases", detail: "Clases regulares y sus horarios", icon: Layers, access: "admin" },
   { href: "/panel/packs", label: "Packs", detail: "Lo que compran tus alumnos, cupones y regalos", icon: Ticket, access: "admin" },
@@ -36,6 +38,7 @@ const LINKS: { href: string; label: string; detail: string; icon: LucideIcon; ac
   { href: "/panel/biblioteca", label: "Biblioteca", detail: "Rutinas, apuntes y videos para tus alumnos", icon: LibraryBig },
   { href: "/panel/referidos", label: "Referidos", detail: "Clases de regalo para quien trae un amigo", icon: Gift, access: "admin" },
   { href: "/panel/ajustes/qr", label: "Cartel QR", detail: "Para que los alumnos se den el presente", icon: QrCode },
+  { href: "/panel/liquidaciones", label: "Liquidación de profes", detail: "Lo que le toca a cada profe por mes", icon: Calculator, access: "payouts" },
   { href: "/panel/equipo", label: "Equipo", detail: "Profes y encargados, y qué puede hacer cada uno", icon: UsersRound, access: "admin" },
   { href: "/panel/ajustes", label: "Ajustes", detail: "Tu marca, Mercado Pago, reservas y clase de prueba", icon: Settings, access: "admin" },
   { href: "/panel/plan", label: "Tu plan", detail: "Suscripción a Giroa", icon: CreditCard, access: "owner" },
@@ -44,26 +47,28 @@ const LINKS: { href: string; label: string; detail: string; icon: LucideIcon; ac
 // En el celular, las secciones que no entran en la barra de abajo.
 export default async function MorePage({ params }: PageProps<"/s/[slug]/panel/mas">) {
   const { slug } = await params;
-  const { user, isAdmin, isOwner } = await requireStaff(slug, "/panel/mas");
+  const { studio, user, isAdmin, isOwner } = await requireStaff(slug, "/panel/mas");
+  const canSeePayouts = isAdmin || (await can(studio.id, "teacher_payouts"));
+  const links = LINKS.filter((l) =>
+    l.access === "owner" ? isOwner : l.access === "admin" ? isAdmin : l.access === "payouts" ? canSeePayouts : true,
+  ).map((l) => (l.access === "payouts" && !isAdmin ? { ...l, label: "Mis liquidaciones", detail: "Lo que te toca por tus clases" } : l));
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <h1 className="font-serif text-3xl font-semibold">Más</h1>
       <nav className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
-        {LINKS.filter((l) => (l.access === "owner" ? isOwner : l.access === "admin" ? isAdmin : true)).map(
-          ({ href, label, detail, icon: Icon }) => (
-            <Link key={href} href={href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-background">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                <Icon className="h-[18px] w-[18px]" aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium">{label}</span>
-                <span className="block text-sm text-muted">{detail}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted" aria-hidden />
-            </Link>
-          ),
-        )}
+        {links.map(({ href, label, detail, icon: Icon }) => (
+          <Link key={href} href={href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-background">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
+              <Icon className="h-[18px] w-[18px]" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">{label}</span>
+              <span className="block text-sm text-muted">{detail}</span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-muted" aria-hidden />
+          </Link>
+        ))}
       </nav>
       <nav className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
         <a href={platformUrl("/estudios")} className="flex items-center gap-3 px-4 py-3.5 text-sm hover:bg-background">

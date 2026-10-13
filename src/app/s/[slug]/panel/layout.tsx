@@ -10,6 +10,7 @@ import { PanelSidebar, PanelTabBar } from "./panel-nav";
 import { AccessGate } from "./access-gate";
 import { daysUntil, getStudioAccess } from "@/lib/subscription.server";
 import { nowMs } from "@/lib/datetime";
+import { can } from "@/lib/gating";
 import { InstallPrompt } from "@/components/studio/install-prompt";
 
 // El panel se instala como su propia app ("Panel · Estudio"), separada de la del alumno.
@@ -65,7 +66,13 @@ export default async function PanelLayout({ children, params }: LayoutProps<"/s/
 
   const isAdmin = role === "owner" || role === "admin";
   const isOwner = role === "owner";
-  const access = { isAdmin, isOwner, canTakePayments: isAdmin || Boolean(member.can_take_payments) };
+  const access = {
+    isAdmin,
+    isOwner,
+    canTakePayments: isAdmin || Boolean(member.can_take_payments),
+    // El profe ve "Mis liquidaciones" solo si el plan las incluye.
+    canSeePayouts: isAdmin || (await can(studio.id, "teacher_payouts")),
+  };
   const studioAccess = await getStudioAccess(studio.id);
   const days = daysUntil(studioAccess.until, nowMs());
   const notice =

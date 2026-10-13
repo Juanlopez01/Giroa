@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Calculator,
   CalendarDays,
   CreditCard,
   FileSpreadsheet,
@@ -30,8 +31,8 @@ import {
 } from "lucide-react";
 
 // Las rutas son las del subdominio del estudio (el proxy agrega /s/[slug]).
-type Access = { isAdmin: boolean; isOwner: boolean; canTakePayments: boolean };
-type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean; adminOnly?: boolean; ownerOnly?: boolean; paymentsOnly?: boolean };
+type Access = { isAdmin: boolean; isOwner: boolean; canTakePayments: boolean; canSeePayouts: boolean };
+type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean; adminOnly?: boolean; ownerOnly?: boolean; paymentsOnly?: boolean; payoutsOnly?: boolean };
 
 const ITEMS: Item[] = [
   { href: "/panel", label: "Inicio", icon: House, exact: true },
@@ -47,6 +48,7 @@ const ITEMS: Item[] = [
   { href: "/panel/anuncios", label: "Anuncios", icon: Megaphone, adminOnly: true },
   { href: "/panel/referidos", label: "Referidos", icon: Gift, adminOnly: true },
   { href: "/panel/biblioteca", label: "Biblioteca", icon: LibraryBig },
+  { href: "/panel/liquidaciones", label: "Liquidación", icon: Calculator, payoutsOnly: true },
   { href: "/panel/equipo", label: "Equipo", icon: UsersRound, adminOnly: true },
   { href: "/panel/ajustes", label: "Ajustes", icon: Settings, adminOnly: true },
   { href: "/panel/plan", label: "Tu plan", icon: CreditCard, ownerOnly: true },
@@ -61,9 +63,9 @@ function useActive() {
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-function visibleItems({ isAdmin, isOwner, canTakePayments }: Access) {
+function visibleItems({ isAdmin, isOwner, canTakePayments, canSeePayouts }: Access) {
   return ITEMS.filter(
-    (i) => (isAdmin || !i.adminOnly) && (isOwner || !i.ownerOnly) && (canTakePayments || !i.paymentsOnly),
+    (i) => (isAdmin || !i.adminOnly) && (isOwner || !i.ownerOnly) && (canTakePayments || !i.paymentsOnly) && (canSeePayouts || !i.payoutsOnly),
   );
 }
 

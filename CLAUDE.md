@@ -143,6 +143,12 @@ Storage, RLS) · Mercado Pago marketplace (OAuth) · Vercel con `*.giroa.com.ar`
 - Cobrar (`/panel/cobrar`, staff con permiso de cobro): una sola pantalla para el mostrador. Elegís alumno (o "no es alumno"),
   ve lo pendiente (`src/lib/charge.server.ts`: cuotas de formación, clases reservadas sin pagar, aranceles) y vende pack, clase
   suelta, entrada o gift card. Sin RPC nuevas: usa las de siempre (`record_manual_payment`, `sell_class_manual`, etc.).
+- Liquidación de profes (`teacher_payouts`, Pro): `payout_rules` por clase (varios profes, con o sin cuenta: `member_id` opcional;
+  fijo por clase, por alumno presente o % de lo que generó la clase), `set_payout_rules` reemplaza las de una clase.
+  `payout_sessions` da presentes y lo que generó cada clase dictada (cada lugar usado vale lo pagado: pack / clases, pack libre /
+  clases usadas, clase suelta lo pagado, prueba o regalo 0). Las reglas se aplican en TS (`src/lib/payouts.ts`). Pagos en
+  `teacher_payouts` (`mark_payout_paid`, el monto lo recalcula el servidor; un pago por mes y profe por `private.payee_key`) con
+  el detalle congelado. El profe ve solo lo suyo (RLS con `private.my_member_ids`).
 - Alumno cargado por el estudio (mostrador o alta): `send_student_welcome` encola el mail `student_welcome` (una vez por
   alumno, lo pide el staff: no es trigger para no mandarle a toda una importación). Al entrar por primera vez con ese email,
   `requireStudent` llama a `join_studio` sin nombre, que vincula la ficha sola (sin pasar por "Sumate").
